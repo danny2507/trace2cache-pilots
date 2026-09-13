@@ -28,6 +28,11 @@ reserved for evaluation and contributes 39,841 extended inputs over 378 curated 
 also contains some IDs from the original train split, only official test IDs 11--510 are eligible
 for the final MBPP+ evaluation.
 
+The identical mutation audit on unseen tasks found 151 mixed mutants across 36/90 validation tasks
+and 762 mixed mutants across 221/500 test tasks. Thus the deterministic operator family supplies a
+usable task-disjoint evaluation set as well as training data. The exact reports are stored under
+`artifacts/data/mbpp_{train,validation,test}_mutation_audit.json`.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
