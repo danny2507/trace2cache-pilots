@@ -1,0 +1,244 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "teacher_checkpoint": "checkpoints/latent_probe/compositional_pair_encoder_balanced_1200.pt",
+  "seed": 109,
+  "train_steps": 3000,
+  "train_distractors": [
+    0,
+    6
+  ],
+  "eval_distractors": [
+    16,
+    40
+  ],
+  "train_pair_count": 80,
+  "heldout_pair_count": 20,
+  "num_latents": 1,
+  "role_mode": "typed",
+  "student_trainable_parameters": 4486657,
+  "elapsed_seconds": 321.56780103966594,
+  "representation": {
+    "seen_short": {
+      "cosine_similarity": 0.9965627193450928,
+      "rmse": 0.7590318918228149,
+      "relative_l2": 0.08547940105199814
+    },
+    "unseen_many_distractors": {
+      "cosine_similarity": 0.9643596410751343,
+      "rmse": 2.488914966583252,
+      "relative_l2": 0.3166024088859558
+    }
+  },
+  "receiver": {
+    "student_seen_short": {
+      "tasks": {
+        "reference": {
+          "latent": 1.0,
+          "shuffled": 0.109375
+        },
+        "buggy": {
+          "latent": 0.99609375,
+          "shuffled": 0.109375
+        },
+        "delta": {
+          "latent": 1.0,
+          "shuffled": 0.078125
+        },
+        "greater": {
+          "latent": 1.0,
+          "shuffled": 0.5078125
+        }
+      },
+      "macro_latent": 0.9990234375,
+      "macro_shuffled": 0.201171875,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.6796875,
+          "shuffled": 0.09375
+        },
+        "buggy": {
+          "latent": 0.9375,
+          "shuffled": 0.10546875
+        },
+        "delta": {
+          "latent": 0.62109375,
+          "shuffled": 0.078125
+        },
+        "greater": {
+          "latent": 1.0,
+          "shuffled": 0.5078125
+        }
+      },
+      "macro_latent_heldout_prompt": 0.8095703125,
+      "macro_shuffled_heldout_prompt": 0.1962890625
+    },
+    "student_unseen_many_distractors": {
+      "tasks": {
+        "reference": {
+          "latent": 0.609375,
+          "shuffled": 0.08203125
+        },
+        "buggy": {
+          "latent": 0.6953125,
+          "shuffled": 0.1171875
+        },
+        "delta": {
+          "latent": 0.1953125,
+          "shuffled": 0.1015625
+        },
+        "greater": {
+          "latent": 0.984375,
+          "shuffled": 0.546875
+        }
+      },
+      "macro_latent": 0.62109375,
+      "macro_shuffled": 0.2119140625,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.55078125,
+          "shuffled": 0.078125
+        },
+        "buggy": {
+          "latent": 0.6875,
+          "shuffled": 0.1171875
+        },
+        "delta": {
+          "latent": 0.17578125,
+          "shuffled": 0.06640625
+        },
+        "greater": {
+          "latent": 0.96875,
+          "shuffled": 0.5546875
+        }
+      },
+      "macro_latent_heldout_prompt": 0.595703125,
+      "macro_shuffled_heldout_prompt": 0.2041015625
+    },
+    "branch_flip_counterfactual": {
+      "tasks": {
+        "reference": {
+          "latent": 0.0078125,
+          "shuffled": 0.1171875
+        },
+        "buggy": {
+          "latent": 0.01953125,
+          "shuffled": 0.08984375
+        },
+        "delta": {
+          "latent": 0.1484375,
+          "shuffled": 0.08203125
+        },
+        "greater": {
+          "latent": 0.484375,
+          "shuffled": 0.4609375
+        }
+      },
+      "macro_latent": 0.1650390625,
+      "macro_shuffled": 0.1875,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.03515625,
+          "shuffled": 0.125
+        },
+        "buggy": {
+          "latent": 0.015625,
+          "shuffled": 0.08984375
+        },
+        "delta": {
+          "latent": 0.1171875,
+          "shuffled": 0.09765625
+        },
+        "greater": {
+          "latent": 0.48046875,
+          "shuffled": 0.46484375
+        }
+      },
+      "macro_latent_heldout_prompt": 0.162109375,
+      "macro_shuffled_heldout_prompt": 0.1943359375
+    },
+    "candidate_role_swap": {
+      "tasks": {
+        "reference": {
+          "latent": 0.015625,
+          "shuffled": 0.12109375
+        },
+        "buggy": {
+          "latent": 0.0234375,
+          "shuffled": 0.08203125
+        },
+        "delta": {
+          "latent": 0.13671875,
+          "shuffled": 0.1015625
+        },
+        "greater": {
+          "latent": 0.48828125,
+          "shuffled": 0.44921875
+        }
+      },
+      "macro_latent": 0.166015625,
+      "macro_shuffled": 0.1884765625,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.046875,
+          "shuffled": 0.12890625
+        },
+        "buggy": {
+          "latent": 0.02734375,
+          "shuffled": 0.0859375
+        },
+        "delta": {
+          "latent": 0.1328125,
+          "shuffled": 0.09765625
+        },
+        "greater": {
+          "latent": 0.484375,
+          "shuffled": 0.4609375
+        }
+      },
+      "macro_latent_heldout_prompt": 0.1728515625,
+      "macro_shuffled_heldout_prompt": 0.193359375
+    },
+    "teacher_unseen_ceiling": {
+      "tasks": {
+        "reference": {
+          "latent": 1.0,
+          "shuffled": 0.1171875
+        },
+        "buggy": {
+          "latent": 0.953125,
+          "shuffled": 0.1171875
+        },
+        "delta": {
+          "latent": 0.35546875,
+          "shuffled": 0.09375
+        },
+        "greater": {
+          "latent": 0.80859375,
+          "shuffled": 0.55859375
+        }
+      },
+      "macro_latent": 0.779296875,
+      "macro_shuffled": 0.2216796875,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.59375,
+          "shuffled": 0.109375
+        },
+        "buggy": {
+          "latent": 0.84375,
+          "shuffled": 0.13671875
+        },
+        "delta": {
+          "latent": 0.17578125,
+          "shuffled": 0.08203125
+        },
+        "greater": {
+          "latent": 0.87890625,
+          "shuffled": 0.54296875
+        }
+      },
+      "macro_latent_heldout_prompt": 0.623046875,
+      "macro_shuffled_heldout_prompt": 0.2177734375
+    }
+  }
+}

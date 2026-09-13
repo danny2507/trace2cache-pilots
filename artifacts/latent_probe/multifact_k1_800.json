@@ -1,0 +1,95 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 29,
+  "train_steps": 800,
+  "train_lengths_per_trace": [
+    2,
+    6
+  ],
+  "eval_lengths_per_trace": [
+    8,
+    12
+  ],
+  "eval_size": 256,
+  "num_latents": 1,
+  "tasks": {
+    "reference": {
+      "latent": 0.91015625,
+      "shuffled": 0.0859375,
+      "reference_anchor": 0.22265625,
+      "buggy_anchor": 0.109375,
+      "two_native_tokens": 0.14453125
+    },
+    "buggy": {
+      "latent": 0.08984375,
+      "shuffled": 0.109375,
+      "reference_anchor": 0.0859375,
+      "buggy_anchor": 0.08984375,
+      "two_native_tokens": 0.078125
+    },
+    "delta": {
+      "latent": 0.1328125,
+      "shuffled": 0.109375,
+      "reference_anchor": 0.109375,
+      "buggy_anchor": 0.09375,
+      "two_native_tokens": 0.25
+    },
+    "greater": {
+      "latent": 0.6875,
+      "shuffled": 0.546875,
+      "reference_anchor": 0.5390625,
+      "buggy_anchor": 0.5390625,
+      "two_native_tokens": 0.5390625
+    }
+  },
+  "trainable_parameters": 4477441,
+  "elapsed_seconds": 208.82593747228384,
+  "residual_gate": 0.0400460883975029,
+  "macro_latent": 0.455078125,
+  "macro_shuffled": 0.212890625,
+  "macro_reference_anchor": 0.2392578125,
+  "macro_buggy_anchor": 0.2080078125,
+  "macro_two_native_tokens": 0.2529296875,
+  "tasks_heldout_prompt": {
+    "reference": {
+      "latent": 0.40234375,
+      "shuffled": 0.08203125,
+      "reference_anchor": 0.26953125,
+      "buggy_anchor": 0.09375,
+      "two_native_tokens": 0.1640625
+    },
+    "buggy": {
+      "latent": 0.08203125,
+      "shuffled": 0.0703125,
+      "reference_anchor": 0.08984375,
+      "buggy_anchor": 0.08984375,
+      "two_native_tokens": 0.125
+    },
+    "delta": {
+      "latent": 0.0,
+      "shuffled": 0.0,
+      "reference_anchor": 0.0,
+      "buggy_anchor": 0.0,
+      "two_native_tokens": 0.0
+    },
+    "greater": {
+      "latent": 0.5390625,
+      "shuffled": 0.5390625,
+      "reference_anchor": 0.5390625,
+      "buggy_anchor": 0.5390625,
+      "two_native_tokens": 0.5390625
+    }
+  },
+  "macro_latent_heldout_prompt": 0.255859375,
+  "macro_shuffled_heldout_prompt": 0.1728515625,
+  "macro_reference_anchor_heldout_prompt": 0.224609375,
+  "macro_buggy_anchor_heldout_prompt": 0.1806640625,
+  "macro_two_native_tokens_heldout_prompt": 0.20703125,
+  "text_trace": {
+    "reference": 0.19921875,
+    "buggy": 0.41015625,
+    "delta": 0.12109375,
+    "greater": 0.5390625,
+    "macro": 0.3173828125
+  }
+}

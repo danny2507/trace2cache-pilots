@@ -1,0 +1,21 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 17,
+  "train_steps": 50,
+  "train_lengths": [
+    2,
+    6
+  ],
+  "eval_lengths": [
+    8,
+    12
+  ],
+  "eval_size": 64,
+  "num_latents": 4,
+  "trainable_parameters": 4477440,
+  "elapsed_seconds": 17.73546677455306,
+  "latent_accuracy": 0.03125,
+  "shuffled_latent_accuracy": 0.03125,
+  "no_trace_accuracy": 0.140625,
+  "text_trace_accuracy": 0.5625
+}

@@ -1,0 +1,194 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 29,
+  "train_steps": 300,
+  "train_lengths_per_trace": [
+    2,
+    6
+  ],
+  "eval_lengths_per_trace": [
+    8,
+    12
+  ],
+  "eval_size": 64,
+  "num_latents": 1,
+  "compressor": "pair_encoder",
+  "prompt_augmentation": true,
+  "compositional_split": true,
+  "train_pair_count": 80,
+  "heldout_pair_count": 20,
+  "tasks": [
+    "reference",
+    "buggy",
+    "delta",
+    "greater"
+  ],
+  "trainable_parameters": 1583872,
+  "elapsed_seconds": 108.15184620395303,
+  "residual_scale": 0.19169923663139343,
+  "seen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 0.625,
+        "shuffled": 0.109375,
+        "reference_anchor": 0.1875,
+        "buggy_anchor": 0.125,
+        "two_native_tokens": 0.15625
+      },
+      "buggy": {
+        "latent": 0.703125,
+        "shuffled": 0.078125,
+        "reference_anchor": 0.09375,
+        "buggy_anchor": 0.078125,
+        "two_native_tokens": 0.0625
+      },
+      "delta": {
+        "latent": 0.59375,
+        "shuffled": 0.203125,
+        "reference_anchor": 0.078125,
+        "buggy_anchor": 0.078125,
+        "two_native_tokens": 0.25
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.5625,
+        "reference_anchor": 0.4375,
+        "buggy_anchor": 0.4375,
+        "two_native_tokens": 0.4375
+      }
+    },
+    "macro_latent": 0.73046875,
+    "macro_shuffled": 0.23828125,
+    "macro_reference_anchor": 0.19921875,
+    "macro_buggy_anchor": 0.1796875,
+    "macro_two_native_tokens": 0.2265625,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.203125,
+        "shuffled": 0.109375,
+        "reference_anchor": 0.28125,
+        "buggy_anchor": 0.046875,
+        "two_native_tokens": 0.140625
+      },
+      "buggy": {
+        "latent": 0.34375,
+        "shuffled": 0.046875,
+        "reference_anchor": 0.078125,
+        "buggy_anchor": 0.078125,
+        "two_native_tokens": 0.109375
+      },
+      "delta": {
+        "latent": 0.484375,
+        "shuffled": 0.1875,
+        "reference_anchor": 0.0,
+        "buggy_anchor": 0.0,
+        "two_native_tokens": 0.0
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.5625,
+        "reference_anchor": 0.4375,
+        "buggy_anchor": 0.4375,
+        "two_native_tokens": 0.4375
+      }
+    },
+    "macro_latent_heldout_prompt": 0.5078125,
+    "macro_shuffled_heldout_prompt": 0.2265625,
+    "macro_reference_anchor_heldout_prompt": 0.19921875,
+    "macro_buggy_anchor_heldout_prompt": 0.140625,
+    "macro_two_native_tokens_heldout_prompt": 0.171875
+  },
+  "unseen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 0.6875,
+        "shuffled": 0.140625,
+        "reference_anchor": 0.1875,
+        "buggy_anchor": 0.15625,
+        "two_native_tokens": 0.125
+      },
+      "buggy": {
+        "latent": 0.5625,
+        "shuffled": 0.109375,
+        "reference_anchor": 0.09375,
+        "buggy_anchor": 0.09375,
+        "two_native_tokens": 0.03125
+      },
+      "delta": {
+        "latent": 0.0,
+        "shuffled": 0.0,
+        "reference_anchor": 0.1875,
+        "buggy_anchor": 0.1875,
+        "two_native_tokens": 0.328125
+      },
+      "greater": {
+        "latent": 0.796875,
+        "shuffled": 0.578125,
+        "reference_anchor": 0.75,
+        "buggy_anchor": 0.75,
+        "two_native_tokens": 0.75
+      }
+    },
+    "macro_latent": 0.51171875,
+    "macro_shuffled": 0.20703125,
+    "macro_reference_anchor": 0.3046875,
+    "macro_buggy_anchor": 0.296875,
+    "macro_two_native_tokens": 0.30859375,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.21875,
+        "shuffled": 0.140625,
+        "reference_anchor": 0.1875,
+        "buggy_anchor": 0.046875,
+        "two_native_tokens": 0.125
+      },
+      "buggy": {
+        "latent": 0.34375,
+        "shuffled": 0.0625,
+        "reference_anchor": 0.09375,
+        "buggy_anchor": 0.09375,
+        "two_native_tokens": 0.109375
+      },
+      "delta": {
+        "latent": 0.09375,
+        "shuffled": 0.03125,
+        "reference_anchor": 0.0,
+        "buggy_anchor": 0.0,
+        "two_native_tokens": 0.0
+      },
+      "greater": {
+        "latent": 0.609375,
+        "shuffled": 0.515625,
+        "reference_anchor": 0.75,
+        "buggy_anchor": 0.75,
+        "two_native_tokens": 0.75
+      }
+    },
+    "macro_latent_heldout_prompt": 0.31640625,
+    "macro_shuffled_heldout_prompt": 0.1875,
+    "macro_reference_anchor_heldout_prompt": 0.2578125,
+    "macro_buggy_anchor_heldout_prompt": 0.22265625,
+    "macro_two_native_tokens_heldout_prompt": 0.24609375
+  },
+  "compact_text": {
+    "reference": 1.0,
+    "buggy": 1.0,
+    "delta": 0.953125,
+    "greater": 0.75,
+    "macro": 0.92578125
+  },
+  "compact_text_heldout_prompt": {
+    "reference": 1.0,
+    "buggy": 1.0,
+    "delta": 0.0,
+    "greater": 0.75,
+    "macro": 0.6875
+  },
+  "full_text_trace": {
+    "reference": 0.28125,
+    "buggy": 0.4375,
+    "delta": 0.1875,
+    "greater": 0.75,
+    "macro": 0.4140625
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 17,
+  "train_steps": 0,
+  "train_lengths": [
+    2,
+    6
+  ],
+  "eval_lengths": [
+    8,
+    12
+  ],
+  "eval_size": 128,
+  "num_latents": 1,
+  "trainable_parameters": 4476672,
+  "elapsed_seconds": 6.660076931118965,
+  "latent_accuracy": 0.078125,
+  "shuffled_latent_accuracy": 0.0859375,
+  "no_trace_accuracy": 0.125,
+  "oracle_native_accuracy": 0.859375,
+  "text_trace_accuracy": 0.9921875
+}

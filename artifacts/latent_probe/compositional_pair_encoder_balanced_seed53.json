@@ -1,0 +1,114 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 53,
+  "train_steps": 1200,
+  "train_lengths_per_trace": [
+    2,
+    6
+  ],
+  "eval_lengths_per_trace": [
+    8,
+    12
+  ],
+  "eval_size": 256,
+  "num_latents": 1,
+  "compressor": "pair_encoder",
+  "prompt_augmentation": true,
+  "compositional_split": true,
+  "minimal_eval": true,
+  "train_pair_count": 80,
+  "heldout_pair_count": 20,
+  "tasks": [
+    "reference",
+    "buggy",
+    "delta",
+    "greater"
+  ],
+  "trainable_parameters": 1583872,
+  "elapsed_seconds": 292.52999491617084,
+  "residual_scale": 0.28730309009552,
+  "seen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 1.0,
+        "shuffled": 0.125
+      },
+      "buggy": {
+        "latent": 1.0,
+        "shuffled": 0.109375
+      },
+      "delta": {
+        "latent": 1.0,
+        "shuffled": 0.09375
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.4921875
+      }
+    },
+    "macro_latent": 1.0,
+    "macro_shuffled": 0.205078125,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.8359375,
+        "shuffled": 0.12890625
+      },
+      "buggy": {
+        "latent": 0.97265625,
+        "shuffled": 0.10546875
+      },
+      "delta": {
+        "latent": 0.6875,
+        "shuffled": 0.1015625
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.4921875
+      }
+    },
+    "macro_latent_heldout_prompt": 0.8740234375,
+    "macro_shuffled_heldout_prompt": 0.20703125
+  },
+  "unseen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 0.84765625,
+        "shuffled": 0.0703125
+      },
+      "buggy": {
+        "latent": 0.92578125,
+        "shuffled": 0.0625
+      },
+      "delta": {
+        "latent": 0.38671875,
+        "shuffled": 0.06640625
+      },
+      "greater": {
+        "latent": 0.90234375,
+        "shuffled": 0.51171875
+      }
+    },
+    "macro_latent": 0.765625,
+    "macro_shuffled": 0.177734375,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.50390625,
+        "shuffled": 0.078125
+      },
+      "buggy": {
+        "latent": 0.7890625,
+        "shuffled": 0.078125
+      },
+      "delta": {
+        "latent": 0.2578125,
+        "shuffled": 0.0859375
+      },
+      "greater": {
+        "latent": 0.859375,
+        "shuffled": 0.515625
+      }
+    },
+    "macro_latent_heldout_prompt": 0.6025390625,
+    "macro_shuffled_heldout_prompt": 0.189453125
+  }
+}

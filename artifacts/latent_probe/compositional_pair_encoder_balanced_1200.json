@@ -1,0 +1,194 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 29,
+  "train_steps": 1200,
+  "train_lengths_per_trace": [
+    2,
+    6
+  ],
+  "eval_lengths_per_trace": [
+    8,
+    12
+  ],
+  "eval_size": 256,
+  "num_latents": 1,
+  "compressor": "pair_encoder",
+  "prompt_augmentation": true,
+  "compositional_split": true,
+  "train_pair_count": 80,
+  "heldout_pair_count": 20,
+  "tasks": [
+    "reference",
+    "buggy",
+    "delta",
+    "greater"
+  ],
+  "trainable_parameters": 1583872,
+  "elapsed_seconds": 384.2820544987917,
+  "residual_scale": 0.2906758189201355,
+  "seen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 1.0,
+        "shuffled": 0.0859375,
+        "reference_anchor": 0.17578125,
+        "buggy_anchor": 0.078125,
+        "two_native_tokens": 0.12890625
+      },
+      "buggy": {
+        "latent": 1.0,
+        "shuffled": 0.09765625,
+        "reference_anchor": 0.078125,
+        "buggy_anchor": 0.08203125,
+        "two_native_tokens": 0.06640625
+      },
+      "delta": {
+        "latent": 1.0,
+        "shuffled": 0.10546875,
+        "reference_anchor": 0.125,
+        "buggy_anchor": 0.06640625,
+        "two_native_tokens": 0.25390625
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.5,
+        "reference_anchor": 0.5078125,
+        "buggy_anchor": 0.5078125,
+        "two_native_tokens": 0.5078125
+      }
+    },
+    "macro_latent": 1.0,
+    "macro_shuffled": 0.197265625,
+    "macro_reference_anchor": 0.2216796875,
+    "macro_buggy_anchor": 0.18359375,
+    "macro_two_native_tokens": 0.2392578125,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.73828125,
+        "shuffled": 0.078125,
+        "reference_anchor": 0.3125,
+        "buggy_anchor": 0.109375,
+        "two_native_tokens": 0.1796875
+      },
+      "buggy": {
+        "latent": 0.94921875,
+        "shuffled": 0.09375,
+        "reference_anchor": 0.08203125,
+        "buggy_anchor": 0.08203125,
+        "two_native_tokens": 0.078125
+      },
+      "delta": {
+        "latent": 0.5546875,
+        "shuffled": 0.07421875,
+        "reference_anchor": 0.0,
+        "buggy_anchor": 0.0,
+        "two_native_tokens": 0.0
+      },
+      "greater": {
+        "latent": 1.0,
+        "shuffled": 0.5,
+        "reference_anchor": 0.5078125,
+        "buggy_anchor": 0.5078125,
+        "two_native_tokens": 0.5078125
+      }
+    },
+    "macro_latent_heldout_prompt": 0.810546875,
+    "macro_shuffled_heldout_prompt": 0.1865234375,
+    "macro_reference_anchor_heldout_prompt": 0.2255859375,
+    "macro_buggy_anchor_heldout_prompt": 0.1748046875,
+    "macro_two_native_tokens_heldout_prompt": 0.19140625
+  },
+  "unseen_pairs": {
+    "tasks": {
+      "reference": {
+        "latent": 1.0,
+        "shuffled": 0.09765625,
+        "reference_anchor": 0.19140625,
+        "buggy_anchor": 0.16796875,
+        "two_native_tokens": 0.1796875
+      },
+      "buggy": {
+        "latent": 0.96484375,
+        "shuffled": 0.1015625,
+        "reference_anchor": 0.08984375,
+        "buggy_anchor": 0.08984375,
+        "two_native_tokens": 0.01953125
+      },
+      "delta": {
+        "latent": 0.27734375,
+        "shuffled": 0.09765625,
+        "reference_anchor": 0.09765625,
+        "buggy_anchor": 0.22265625,
+        "two_native_tokens": 0.328125
+      },
+      "greater": {
+        "latent": 0.828125,
+        "shuffled": 0.4921875,
+        "reference_anchor": 0.55859375,
+        "buggy_anchor": 0.55859375,
+        "two_native_tokens": 0.55859375
+      }
+    },
+    "macro_latent": 0.767578125,
+    "macro_shuffled": 0.197265625,
+    "macro_reference_anchor": 0.234375,
+    "macro_buggy_anchor": 0.259765625,
+    "macro_two_native_tokens": 0.271484375,
+    "tasks_heldout_prompt": {
+      "reference": {
+        "latent": 0.640625,
+        "shuffled": 0.09375,
+        "reference_anchor": 0.29296875,
+        "buggy_anchor": 0.12109375,
+        "two_native_tokens": 0.1796875
+      },
+      "buggy": {
+        "latent": 0.85546875,
+        "shuffled": 0.109375,
+        "reference_anchor": 0.08984375,
+        "buggy_anchor": 0.08984375,
+        "two_native_tokens": 0.16796875
+      },
+      "delta": {
+        "latent": 0.1171875,
+        "shuffled": 0.0625,
+        "reference_anchor": 0.0,
+        "buggy_anchor": 0.0,
+        "two_native_tokens": 0.0
+      },
+      "greater": {
+        "latent": 0.88671875,
+        "shuffled": 0.51953125,
+        "reference_anchor": 0.55859375,
+        "buggy_anchor": 0.55859375,
+        "two_native_tokens": 0.55859375
+      }
+    },
+    "macro_latent_heldout_prompt": 0.625,
+    "macro_shuffled_heldout_prompt": 0.1962890625,
+    "macro_reference_anchor_heldout_prompt": 0.2353515625,
+    "macro_buggy_anchor_heldout_prompt": 0.1923828125,
+    "macro_two_native_tokens_heldout_prompt": 0.2265625
+  },
+  "compact_text": {
+    "reference": 1.0,
+    "buggy": 1.0,
+    "delta": 0.421875,
+    "greater": 0.55859375,
+    "macro": 0.7451171875
+  },
+  "compact_text_heldout_prompt": {
+    "reference": 1.0,
+    "buggy": 0.94140625,
+    "delta": 0.0,
+    "greater": 0.55859375,
+    "macro": 0.625
+  },
+  "full_text_trace": {
+    "reference": 0.23828125,
+    "buggy": 0.421875,
+    "delta": 0.08203125,
+    "greater": 0.55859375,
+    "macro": 0.3251953125
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "teacher_checkpoint": "checkpoints/latent_probe/compositional_pair_encoder_balanced_1200.pt",
+  "seed": 71,
+  "train_steps": 3000,
+  "train_lengths_per_trace": [
+    2,
+    6
+  ],
+  "eval_lengths_per_trace": [
+    8,
+    12
+  ],
+  "train_pair_count": 80,
+  "heldout_pair_count": 20,
+  "num_latents": 1,
+  "student_trainable_parameters": 4477441,
+  "loss": "mse + cosine_weight * (1 - cosine)",
+  "cosine_weight": 0.1,
+  "elapsed_seconds": 306.2315999940038,
+  "representation": {
+    "seen_short": {
+      "cosine_similarity": 0.9997994303703308,
+      "rmse": 0.26110607385635376,
+      "relative_l2": 0.02136322483420372
+    },
+    "unseen_long": {
+      "cosine_similarity": 0.7081916928291321,
+      "rmse": 7.850803852081299,
+      "relative_l2": 0.9192110896110535
+    }
+  },
+  "receiver": {
+    "student_seen_short": {
+      "tasks": {
+        "reference": {
+          "latent": 1.0,
+          "shuffled": 0.09765625
+        },
+        "buggy": {
+          "latent": 1.0,
+          "shuffled": 0.10546875
+        },
+        "delta": {
+          "latent": 1.0,
+          "shuffled": 0.09765625
+        },
+        "greater": {
+          "latent": 1.0,
+          "shuffled": 0.515625
+        }
+      },
+      "macro_latent": 1.0,
+      "macro_shuffled": 0.2041015625,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.7265625,
+          "shuffled": 0.1015625
+        },
+        "buggy": {
+          "latent": 0.9375,
+          "shuffled": 0.09765625
+        },
+        "delta": {
+          "latent": 0.5703125,
+          "shuffled": 0.11328125
+        },
+        "greater": {
+          "latent": 1.0,
+          "shuffled": 0.515625
+        }
+      },
+      "macro_latent_heldout_prompt": 0.80859375,
+      "macro_shuffled_heldout_prompt": 0.20703125
+    },
+    "student_unseen_long": {
+      "tasks": {
+        "reference": {
+          "latent": 0.078125,
+          "shuffled": 0.1171875
+        },
+        "buggy": {
+          "latent": 0.1328125,
+          "shuffled": 0.08203125
+        },
+        "delta": {
+          "latent": 0.140625,
+          "shuffled": 0.1171875
+        },
+        "greater": {
+          "latent": 0.5078125,
+          "shuffled": 0.53125
+        }
+      },
+      "macro_latent": 0.21484375,
+      "macro_shuffled": 0.2119140625,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.09765625,
+          "shuffled": 0.10546875
+        },
+        "buggy": {
+          "latent": 0.1328125,
+          "shuffled": 0.08203125
+        },
+        "delta": {
+          "latent": 0.1171875,
+          "shuffled": 0.1015625
+        },
+        "greater": {
+          "latent": 0.5078125,
+          "shuffled": 0.53125
+        }
+      },
+      "macro_latent_heldout_prompt": 0.2138671875,
+      "macro_shuffled_heldout_prompt": 0.205078125
+    },
+    "teacher_unseen_ceiling": {
+      "tasks": {
+        "reference": {
+          "latent": 1.0,
+          "shuffled": 0.08984375
+        },
+        "buggy": {
+          "latent": 0.95703125,
+          "shuffled": 0.08203125
+        },
+        "delta": {
+          "latent": 0.3671875,
+          "shuffled": 0.1015625
+        },
+        "greater": {
+          "latent": 0.8359375,
+          "shuffled": 0.46875
+        }
+      },
+      "macro_latent": 0.7900390625,
+      "macro_shuffled": 0.185546875,
+      "tasks_heldout_prompt": {
+        "reference": {
+          "latent": 0.68359375,
+          "shuffled": 0.109375
+        },
+        "buggy": {
+          "latent": 0.87109375,
+          "shuffled": 0.0859375
+        },
+        "delta": {
+          "latent": 0.17578125,
+          "shuffled": 0.08203125
+        },
+        "greater": {
+          "latent": 0.90625,
+          "shuffled": 0.4609375
+        }
+      },
+      "macro_latent_heldout_prompt": 0.6591796875,
+      "macro_shuffled_heldout_prompt": 0.1845703125
+    }
+  }
+}
