@@ -50,12 +50,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--cosine-weight", type=float, default=0.1)
+    parser.add_argument(
+        "--role-mode",
+        choices=("typed", "coarse_candidates"),
+        default="typed",
+        help="coarse_candidates removes false/true polarity while retaining run and branch roles",
+    )
     parser.add_argument("--seed", type=int, default=83)
     parser.add_argument(
         "--output", default="artifacts/latent_probe/causal_path_distillation_seed83.json"
     )
     parser.add_argument(
         "--checkpoint", default="checkpoints/latent_probe/causal_path_distillation_seed83.pt"
+    )
+    parser.add_argument(
+        "--student-checkpoint",
+        help="load an existing trainable-only student checkpoint before optional further training",
     )
     return parser.parse_args()
 
@@ -103,6 +113,7 @@ def make_causal_batch(
     digit_ids: dict[str, int],
     allowed_pairs: list[tuple[int, int]],
     max_events: int = 64,
+    role_mode: str = "typed",
 ) -> PairBatch:
     event_types = torch.zeros(batch_size, max_events, dtype=torch.long)
     arguments = torch.full((batch_size, max_events), digit_ids["0"], dtype=torch.long)
@@ -129,6 +140,21 @@ def make_causal_batch(
             rng=rng,
         )
         combined = reference_events + buggy_events
+        if role_mode == "coarse_candidates":
+            combined = [
+                (
+                    REF_FALSE
+                    if kind in (REF_FALSE, REF_TRUE)
+                    else BUG_FALSE
+                    if kind in (BUG_FALSE, BUG_TRUE)
+                    else kind,
+                    argument,
+                    state,
+                )
+                for kind, argument, state in combined
+            ]
+        elif role_mode != "typed":
+            raise ValueError(f"unknown role mode: {role_mode}")
         if len(combined) > max_events:
             raise ValueError("causal trace exceeds max_events")
         for column, (kind, argument, state) in enumerate(combined):
@@ -164,6 +190,18 @@ def flip_branch_counterfactual(batch: PairBatch, digit_ids: dict[str, int]) -> P
         torch.tensor(zero_id, device=states.device),
     )
     return replace(batch, states=states)
+
+
+def swap_candidate_roles(batch: PairBatch) -> PairBatch:
+    """Corrupt causal semantics without changing values, order, branch, or targets."""
+    event_types = batch.event_types.clone()
+    original = batch.event_types
+    valid = batch.event_mask.bool()
+    event_types[(original == REF_FALSE) & valid] = REF_TRUE
+    event_types[(original == REF_TRUE) & valid] = REF_FALSE
+    event_types[(original == BUG_FALSE) & valid] = BUG_TRUE
+    event_types[(original == BUG_TRUE) & valid] = BUG_FALSE
+    return replace(batch, event_types=event_types)
 
 
 def main() -> None:
@@ -205,6 +243,18 @@ def main() -> None:
         zero_output_init=True,
         fixed_positions=True,
     ).to(device)
+    if args.student_checkpoint:
+        student_payload = torch.load(
+            args.student_checkpoint, map_location=device, weights_only=False
+        )
+        missing, unexpected = student.load_state_dict(
+            student_payload["adapter_trainable"], strict=False
+        )
+        allowed_missing = {"token_embedding.weight", "fixed_position_encoding"}
+        if unexpected or any(name not in allowed_missing for name in missing):
+            raise RuntimeError(
+                f"student mismatch: missing={missing}, unexpected={unexpected}"
+            )
     optimizer = torch.optim.AdamW(student.parameters(), lr=args.learning_rate, weight_decay=0.01)
     train_pairs, heldout_pairs = compositional_pair_split()
     rng = random.Random(args.seed)
@@ -218,6 +268,7 @@ def main() -> None:
             rng=rng,
             digit_ids=digit_ids,
             allowed_pairs=train_pairs,
+            role_mode=args.role_mode,
         ).to(device)
         with torch.no_grad():
             target = teacher(batch.reference_values, batch.buggy_values)
@@ -246,6 +297,7 @@ def main() -> None:
         rng=random.Random(args.seed + 10_000),
         digit_ids=digit_ids,
         allowed_pairs=train_pairs,
+        role_mode=args.role_mode,
     ).to(device)
     unseen_distractors = make_causal_batch(
         batch_size=args.eval_size,
@@ -254,13 +306,16 @@ def main() -> None:
         rng=random.Random(args.seed + 20_000),
         digit_ids=digit_ids,
         allowed_pairs=heldout_pairs,
+        role_mode=args.role_mode,
     ).to(device)
     counterfactual = flip_branch_counterfactual(unseen_distractors, digit_ids)
+    swapped_roles = swap_candidate_roles(unseen_distractors)
     prompts = {task: prompt_parts(tokenizer, device, task) for task in TASKS}
     heldout_prompts = {task: prompt_parts(tokenizer, device, task, True) for task in TASKS}
     result = {
         "model": args.model,
         "teacher_checkpoint": args.teacher_checkpoint,
+        "student_checkpoint_loaded": args.student_checkpoint,
         "seed": args.seed,
         "train_steps": args.steps,
         "train_distractors": [0, 6],
@@ -268,6 +323,7 @@ def main() -> None:
         "train_pair_count": len(train_pairs),
         "heldout_pair_count": len(heldout_pairs),
         "num_latents": 1,
+        "role_mode": args.role_mode,
         "student_trainable_parameters": trainable_parameter_count(student),
         "elapsed_seconds": time.perf_counter() - started,
         "representation": {
@@ -285,6 +341,10 @@ def main() -> None:
             ),
             "branch_flip_counterfactual": evaluate(
                 model, student, prompts, heldout_prompts, counterfactual,
+                digit_ids, label_ids, "trace", minimal=True
+            ),
+            "candidate_role_swap": evaluate(
+                model, student, prompts, heldout_prompts, swapped_roles,
                 digit_ids, label_ids, "trace", minimal=True
             ),
             "teacher_unseen_ceiling": evaluate(

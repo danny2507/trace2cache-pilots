@@ -301,9 +301,32 @@ retained. Macro accuracy collapsed from 65.8% to 16.3%; reference and buggy reco
 1.2%. This is strong evidence that the student uses the selector-to-definition path rather than a
 masked-sink, event-position, or majority shortcut.
 
+Two exact-hyperparameter replications and test-time causal corruptions give:
+
+| Unseen-pair, 16–40 distractor metric | Seed 83 | Seed 97 | Seed 109 | Mean ± sample SD |
+|---|---:|---:|---:|---:|
+| Typed causal latent | 65.8% | 46.0% | 62.1% | **58.0 ± 10.5%** |
+| Shuffled latent | 18.5% | 19.1% | 21.2% | **19.6 ± 1.4%** |
+| Held-out prompt | 60.3% | 45.7% | 59.6% | **55.2 ± 8.2%** |
+| Branch-selector flip | 16.3% | 24.9% | 16.5% | **19.2 ± 4.9%** |
+| False/true candidate-role swap | 16.2% | 25.2% | 16.6% | **19.3 ± 5.1%** |
+
+Mean unseen latent-to-teacher cosine is 0.936 ± 0.049. Seed 97 is a genuine optimization failure
+relative to the other runs and is retained in all aggregates.
+
+For a train-from-scratch removal ablation at seed 83, false and true candidates were assigned the
+same coarse candidate role while preserving run identity and the branch event. Accuracy fell from
+65.8% typed to 32.9% coarse, while shuffled was 20.3%. The residual performance is expected because
+the correct value remains one of two visible candidates, but the representation no longer contains
+enough information to resolve branch polarity.
+
 The result supports a more precise method hypothesis: a fixed-rate latent channel works when runtime
 evidence is represented as semantically typed causal events and distilled into a receiver-readable
-code. It remains a controlled synthetic result and one seed; replication and removal/corruption of
-role annotations are required before transferring to program repair.
+code. The three-seed true-versus-shuffled gap is 38.4 points; both branch flips and candidate-role
+swaps erase the gain. This remains controlled synthetic evidence, but semantic-role dependence is
+now directly supported rather than inferred.
 
-Artifact: `artifacts/latent_probe/causal_path_distillation_seed83.json`.
+Artifacts: `artifacts/latent_probe/causal_path_seed83_ablation_eval.json`,
+`artifacts/latent_probe/causal_path_distillation_seed97.json`,
+`artifacts/latent_probe/causal_path_distillation_seed109.json`, and
+`artifacts/latent_probe/causal_path_remove_roles_seed83.json`.
