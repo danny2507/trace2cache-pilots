@@ -33,6 +33,33 @@ and 762 mixed mutants across 221/500 test tasks. Thus the deterministic operator
 usable task-disjoint evaluation set as well as training data. The exact reports are stored under
 `artifacts/data/mbpp_{train,validation,test}_mutation_audit.json`.
 
+### Open-ended MBPP latent repair
+
+A frozen `Qwen2.5-Coder-3B-Instruct` receiver was paired with a 4.73M-parameter role-aware trace
+encoder producing eight soft states. Training used 241 mixed mutants from 139 official MBPP train
+tasks. Validation used one mutant from each of 36 distinct official validation tasks; shuffled
+controls always came from a different task. The run performed 400 microsteps (100 optimizer
+updates with four-step gradient accumulation). Peak GPU allocation across training and generation
+was 11.85 GiB.
+
+| Validation condition | Mean teacher-forced patch loss | Repair@1 (8-task sample) |
+|---|---:|---:|
+| No runtime evidence | 0.48276 | 1/8 |
+| Text trace | 0.46882 | 5/8 |
+| True latent trace | 0.22887 | 7/8 |
+| Different-task shuffled latent | 0.22906 | 7/8 |
+
+True and shuffled latent conditions had identical pass/fail outcomes on all eight generated tasks,
+and their generated text was exactly identical on seven. Therefore the apparent latent gain is not
+instance-specific runtime communication. The encoder learned a generic continuous repair prompt
+that steers the frozen receiver toward shorter, valid source. This run fails the shuffled-control
+gate despite improving raw repair accuracy.
+
+The next training objective must make trace identity necessary. Suitable interventions are
+same-prompt counterfactual repairs or an explicit margin requiring the correct trace to assign
+higher likelihood to its patch than a different-task trace. Merely adding more MBPP mutants to the
+current patch loss is unlikely to fix the shortcut.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
