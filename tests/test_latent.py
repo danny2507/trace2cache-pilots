@@ -5,10 +5,43 @@ import unittest
 import torch
 from torch import nn
 
-from trace2cache.latent import NativeEventResampler, NativePairCodebook, NativePairEncoder
+from trace2cache.latent import (
+    NativeEventResampler,
+    NativePairCodebook,
+    NativePairEncoder,
+    RoleAwareEventEncoder,
+)
 
 
 class LatentTests(unittest.TestCase):
+    def test_role_aware_encoder_shape_and_role_signal(self):
+        anchor = torch.randn(3, 16)
+        encoder = RoleAwareEventEncoder(
+            model_width=16,
+            output_anchor=anchor,
+            hidden_width=16,
+            num_roles=4,
+            max_events=6,
+            max_tests=3,
+            num_layers=1,
+            num_heads=4,
+        )
+        contents = torch.randn(2, 5, 16)
+        roles = torch.zeros(2, 5, dtype=torch.long)
+        tests = torch.tensor([[0, 0, 1, 1, 1], [0, 0, 0, 1, 1]])
+        mask = torch.ones(2, 5, dtype=torch.bool)
+        initial = encoder(contents, roles, tests, mask)
+        self.assertEqual(initial.shape, (2, 3, 16))
+        self.assertTrue(torch.allclose(initial, anchor.unsqueeze(0).expand(2, -1, -1)))
+        nn.init.normal_(encoder.output[-1].weight, std=0.02)
+        changed_roles = roles.clone()
+        changed_roles[:, 2] = 1
+        self.assertFalse(
+            torch.allclose(
+                encoder(contents, roles, tests, mask),
+                encoder(contents, changed_roles, tests, mask),
+            )
+        )
     def test_pair_encoder_is_parametric_and_native_anchored(self):
         embedding = nn.Embedding(60, 16)
         digit_ids = list(range(10, 20))

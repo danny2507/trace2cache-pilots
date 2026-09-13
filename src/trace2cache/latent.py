@@ -182,5 +182,104 @@ class NativeEventResampler(nn.Module):
         return output
 
 
+class RoleAwareEventEncoder(nn.Module):
+    """Compress native event contents while preserving role and test identity."""
+
+    def __init__(
+        self,
+        *,
+        model_width: int,
+        output_anchor: torch.Tensor,
+        hidden_width: int = 256,
+        num_roles: int = 10,
+        max_events: int = 192,
+        max_tests: int = 8,
+        num_layers: int = 2,
+        num_heads: int = 4,
+    ) -> None:
+        super().__init__()
+        if output_anchor.ndim != 2 or output_anchor.shape[1] != model_width:
+            raise ValueError("output_anchor must have shape [slots, model_width]")
+        self.register_buffer("output_anchor", output_anchor.float().clone())
+        self.content_projection = nn.Linear(model_width, hidden_width)
+        self.role_embedding = nn.Embedding(num_roles, hidden_width)
+        self.register_buffer(
+            "event_positions", self._sinusoidal(max_events, hidden_width), persistent=False
+        )
+        self.register_buffer(
+            "test_positions", self._sinusoidal(max_tests, hidden_width), persistent=False
+        )
+        layer = nn.TransformerEncoderLayer(
+            d_model=hidden_width,
+            nhead=num_heads,
+            dim_feedforward=hidden_width * 4,
+            dropout=0.0,
+            activation="gelu",
+            batch_first=True,
+            norm_first=True,
+        )
+        self.event_encoder = nn.TransformerEncoder(layer, num_layers=num_layers)
+        self.latent_queries = nn.Parameter(
+            torch.randn(output_anchor.shape[0], hidden_width) * 0.02
+        )
+        self.resampler = nn.MultiheadAttention(
+            hidden_width, num_heads=num_heads, dropout=0.0, batch_first=True
+        )
+        self.output = nn.Sequential(
+            nn.LayerNorm(hidden_width),
+            nn.Linear(hidden_width, hidden_width * 4),
+            nn.GELU(),
+            nn.Linear(hidden_width * 4, model_width),
+        )
+        nn.init.zeros_(self.output[-1].weight)
+        nn.init.zeros_(self.output[-1].bias)
+
+    @staticmethod
+    def _sinusoidal(length: int, width: int) -> torch.Tensor:
+        positions = torch.arange(length, dtype=torch.float32).unsqueeze(1)
+        frequencies = torch.exp(
+            torch.arange(0, width, 2, dtype=torch.float32)
+            * (-math.log(10_000.0) / width)
+        )
+        encoding = torch.zeros(length, width)
+        encoding[:, 0::2] = torch.sin(positions * frequencies)
+        encoding[:, 1::2] = torch.cos(
+            positions * frequencies[: encoding[:, 1::2].shape[1]]
+        )
+        return encoding
+
+    @property
+    def num_latents(self) -> int:
+        return self.output_anchor.shape[0]
+
+    def forward(
+        self,
+        content_vectors: torch.Tensor,
+        role_ids: torch.Tensor,
+        test_ids: torch.Tensor,
+        event_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        batch_size, event_count, _ = content_vectors.shape
+        if event_count > self.event_positions.shape[0]:
+            raise ValueError("event sequence exceeds configured max_events")
+        if test_ids.max().item() >= self.test_positions.shape[0]:
+            raise ValueError("test index exceeds configured max_tests")
+        positions = self.event_positions[:event_count].unsqueeze(0)
+        tests = self.test_positions[test_ids]
+        events = (
+            self.content_projection(content_vectors.float())
+            + self.role_embedding(role_ids)
+            + positions
+            + tests
+        )
+        padding_mask = ~event_mask.bool()
+        events = self.event_encoder(events, src_key_padding_mask=padding_mask)
+        queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
+        latents, _ = self.resampler(
+            queries, events, events, key_padding_mask=padding_mask, need_weights=False
+        )
+        return self.output_anchor.unsqueeze(0) + self.output(latents)
+
+
 def trainable_parameter_count(module: nn.Module) -> int:
     return sum(parameter.numel() for parameter in module.parameters() if parameter.requires_grad)
