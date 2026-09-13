@@ -167,14 +167,20 @@ def generate_mutants(
     return tuple(mutations)
 
 
-def run_mbpp_tests(
-    task: MBPPTask, source: str | None = None, *, timeout_seconds: float = 2.0
+def _run_mbpp_worker(
+    task: MBPPTask,
+    source: str | None,
+    *,
+    timeout_seconds: float,
+    collect_trace: bool,
+    max_events: int,
 ) -> dict:
-    """Execute each MBPP assertion and report per-test outcomes in a fresh process."""
     payload = {
         "source": task.canonical_source if source is None else source,
         "setup_source": task.setup_source,
         "tests": task.tests,
+        "collect_trace": collect_trace,
+        "max_events": max_events,
     }
     try:
         result = subprocess.run(
@@ -194,3 +200,33 @@ def run_mbpp_tests(
             "error": result.stderr.strip() or result.stdout.strip(),
         }
     return json.loads(result.stdout)
+
+
+def run_mbpp_tests(
+    task: MBPPTask, source: str | None = None, *, timeout_seconds: float = 2.0
+) -> dict:
+    """Execute each MBPP assertion and report per-test outcomes in a fresh process."""
+    return _run_mbpp_worker(
+        task,
+        source,
+        timeout_seconds=timeout_seconds,
+        collect_trace=False,
+        max_events=512,
+    )
+
+
+def trace_mbpp_tests(
+    task: MBPPTask,
+    source: str | None = None,
+    *,
+    timeout_seconds: float = 3.0,
+    max_events: int = 512,
+) -> dict:
+    """Execute MBPP assertions and retain line-level program events for each test."""
+    return _run_mbpp_worker(
+        task,
+        source,
+        timeout_seconds=timeout_seconds,
+        collect_trace=True,
+        max_events=max_events,
+    )

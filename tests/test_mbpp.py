@@ -5,7 +5,13 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from trace2cache.mbpp import MBPPTask, generate_mutants, load_mbpp, run_mbpp_tests
+from trace2cache.mbpp import (
+    MBPPTask,
+    generate_mutants,
+    load_mbpp,
+    run_mbpp_tests,
+    trace_mbpp_tests,
+)
 
 
 class MBPPTests(unittest.TestCase):
@@ -40,6 +46,19 @@ class MBPPTests(unittest.TestCase):
         self.assertTrue(
             any(run_mbpp_tests(task, mutation.source)["status"] == "all_fail" for mutation in first)
         )
+
+    def test_collects_separate_test_traces(self):
+        task = MBPPTask(
+            task_id=601,
+            description="Increment x.",
+            canonical_source="def inc(x):\n    y = x + 1\n    return y\n",
+            tests=("assert inc(0) == 1", "assert inc(2) == 3"),
+        )
+        result = trace_mbpp_tests(task)
+        self.assertEqual(result["status"], "all_pass")
+        self.assertEqual(len(result["traces"]), 2)
+        self.assertTrue(all(trace[0]["event"] == "call" for trace in result["traces"]))
+        self.assertEqual(result["traces"][0][-1]["value"], "1")
 
 
 if __name__ == "__main__":
