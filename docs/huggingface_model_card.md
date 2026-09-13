@@ -17,8 +17,8 @@ consume structured runtime evidence through one model-native continuous state. T
 research artifacts, not standalone language models or a production program-repair system.
 
 The receiver was frozen `Qwen/Qwen2.5-1.5B-Instruct`. Each `.safetensors` file excludes the base
-model and its token-embedding table. The architecture and evaluation code live in the companion
-Trace2Cache source repository.
+model and its token-embedding table. Architecture and evaluation code live in the
+[Trace2Cache source repository](https://github.com/danny2507/trace2cache-pilots).
 
 ## Main findings
 

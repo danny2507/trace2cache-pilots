@@ -5,17 +5,28 @@ Trace2Cache is an empirical pilot for a narrow question:
 > Can a frozen small CodeLM use compact, model-native runtime evidence more reliably than a
 > textual execution trace for program repair?
 
-The project intentionally starts with a falsification gate. Pilot 1 measures whether textual trace
-utility degrades as the trace becomes longer/noisier on the exact target model. Pilot 2 will train a
-small soft-prefix trace encoder on execution-state probes. Direct KV injection is only attempted if
-both gates pass.
+The project starts with falsification gates. Pilot 1 measures whether textual trace utility degrades
+as the trace becomes longer/noisier. The latent pilots then test progressively harder interfaces:
+native anchors, one-state multi-fact codes, held-out value combinations, full trace distillation,
+and typed causal paths with heavy distractors. Direct KV injection is intentionally deferred until
+the soft-state representation and real-code integration are established.
 
-## Current target
+## Current status
 
-- Model: `Qwen/Qwen2.5-Coder-3B-Instruct` (frozen, BF16)
+- Text repair receiver: `Qwen/Qwen2.5-Coder-3B-Instruct` (frozen, BF16)
+- Latent probe receiver: `Qwen/Qwen2.5-1.5B-Instruct` (frozen, BF16)
 - Hardware: one A100 40 GB
-- Task: deterministic Python function repair, checked on held-out tests
-- Conditions: failing test only, compact text trace, full text trace, structured JSON trace
+- Text task: Python function repair, checked on held-out tests
+- Latent task: compress paired, typed runtime events into one receiver-readable state
+
+Across three causal-path seeds, the one-state latent reaches `58.0 ± 10.5%` macro accuracy on
+unseen output pairs and much longer traces, versus `19.6 ± 1.4%` after message shuffling. Branch
+flips and candidate-role swaps reduce accuracy to chance, supporting use of the intended causal
+fields. This is controlled synthetic evidence; the generated real Python traces are not yet wired
+into the latent encoder.
+
+Trainable-only model artifacts are published separately at
+[`danny2507/trace2cache-pilots`](https://huggingface.co/danny2507/trace2cache-pilots).
 
 ## Reproduce
 
@@ -33,7 +44,12 @@ export PYTHONPATH="$PWD/src"
 `--system-site-packages` reuses the server's existing CUDA wheels and avoids a multi-GB duplicate
 download. The project package itself is installed into the local `.venv`.
 
-Results are append-only JSONL under `artifacts/pilot1/`, so an interrupted run can be resumed.
+Results are under `artifacts/`; large local checkpoints remain ignored. To create safe,
+trainable-only `safetensors` releases without duplicating the frozen base model:
+
+```bash
+.venv/bin/python scripts/export_hf_adapters.py
+```
 
 ## Research safeguards
 
@@ -46,5 +62,6 @@ Results are append-only JSONL under `artifacts/pilot1/`, so an interrupted run c
 
 See `docs/research_plan.md` for hypotheses, controls, and stop/go criteria.
 
-Current directional results, including Refactory and latent true-vs-shuffled controls, are recorded
-in `docs/pilot_results_2026-09-13.md`.
+Current directional results, including Refactory, three-seed latent replications, causal
+interventions, and real Python trace examples, are recorded in
+`docs/pilot_results_2026-09-13.md`.
