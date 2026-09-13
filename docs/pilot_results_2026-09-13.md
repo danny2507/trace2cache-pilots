@@ -346,3 +346,34 @@ roles, followed by code-and-test textual context plus latent runtime evidence at
 
 Artifacts: `artifacts/real_traces/python_bug_traces.jsonl` and
 `artifacts/real_traces/python_bug_traces.md`.
+
+## 9. Real-code repair with non-learned event pooling
+
+The first end-to-end repair integration keeps the buggy source and failing test as text, selects at
+most eight changed-state/control/boundary events from an actual Refactory execution, and replaces
+every selected event with the mean of its frozen CodeLM token embeddings. Thus each variable-length
+event occupies one model-native input slot. The frozen receiver is
+`Qwen2.5-Coder-3B-Instruct`; generated functions are checked on the shown test plus ten held-out
+instructor tests.
+
+| Condition | Repair@1 | Mean total input slots | Mean generation seconds |
+|---|---:|---:|---:|
+| Test only | 12/20 (60%) | 200.3 | 6.07 |
+| Selected event text | 9/20 (45%) | 351.4 | 4.54 |
+| Mean-pooled event latent | 14/20 (70%) | 202.2 | 6.67 |
+| Shuffled mean-pooled latent | 14/20 (70%) | 202.2 | 6.65 |
+
+The selected trace summaries contain 155.1 tokens on average. Pooled latent avoids all three cases
+where selected text breaks a correct test-only repair, and changes two test-only failures into
+successful repairs. However, the same two wins occur with trace vectors from a different program.
+True and shuffled latent have identical correctness on all 20 programs and byte-identical model
+responses on 18/20. Therefore the apparent gain is generic prompt/activation steering, not use of
+instance-specific execution evidence.
+
+This is a useful negative gate: arithmetic mean pooling remains near the native embedding manifold
+and is less disruptive than trace text, but destroys the binding among event role, source, and
+value. The next repair experiment should first establish that a small learned latent code can steer
+a frozen receiver to produce a complete validated patch, with shuffled-code and no-message
+controls. Only then should a role-aware trace encoder be distilled into that code.
+
+Artifact: `artifacts/repair_latent/refactory_q1_event_pool.jsonl`.
