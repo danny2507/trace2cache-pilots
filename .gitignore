@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 checkpoints/
 artifacts/**/smoke*.json
+artifacts/**/*smoke*.json
 third_party/
 *.egg-info/
 .tools/

@@ -572,11 +572,13 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     print(json.dumps({"event": "building_train_data"}), flush=True)
-    train_raw = _load_or_build_examples(args, "train")[: args.max_train_examples]
+    train_pool = _load_or_build_examples(args, "train")
+    random.Random(args.seed).shuffle(train_pool)
+    train_raw = train_pool[: args.max_train_examples]
     print(json.dumps({"event": "building_eval_data"}), flush=True)
-    eval_raw = _one_example_per_task(_load_or_build_examples(args, "validation"))[
-        : args.max_eval_examples
-    ]
+    eval_pool = _load_or_build_examples(args, "validation")
+    random.Random(args.seed + 1).shuffle(eval_pool)
+    eval_raw = _one_example_per_task(eval_pool)[: args.max_eval_examples]
     print(
         json.dumps(
             {
