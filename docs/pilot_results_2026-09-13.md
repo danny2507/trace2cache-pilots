@@ -377,3 +377,39 @@ a frozen receiver to produce a complete validated patch, with shuffled-code and 
 controls. Only then should a role-aware trace encoder be distilled into that code.
 
 Artifact: `artifacts/repair_latent/refactory_q1_event_pool.jsonl`.
+
+## 10. Full-patch latent-channel capacity
+
+The mean-pooling result leaves two possible explanations: either the receiver cannot use a small
+latent message for full program repair, or the pooling operation destroys event semantics. A
+capacity gate separates them using four paired tasks. Within every pair, the buggy code and public
+failing test are byte-identical, but hidden behavior differs: first versus last matching index, sum
+versus product, maximum versus minimum, and even-value versus positive-value count. Consequently a
+deterministic no-message receiver must emit the same patch for both sides and cannot solve both.
+
+Eight latent slots are initialized from the frozen receiver's embeddings of a short behavioral
+diagnosis. A 98,304-parameter residual codebook is then optimized for 240 steps through the frozen
+`Qwen2.5-1.5B-Instruct` receiver, using full corrected-function teacher forcing. Generated patches,
+not token loss, determine success on public plus hidden tests.
+
+| Condition | Repair@1 (8 paired tasks) | Held-out prompt wording |
+|---|---:|---:|
+| No behavioral evidence | 2/8 | 2/8 |
+| Diagnosis as text | 6/8 | 6/8 |
+| Untrained native diagnosis anchors | 6/8 | 6/8 |
+| **Trained latent code** | **8/8** | **8/8** |
+| Paired opposite-behavior code | **0/8** | **0/8** |
+
+Training took 165.9 seconds on one A100 while the receiver stayed frozen. The paired-swap result is
+the first actual-repair evidence that the latent content controls which complete program is emitted:
+generic activation steering cannot explain opposite codes selecting opposite hidden semantics.
+It also establishes that the earlier real-trace failure is an encoder/representation problem, not
+an eight-slot receiver-capacity problem.
+
+The claim remains deliberately narrow. The codebook is indexed by the oracle behavior label and is
+evaluated on the same eight programs (with a held-out instruction wording); it is not a learned
+trace compressor and does not establish program generalization. The next gate must encode multiple
+test executions—including inputs, expected/actual outputs, and typed causal events—into these
+successful repair codes, with held-out evidence bundles and expected-value/trace-shuffle controls.
+
+Artifact: `artifacts/repair_latent/repair_codebook_seed131.json`.
