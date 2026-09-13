@@ -238,6 +238,22 @@ def _load_or_build_examples(args, split: str) -> list[RepairExample]:
     return examples
 
 
+def _one_example_per_task(examples: list[RepairExample]) -> list[RepairExample]:
+    selected = {}
+    for example in examples:
+        selected.setdefault(example.task_id, example)
+    return list(selected.values())
+
+
+def _different_task_example(examples: list[NumericExample], index: int) -> NumericExample:
+    task_id = examples[index].example.task_id
+    for offset in range(1, len(examples)):
+        candidate = examples[(index + offset) % len(examples)]
+        if candidate.example.task_id != task_id:
+            return candidate
+    raise ValueError("shuffled control requires at least two distinct task IDs")
+
+
 def _render(tokenizer, example: RepairExample, evidence: str) -> str:
     user = f"""Repair this Python program using the failing test and runtime evidence.
 
@@ -394,7 +410,9 @@ def main() -> None:
     print(json.dumps({"event": "building_train_data"}), flush=True)
     train_raw = _load_or_build_examples(args, "train")[: args.max_train_examples]
     print(json.dumps({"event": "building_eval_data"}), flush=True)
-    eval_raw = _load_or_build_examples(args, "validation")[: args.max_eval_examples]
+    eval_raw = _one_example_per_task(_load_or_build_examples(args, "validation"))[
+        : args.max_eval_examples
+    ]
 
     model_path = resolve_local_model(args.model)
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
@@ -463,7 +481,7 @@ def main() -> None:
     conditions = ("no_evidence", "trace_text", "true_latent", "shuffled_latent")
     losses = {condition: [] for condition in conditions}
     for index, example in enumerate(evaluation):
-        shuffled = evaluation[(index + 1) % len(evaluation)]
+        shuffled = _different_task_example(evaluation, index)
         for condition in conditions:
             losses[condition].append(
                 _condition_loss(model, tokenizer, encoder, example, table, condition, shuffled)
@@ -474,7 +492,7 @@ def main() -> None:
 
     generation_rows = []
     for index, example in enumerate(evaluation[: args.generation_examples]):
-        shuffled = evaluation[(index + 1) % len(evaluation)]
+        shuffled = _different_task_example(evaluation, index)
         for condition in conditions:
             result = _generate(
                 model,
