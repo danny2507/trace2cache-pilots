@@ -60,6 +60,34 @@ same-prompt counterfactual repairs or an explicit margin requiring the correct t
 higher likelihood to its patch than a different-task trace. Merely adding more MBPP mutants to the
 current patch loss is unlikely to fix the shortcut.
 
+### Automatic augmentation plus task-level contrastive loss
+
+The mutation family was expanded to cover alternative comparisons and arithmetic operators,
+augmented assignments, condition negation, boolean changes, and assignment deletion. A
+type-directed fuzzer perturbed literal MBPP arguments and used the canonical implementation as the
+output oracle. This increased the project-local cache to 1,173 bundles over 183 train tasks (599
+base-test and 574 fuzz-derived bundles), plus 297 bundles over 47 validation tasks.
+
+The contrastive run sampled 768 balanced bundles from 178 train tasks, including 387 fuzz-derived
+bundles. For the same buggy-code prompt and target patch, it optimized the true-trace patch loss
+plus a hinge requiring that loss to beat a different-task trace by a margin of 0.1. Qwen remained
+frozen. The run used 800 microsteps (200 optimizer updates) and peaked at 12.09 GiB.
+
+| Validation condition | Mean teacher-forced patch loss | Repair@1 (8-task sample) |
+|---|---:|---:|
+| No runtime evidence | 0.57602 | 4/8 |
+| Text trace | 0.55831 | 5/8 |
+| True latent trace | 0.25821 | 6/8 |
+| Different-task shuffled latent | 0.25886 | 5/8 |
+
+One task was repaired only with its true latent, providing a weak directional hint. However, seven
+of eight true/shuffled generations were exactly identical, and the mean validation loss gap was
+only 0.00065, far below the requested 0.1 margin. Logged per-example ranking losses remained near
+0.1 throughout training. Therefore automatic data scaling did not remove the generic-prefix
+shortcut, and this run still fails the instance-specific communication gate. The next objective
+needs direct semantic supervision (for example trace-fact reconstruction/matching) or same-prompt
+counterfactual targets; simply increasing the hinge weight is not well motivated by this result.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.

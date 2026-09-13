@@ -1,0 +1,475 @@
+{
+  "timestamp": "2026-09-13T12:40:24.769025+00:00",
+  "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+  "seed": 173,
+  "steps": 800,
+  "train_examples": 768,
+  "train_tasks": 178,
+  "train_fuzz_examples": 387,
+  "eval_examples": 36,
+  "latent_slots": 8,
+  "contrastive_weight": 1.0,
+  "contrastive_margin": 0.1,
+  "trainable_parameters": 4734208,
+  "training_seconds": 612.7550945021212,
+  "teacher_forced_patch_loss": {
+    "no_evidence": 0.5760177017913924,
+    "trace_text": 0.5583143221835295,
+    "true_latent": 0.2582108185937007,
+    "shuffled_latent": 0.2588622679726945
+  },
+  "generation_summary": {
+    "no_evidence": 4,
+    "trace_text": 5,
+    "true_latent": 6,
+    "shuffled_latent": 5
+  },
+  "generation_rows": [
+    {
+      "task_id": 592,
+      "condition": "no_evidence",
+      "response": "```python\ndef binomial_Coeff(n, k):\n    C = [0] * (k + 1)\n    C[0] = 1\n    for i in range(1, n + 1):\n        for j in range(min(i, k), 0, -1):\n            C[j] = C[j] + C[j - 1]\n    return C[k]\n\ndef sum_Of_product(n):\n    return binomial_Coeff(2 * n, n)\n```",
+      "source": "def binomial_Coeff(n, k):\n    C = [0] * (k + 1)\n    C[0] = 1\n    for i in range(1, n + 1):\n        for j in range(min(i, k), 0, -1):\n            C[j] = C[j] + C[j - 1]\n    return C[k]\n\ndef sum_Of_product(n):\n    return binomial_Coeff(2 * n, n)\n",
+      "validation": {
+        "status": "all_fail",
+        "tests": [
+          "fail",
+          "fail",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 592,
+      "condition": "trace_text",
+      "response": "```python\ndef binomial_Coeff(n, k):\n    C = [0] * (k + 1)\n    C[0] = 1\n    for i in range(1, n + 1):\n        for j in range(min(i, k), 0, -1):\n            C[j] = C[j] + C[j - 1]\n    return C[k]\n\ndef sum_Of_product(n):\n    return binomial_Coeff(2 * n, n - 1)\n```",
+      "source": "def binomial_Coeff(n, k):\n    C = [0] * (k + 1)\n    C[0] = 1\n    for i in range(1, n + 1):\n        for j in range(min(i, k), 0, -1):\n            C[j] = C[j] + C[j - 1]\n    return C[k]\n\ndef sum_Of_product(n):\n    return binomial_Coeff(2 * n, n - 1)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 592,
+      "condition": "true_latent",
+      "response": "```python\ndef binomial_Coeff(n,k): \r\n    C = [0] * (k + 1) \r\n    C[0] = 1\r\n    for i in range(1, n + 1): \r\n        for j in range(min(i, k), 0, -1): \r\n            C[j] = C[j] + C[j - 1] \r\n    return C[k] \r\ndef sum_Of_product(n): \r\n    return binomial_Coeff(2 * n, n - 1) \n```",
+      "source": "def binomial_Coeff(n,k): \r\n    C = [0] * (k + 1) \r\n    C[0] = 1\r\n    for i in range(1, n + 1): \r\n        for j in range(min(i, k), 0, -1): \r\n            C[j] = C[j] + C[j - 1] \r\n    return C[k] \r\ndef sum_Of_product(n): \r\n    return binomial_Coeff(2 * n, n - 1)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 592,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef binomial_Coeff(n,k): \r\n    C = [0] * (k + 1) \r\n    C[0] = 1\r\n    for i in range(1, n + 1): \r\n        for j in range(min(i, k), 0, -1): \r\n            C[j] = C[j] + C[j - 1] \r\n    return C[k] \r\ndef sum_Of_product(n): \r\n    return binomial_Coeff(2 * n, n - 1) \n```",
+      "source": "def binomial_Coeff(n,k): \r\n    C = [0] * (k + 1) \r\n    C[0] = 1\r\n    for i in range(1, n + 1): \r\n        for j in range(min(i, k), 0, -1): \r\n            C[j] = C[j] + C[j - 1] \r\n    return C[k] \r\ndef sum_Of_product(n): \r\n    return binomial_Coeff(2 * n, n - 1)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 576,
+      "condition": "no_evidence",
+      "response": "To fix the given Python program, we need to ensure that it correctly checks if array `B` is a sub-array of array `A`. The current implementation has a logical error in the condition `if j == m`. This condition should be `if j == m - 1` to correctly check if `B` is a sub-array of `A`.\n\nHere's the corrected version of the program:\n\n```python\ndef is_Sub_Array(A, B, n, m):\n    i = 0\n    j = 0\n    while i < n and j < m:\n        if A[i] < B[j]:\n            i += 1\n            j += 1\n            if j == m - 1:  # Corrected condition\n                return True\n        else:\n            i = i - j + 1\n            j = 0\n    return False\n```\n\nThis corrected program should now pass the given test case `assert is_Sub_Array([1,2,1],[1,2,1],3,3) == True`.",
+      "source": "def is_Sub_Array(A, B, n, m):\n    i = 0\n    j = 0\n    while i < n and j < m:\n        if A[i] < B[j]:\n            i += 1\n            j += 1\n            if j == m - 1:  # Corrected condition\n                return True\n        else:\n            i = i - j + 1\n            j = 0\n    return False\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "fail",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 576,
+      "condition": "trace_text",
+      "response": "```python\ndef is_Sub_Array(A, B, n, m):\n    i = 0\n    j = 0\n    while i < n and j < m:\n        if A[i] < B[j]:\n            i += 1\n            j += 1\n            if j == m:\n                return True\n        else:\n            i = i - j + 1\n            j = 0\n    return False\n```",
+      "source": "def is_Sub_Array(A, B, n, m):\n    i = 0\n    j = 0\n    while i < n and j < m:\n        if A[i] < B[j]:\n            i += 1\n            j += 1\n            if j == m:\n                return True\n        else:\n            i = i - j + 1\n            j = 0\n    return False\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "fail",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 576,
+      "condition": "true_latent",
+      "response": "```python\ndef is_Sub_Array(A,B,n,m):\r\n    i=0\r\n    j=0\r\n    while i<n and j<m:\r\n        if A[i]<B[j]:\r\n            i+=1\r\n            j+=1\r\n            if j==m:\r\n                return True\r\n        else:\r\n            i=i-j+1\r\n            j=0\r\n    return False\n```",
+      "source": "def is_Sub_Array(A,B,n,m):\r\n    i=0\r\n    j=0\r\n    while i<n and j<m:\r\n        if A[i]<B[j]:\r\n            i+=1\r\n            j+=1\r\n            if j==m:\r\n                return True\r\n        else:\r\n            i=i-j+1\r\n            j=0\r\n    return False\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "fail",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 576,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef is_Sub_Array(A,B,n,m):\r\n    i=0\r\n    j=0\r\n    while i<n and j<m:\r\n        if A[i]<B[j]:\r\n            i+=1\r\n            j+=1\r\n            if j==m:\r\n                return True\r\n        else:\r\n            i=i-j+1\r\n            j=0\r\n    return False\n```",
+      "source": "def is_Sub_Array(A,B,n,m):\r\n    i=0\r\n    j=0\r\n    while i<n and j<m:\r\n        if A[i]<B[j]:\r\n            i+=1\r\n            j+=1\r\n            if j==m:\r\n                return True\r\n        else:\r\n            i=i-j+1\r\n            j=0\r\n    return False\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "fail",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 599,
+      "condition": "no_evidence",
+      "response": "```python\ndef sum_average(number):\n    total = 0\n    for value in range(1, number + 1):\n        total += value\n    average = total / number\n    return (total, average)\n```",
+      "source": "def sum_average(number):\n    total = 0\n    for value in range(1, number + 1):\n        total += value\n    average = total / number\n    return (total, average)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 599,
+      "condition": "trace_text",
+      "response": "```python\ndef sum_average(number):\n    total = 0\n    for value in range(1, number + 1):\n        total += value\n    average = total / number\n    return (total, average)\n```",
+      "source": "def sum_average(number):\n    total = 0\n    for value in range(1, number + 1):\n        total += value\n    average = total / number\n    return (total, average)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 599,
+      "condition": "true_latent",
+      "response": "```python\ndef sum_average(number):\r\n  total = 0\r\n  for value in range(1, number + 1):\r\n    total = total + value\r\n  average = total / number\r\n  return (total, average)\n```",
+      "source": "def sum_average(number):\r\n  total = 0\r\n  for value in range(1, number + 1):\r\n    total = total + value\r\n  average = total / number\r\n  return (total, average)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 599,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef sum_average(number):\r\n  total = 0\r\n  for value in range(1,number + 1):\r\n    total = total + value\r\n  average = total // number\r\n  return (total,average)\n```",
+      "source": "def sum_average(number):\r\n  total = 0\r\n  for value in range(1,number + 1):\r\n    total = total + value\r\n  average = total // number\r\n  return (total,average)\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "fail",
+          "pass",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 532,
+      "condition": "no_evidence",
+      "response": "```python\ndef check_permutation(str1, str2):\n    n1 = len(str1)\n    n2 = len(str2)\n    if n1 != n2:\n        return False\n    return sorted(str1) == sorted(str2)\n```",
+      "source": "def check_permutation(str1, str2):\n    n1 = len(str1)\n    n2 = len(str2)\n    if n1 != n2:\n        return False\n    return sorted(str1) == sorted(str2)\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 532,
+      "condition": "trace_text",
+      "response": "```python\ndef check_permutation(str1, str2):\n    n1 = len(str1)\n    n2 = len(str2)\n    if n1 != n2:\n        return False\n    a = sorted(str1)\n    b = sorted(str2)\n    for i in range(n1):\n        if a[i] != b[i]:\n            return False\n    return True\n```",
+      "source": "def check_permutation(str1, str2):\n    n1 = len(str1)\n    n2 = len(str2)\n    if n1 != n2:\n        return False\n    a = sorted(str1)\n    b = sorted(str2)\n    for i in range(n1):\n        if a[i] != b[i]:\n            return False\n    return True\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 532,
+      "condition": "true_latent",
+      "response": "```python\ndef check_permutation(str1,str2):\r\n    n1 = len(str1)\r\n    n2 = len(str2)\r\n    if n1 != n2:\r\n        return False\r\n    a = sorted(str1)\r\n    str1 = ' '.join(a)\r\n    b = sorted(str2)\r\n    str2 = ' '.join(b)\r\n    for i in range(0, n1, 1):\r\n        if not (str1[i] == str2[i]):\r\n            return False\r\n    return True\n```",
+      "source": "def check_permutation(str1,str2):\r\n    n1 = len(str1)\r\n    n2 = len(str2)\r\n    if n1 != n2:\r\n        return False\r\n    a = sorted(str1)\r\n    str1 = ' '.join(a)\r\n    b = sorted(str2)\r\n    str2 = ' '.join(b)\r\n    for i in range(0, n1, 1):\r\n        if not (str1[i] == str2[i]):\r\n            return False\r\n    return True\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 532,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef check_permutation(str1,str2):\r\n    n1 = len(str1)\r\n    n2 = len(str2)\r\n    if n1 != n2:\r\n        return False\r\n    a = sorted(str1)\r\n    str1 = ' '.join(a)\r\n    b = sorted(str2)\r\n    str2 = ' '.join(b)\r\n    for i in range(0, n1, 1):\r\n        if not (str1[i] == str2[i]):\r\n            return False\r\n    return True\n```",
+      "source": "def check_permutation(str1,str2):\r\n    n1 = len(str1)\r\n    n2 = len(str2)\r\n    if n1 != n2:\r\n        return False\r\n    a = sorted(str1)\r\n    str1 = ' '.join(a)\r\n    b = sorted(str2)\r\n    str2 = ' '.join(b)\r\n    for i in range(0, n1, 1):\r\n        if not (str1[i] == str2[i]):\r\n            return False\r\n    return True\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 559,
+      "condition": "no_evidence",
+      "response": "To correct the given Python program, we need to ensure that it correctly calculates the maximum sum of a contiguous subarray. The provided code seems to be trying to find the minimum sum of a contiguous subarray, which is the opposite of what we want. Let's correct it to find the maximum sum.\n\nHere's the corrected code:\n\n```python\ndef max_sub_array_sum(a, size):\n    max_so_far = a[0]\n    max_ending_here = a[0]\n    for i in range(1, size):\n        max_ending_here = max_ending_here + a[i]\n        if max_ending_here < a[i]:\n            max_ending_here = a[i]\n        if max_so_far < max_ending_here:\n            max_so_far = max_ending_here\n    return max_so_far\n\n# Test the function with the provided test case\nassert max_sub_array_sum([-2, -3, 4, -1, -2, 1, 5, -3], 8) == 7\n```\n\n### Explanation:\n- We initialize `max_so_far` and `max_ending_here` with the first element of the array.\n- We iterate through the array starting from the second element.\n- For",
+      "source": "def max_sub_array_sum(a, size):\n    max_so_far = a[0]\n    max_ending_here = a[0]\n    for i in range(1, size):\n        max_ending_here = max_ending_here + a[i]\n        if max_ending_here < a[i]:\n            max_ending_here = a[i]\n        if max_so_far < max_ending_here:\n            max_so_far = max_ending_here\n    return max_so_far\n\n# Test the function with the provided test case\nassert max_sub_array_sum([-2, -3, 4, -1, -2, 1, 5, -3], 8) == 7\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 559,
+      "condition": "trace_text",
+      "response": "```python\ndef max_sub_array_sum(a, size):\n    max_so_far = a[0]\n    max_ending_here = a[0]\n    for i in range(1, size):\n        max_ending_here = max_ending_here + a[i]\n        if max_ending_here < a[i]:\n            max_ending_here = a[i]\n        if max_so_far < max_ending_here:\n            max_so_far = max_ending_here\n    return max_so_far\n```",
+      "source": "def max_sub_array_sum(a, size):\n    max_so_far = a[0]\n    max_ending_here = a[0]\n    for i in range(1, size):\n        max_ending_here = max_ending_here + a[i]\n        if max_ending_here < a[i]:\n            max_ending_here = a[i]\n        if max_so_far < max_ending_here:\n            max_so_far = max_ending_here\n    return max_so_far\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 559,
+      "condition": "true_latent",
+      "response": "```python\ndef max_sub_array_sum(a,size): \r\n    max_so_far = 0\r\n    max_ending_here = 0\r\n    for i in range(0, size): \r\n        max_ending_here = max_ending_here + a[i] \r\n        if max_so_far < max_ending_here: \r\n            max_so_far = max_ending_here \r\n        if max_ending_here < 0: \r\n            max_ending_here = 0\r\n    return max_so_far\n```",
+      "source": "def max_sub_array_sum(a,size): \r\n    max_so_far = 0\r\n    max_ending_here = 0\r\n    for i in range(0, size): \r\n        max_ending_here = max_ending_here + a[i] \r\n        if max_so_far < max_ending_here: \r\n            max_so_far = max_ending_here \r\n        if max_ending_here < 0: \r\n            max_ending_here = 0\r\n    return max_so_far\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 559,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef max_sub_array_sum(a,size): \r\n    max_so_far = 0\r\n    max_ending_here = 0\r\n    for i in range(0, size): \r\n        max_ending_here = max_ending_here + a[i] \r\n        if max_so_far < max_ending_here: \r\n            max_so_far = max_ending_here \r\n        if max_ending_here < 0: \r\n            max_ending_here = 0\r\n    return max_so_far\n```",
+      "source": "def max_sub_array_sum(a,size): \r\n    max_so_far = 0\r\n    max_ending_here = 0\r\n    for i in range(0, size): \r\n        max_ending_here = max_ending_here + a[i] \r\n        if max_so_far < max_ending_here: \r\n            max_so_far = max_ending_here \r\n        if max_ending_here < 0: \r\n            max_ending_here = 0\r\n    return max_so_far\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 564,
+      "condition": "no_evidence",
+      "response": "To fix the bug in the `count_Pairs` function, we need to ensure that the multiplication operation is correctly applied. The current implementation is incorrect because it multiplies `cnt` by 1 in each iteration, which does not change its value. Instead, we should be counting the number of pairs where the elements are not equal.\n\nHere's the corrected version of the function:\n\n```python\ndef count_Pairs(arr, n):\n    cnt = 0\n    for i in range(n):\n        for j in range(i + 1, n):\n            if arr[i] != arr[j]:\n                cnt += 1\n    return cnt\n```\n\nThis corrected function will now correctly count the number of pairs of elements in the array that are not equal.",
+      "source": "def count_Pairs(arr, n):\n    cnt = 0\n    for i in range(n):\n        for j in range(i + 1, n):\n            if arr[i] != arr[j]:\n                cnt += 1\n    return cnt\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 564,
+      "condition": "trace_text",
+      "response": "```python\ndef count_Pairs(arr, n):\n    cnt = 0\n    for i in range(n):\n        for j in range(i + 1, n):\n            if arr[i] != arr[j]:\n                cnt += 1\n    return cnt\n```",
+      "source": "def count_Pairs(arr, n):\n    cnt = 0\n    for i in range(n):\n        for j in range(i + 1, n):\n            if arr[i] != arr[j]:\n                cnt += 1\n    return cnt\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 564,
+      "condition": "true_latent",
+      "response": "```python\ndef count_Pairs(arr,n):\r\n    cnt = 0\r\n    for i in range(n):\r\n        for j in range(i + 1, n):\r\n            if arr[i] != arr[j]:\r\n                cnt += 1\r\n    return cnt\n```",
+      "source": "def count_Pairs(arr,n):\r\n    cnt = 0\r\n    for i in range(n):\r\n        for j in range(i + 1, n):\r\n            if arr[i] != arr[j]:\r\n                cnt += 1\r\n    return cnt\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 564,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef count_Pairs(arr,n):\r\n    cnt = 0\r\n    for i in range(n):\r\n        for j in range(i + 1, n):\r\n            if arr[i] != arr[j]:\r\n                cnt += 1\r\n    return cnt\n```",
+      "source": "def count_Pairs(arr,n):\r\n    cnt = 0\r\n    for i in range(n):\r\n        for j in range(i + 1, n):\r\n            if arr[i] != arr[j]:\r\n                cnt += 1\r\n    return cnt\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 523,
+      "condition": "no_evidence",
+      "response": "To fix the `TypeError` in the program, we need to ensure that the conditions in the list comprehension are evaluated correctly. The issue arises because the conditions are being evaluated as strings rather than booleans. We can fix this by using a list comprehension to evaluate each condition and then checking if the result is `True`.\n\nHere's the corrected version of the program:\n\n```python\ndef check_string(str1):\n    messg = [\n        lambda str1: any(x.isupper() for x in str1) or 'String must have 1 upper case character.',\n        lambda str1: any(x.islower() for x in str1) or 'String must have 1 lower case character.',\n        lambda str1: any(x.isdigit() for x in str1) or 'String must have 1 number.',\n        lambda str1: len(str1) >= 7 or 'String length should be atleast 8.'\n    ]\n    \n    # Evaluate each condition and collect the results\n    results = [x(str1) for x in messg]\n    \n    # Filter out the results that are not strings\n    valid_results = [result for result in results if isinstance(result, str)]\n    \n    # If no valid results are found, append 'Valid string",
+      "source": null,
+      "validation": {
+        "status": "invalid",
+        "tests": [],
+        "error": "SyntaxError: unterminated string literal (detected at line 3) (<unknown>, line 3)"
+      }
+    },
+    {
+      "task_id": 523,
+      "condition": "trace_text",
+      "response": "```python\ndef check_string(str1):\n    messg = [\n        lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.',\n        lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.',\n        lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.',\n        lambda str1: len(str1) >= 7 or 'String length should be atleast 8.'\n    ]\n    result = [x() for x in messg if x()]\n    if not result:\n        result.append('Valid string.')\n    return result\n```",
+      "source": "def check_string(str1):\n    messg = [\n        lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.',\n        lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.',\n        lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.',\n        lambda str1: len(str1) >= 7 or 'String length should be atleast 8.'\n    ]\n    result = [x() for x in messg if x()]\n    if not result:\n        result.append('Valid string.')\n    return result\n",
+      "validation": {
+        "status": "all_fail",
+        "tests": [
+          "error:TypeError",
+          "error:TypeError",
+          "error:TypeError"
+        ]
+      }
+    },
+    {
+      "task_id": 523,
+      "condition": "true_latent",
+      "response": "```python\ndef check_string(str1):\r\n    messg = [lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.', lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.', lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.', lambda str1: len(str1) >= 7 or 'String length should be atleast 8.']\r\n    result = [x for x in [i(str1) for i in messg] if x != '']\r\n    if not result:\r\n        result.append('Valid string.')\r\n    return result\n```",
+      "source": "def check_string(str1):\r\n    messg = [lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.', lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.', lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.', lambda str1: len(str1) >= 7 or 'String length should be atleast 8.']\r\n    result = [x for x in [i(str1) for i in messg] if x != '']\r\n    if not result:\r\n        result.append('Valid string.')\r\n    return result\n",
+      "validation": {
+        "status": "all_fail",
+        "tests": [
+          "fail",
+          "fail",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 523,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef check_string(str1):\r\n    messg = [lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.', lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.', lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.', lambda str1: len(str1) >= 7 or 'String length should be atleast 8.']\r\n    result = [x for x in [i(str1) for i in messg] if x != '']\r\n    if not result:\r\n        result.append('Valid string.')\r\n    return result\n```",
+      "source": "def check_string(str1):\r\n    messg = [lambda str1: any((x.isupper() for x in str1)) or 'String must have 1 upper case character.', lambda str1: any((x.islower() for x in str1)) or 'String must have 1 lower case character.', lambda str1: any((x.isdigit() for x in str1)) or 'String must have 1 number.', lambda str1: len(str1) >= 7 or 'String length should be atleast 8.']\r\n    result = [x for x in [i(str1) for i in messg] if x != '']\r\n    if not result:\r\n        result.append('Valid string.')\r\n    return result\n",
+      "validation": {
+        "status": "all_fail",
+        "tests": [
+          "fail",
+          "fail",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 543,
+      "condition": "no_evidence",
+      "response": "```python\ndef count_digits(num1, num2):\n    number = num1 + num2\n    count = 0\n    while number > 0:\n        number = number // 11\n        count = count + 1\n    return count\n```",
+      "source": "def count_digits(num1, num2):\n    number = num1 + num2\n    count = 0\n    while number > 0:\n        number = number // 11\n        count = count + 1\n    return count\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "pass",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 543,
+      "condition": "trace_text",
+      "response": "```python\ndef count_digits(num1, num2):\n    number = num1 + num2\n    count = 0\n    while number > 0:\n        number = number // 11\n        count = count + 1\n    return count\n```",
+      "source": "def count_digits(num1, num2):\n    number = num1 + num2\n    count = 0\n    while number > 0:\n        number = number // 11\n        count = count + 1\n    return count\n",
+      "validation": {
+        "status": "mixed",
+        "tests": [
+          "pass",
+          "pass",
+          "fail"
+        ]
+      }
+    },
+    {
+      "task_id": 543,
+      "condition": "true_latent",
+      "response": "```python\ndef count_digits(num1,num2):\r\n  number=num1+num2\r\n  count=0\r\n  while(number>0):\r\n    number=number//10\r\n    count=count+1\r\n  return count\n```",
+      "source": "def count_digits(num1,num2):\r\n  number=num1+num2\r\n  count=0\r\n  while(number>0):\r\n    number=number//10\r\n    count=count+1\r\n  return count\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    },
+    {
+      "task_id": 543,
+      "condition": "shuffled_latent",
+      "response": "```python\ndef count_digits(num1,num2):\r\n  number=num1+num2\r\n  count=0\r\n  while(number>0):\r\n    number=number//10\r\n    count=count+1\r\n  return count\n```",
+      "source": "def count_digits(num1,num2):\r\n  number=num1+num2\r\n  count=0\r\n  while(number>0):\r\n    number=number//10\r\n    count=count+1\r\n  return count\n",
+      "validation": {
+        "status": "all_pass",
+        "tests": [
+          "pass",
+          "pass",
+          "pass"
+        ]
+      }
+    }
+  ],
+  "gpu_peak_gib": 12.085893154144287
+}
