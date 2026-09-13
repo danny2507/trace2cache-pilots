@@ -330,3 +330,19 @@ Artifacts: `artifacts/latent_probe/causal_path_seed83_ablation_eval.json`,
 `artifacts/latent_probe/causal_path_distillation_seed97.json`,
 `artifacts/latent_probe/causal_path_distillation_seed109.json`, and
 `artifacts/latent_probe/causal_path_remove_roles_seed83.json`.
+
+## 8. Executed Python trace corpus smoke test
+
+A deterministic local generator executes the six curated Python repair cases and emits source code,
+the failing assertion, expected/actual output, raw line events, changed-state trace, and heuristic
+semantic roles (`call_input`, `branch_predicate`, `loop_control`, `state_definition`, and
+`return_sink`). All 6 public tests fail as intended and produce 79 runtime events in total. No LLM or
+API is used to create either programs or traces.
+
+This corpus is not yet consumed by the latent encoder. The semantic annotations are currently
+line/state heuristics rather than a sound def-use analysis. The next integration step is a mapper
+from these real events plus AST information into branch, definition, dependency, and assertion-sink
+roles, followed by code-and-test textual context plus latent runtime evidence at the receiver.
+
+Artifacts: `artifacts/real_traces/python_bug_traces.jsonl` and
+`artifacts/real_traces/python_bug_traces.md`.
