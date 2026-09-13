@@ -88,20 +88,25 @@ def expected_for(item: AmbiguousRepairCase, args: list[object]) -> object:
     raise ValueError(case_id)
 
 
-def sample_args(item: AmbiguousRepairCase, rng: random.Random, *, heldout: bool) -> list[object]:
+def sample_args(
+    item: AmbiguousRepairCase, rng: random.Random, *, heldout_values: bool
+) -> list[object]:
     pair = item.pair_id
     while True:
         if pair == "locate":
-            target = rng.randint(6, 12) if heldout else rng.randint(0, 5)
-            length = rng.randint(6, 9) if heldout else rng.randint(3, 5)
-            values = [rng.randint(-4, 14) if heldout else rng.randint(0, 5) for _ in range(length)]
+            target = rng.randint(6, 12) if heldout_values else rng.randint(0, 5)
+            length = rng.randint(6, 9) if heldout_values else rng.randint(3, 5)
+            values = [
+                rng.randint(-4, 14) if heldout_values else rng.randint(0, 5)
+                for _ in range(length)
+            ]
             first, last = sorted(rng.sample(range(length), 2))
             values[first] = target
             values[last] = target
             return [values, target]
         if pair == "aggregate":
-            length = rng.randint(5, 7) if heldout else rng.randint(2, 4)
-            low, high = (-2, 5) if heldout else (1, 3)
+            length = rng.randint(5, 7) if heldout_values else rng.randint(2, 4)
+            low, high = (-2, 5) if heldout_values else (1, 3)
             values = [rng.randint(low, high) for _ in range(length)]
             product = 1
             for value in values:
@@ -109,14 +114,14 @@ def sample_args(item: AmbiguousRepairCase, rng: random.Random, *, heldout: bool)
             if sum(values) != product:
                 return [values]
         elif pair == "extreme":
-            length = rng.randint(6, 9) if heldout else rng.randint(3, 5)
-            low, high = (-15, 15) if heldout else (-5, 5)
+            length = rng.randint(6, 9) if heldout_values else rng.randint(3, 5)
+            low, high = (-15, 15) if heldout_values else (-5, 5)
             values = [rng.randint(low, high) for _ in range(length)]
             if min(values) != max(values):
                 return [values]
         elif pair == "measure":
-            length = rng.randint(7, 10) if heldout else rng.randint(3, 6)
-            low, high = (-12, 12) if heldout else (-4, 4)
+            length = rng.randint(7, 10) if heldout_values else rng.randint(3, 6)
+            low, high = (-12, 12) if heldout_values else (-4, 4)
             values = [rng.randint(low, high) for _ in range(length)]
             even = sum(value % 2 == 0 for value in values)
             positive = sum(value > 0 for value in values)
@@ -184,13 +189,14 @@ def make_example(
     label: int,
     rng: random.Random,
     *,
-    heldout: bool,
+    long_bundle: bool,
+    heldout_values: bool,
 ) -> EvidenceExample:
-    test_count = rng.randint(5, 8) if heldout else rng.randint(2, 4)
+    test_count = rng.randint(5, 8) if long_bundle else rng.randint(2, 4)
     contents, roles, test_ids = [], [], []
     for test_id in range(test_count):
         test_contents, test_roles = one_test_events(
-            item, sample_args(item, rng, heldout=heldout), test_id
+            item, sample_args(item, rng, heldout_values=heldout_values), test_id
         )
         contents.extend(test_contents)
         roles.extend(test_roles)
@@ -198,10 +204,18 @@ def make_example(
     return EvidenceExample(label, contents, roles, test_ids)
 
 
-def make_dataset(items, size: int, seed: int, *, heldout: bool):
+def make_dataset(
+    items, size: int, seed: int, *, long_bundle: bool, heldout_values: bool
+):
     rng = random.Random(seed)
     return [
-        make_example(items[index % len(items)], index % len(items), rng, heldout=heldout)
+        make_example(
+            items[index % len(items)],
+            index % len(items),
+            rng,
+            long_bundle=long_bundle,
+            heldout_values=heldout_values,
+        )
         for index in range(size)
     ]
 
@@ -321,8 +335,16 @@ def main() -> None:
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     items = get_ambiguous_cases()
-    train_raw = make_dataset(items, args.train_examples, args.seed, heldout=False)
-    eval_raw = make_dataset(items, args.eval_examples, args.seed + 10_000, heldout=True)
+    train_raw = make_dataset(
+        items, args.train_examples, args.seed, long_bundle=False, heldout_values=False
+    )
+    eval_raw = make_dataset(
+        items,
+        args.eval_examples,
+        args.seed + 10_000,
+        long_bundle=True,
+        heldout_values=True,
+    )
 
     model_path = resolve_local_model(args.model)
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)

@@ -1,0 +1,631 @@
+{
+  "timestamp": "2026-09-13T09:52:41.914357+00:00",
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "seed": 151,
+  "steps": 100,
+  "train_examples": 128,
+  "eval_examples": 32,
+  "train_tests_per_bundle": [
+    2,
+    4
+  ],
+  "eval_tests_per_bundle": [
+    5,
+    8
+  ],
+  "vocabulary_size": 2357,
+  "trainable_parameters": 4078848,
+  "training_seconds": 45.795120254158974,
+  "representation": {
+    "nearest_code_accuracy": 0.25,
+    "cosine_similarity": 0.6329201459884644,
+    "rmse": 0.03212506324052811
+  },
+  "repair_summary": {
+    "true": 2,
+    "paired_swap": 3,
+    "expected_removed": 3
+  },
+  "repair_rows": [
+    {
+      "case_id": "locate_first",
+      "condition": "true",
+      "evidence_events": 114,
+      "passed": true,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "locate_first",
+      "condition": "paired_swap",
+      "evidence_events": 101,
+      "passed": true,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "locate_first",
+      "condition": "expected_removed",
+      "evidence_events": 114,
+      "passed": true,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "locate_last",
+      "condition": "true",
+      "evidence_events": 101,
+      "passed": false,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "0"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "locate_last",
+      "condition": "paired_swap",
+      "evidence_events": 114,
+      "passed": false,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "0"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "locate_last",
+      "condition": "expected_removed",
+      "evidence_events": 101,
+      "passed": false,
+      "response": "```python\ndef locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n```",
+      "patch": "def locate(values, target):\n    for index, value in enumerate(values):\n        if value == target:\n            return index\n    return -1\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "0"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "aggregate_sum",
+      "condition": "true",
+      "evidence_events": 114,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "aggregate_sum",
+      "condition": "paired_swap",
+      "evidence_events": 69,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "aggregate_sum",
+      "condition": "expected_removed",
+      "evidence_events": 114,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "aggregate_product",
+      "condition": "true",
+      "evidence_events": 69,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "aggregate_product",
+      "condition": "paired_swap",
+      "evidence_events": 114,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "aggregate_product",
+      "condition": "expected_removed",
+      "evidence_events": 69,
+      "passed": false,
+      "response": "```python\ndef aggregate(values):\n    return len(set(values))\n```",
+      "patch": "def aggregate(values):\n    return len(set(values))\n",
+      "validation": {
+        "passed": false,
+        "error": "ValueError: call is not allowlisted: set",
+        "tests": []
+      }
+    },
+    {
+      "case_id": "extreme_max",
+      "condition": "true",
+      "evidence_events": 94,
+      "passed": false,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "extreme_max",
+      "condition": "paired_swap",
+      "evidence_events": 94,
+      "passed": false,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "extreme_max",
+      "condition": "expected_removed",
+      "evidence_events": 94,
+      "passed": false,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "extreme_min",
+      "condition": "true",
+      "evidence_events": 94,
+      "passed": true,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "extreme_min",
+      "condition": "paired_swap",
+      "evidence_events": 94,
+      "passed": true,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "extreme_min",
+      "condition": "expected_removed",
+      "evidence_events": 94,
+      "passed": true,
+      "response": "```python\ndef extreme(values):\n    return min(values)\n```",
+      "patch": "def extreme(values):\n    return min(values)\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "-2"
+          },
+          {
+            "passed": true,
+            "actual": "1"
+          },
+          {
+            "passed": true,
+            "actual": "-4"
+          },
+          {
+            "passed": true,
+            "actual": "7"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_even",
+      "condition": "true",
+      "evidence_events": 116,
+      "passed": false,
+      "response": "```python\ndef measure(values):\n    return len([x for x in values if x > 0])\n```",
+      "patch": "def measure(values):\n    return len([x for x in values if x > 0])\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": false,
+            "actual": "2"
+          },
+          {
+            "passed": false,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_even",
+      "condition": "paired_swap",
+      "evidence_events": 115,
+      "passed": false,
+      "response": "```python\ndef measure(values):\n    return min(values)\n```",
+      "patch": "def measure(values):\n    return min(values)\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": false,
+            "actual": "-1"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "-3"
+          },
+          {
+            "passed": false,
+            "error": "ValueError: min() arg is an empty sequence"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_even",
+      "condition": "expected_removed",
+      "evidence_events": 116,
+      "passed": false,
+      "response": "```python\ndef measure(values):\n    return len([x for x in values if x > 0])\n```",
+      "patch": "def measure(values):\n    return len([x for x in values if x > 0])\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": false,
+            "actual": "2"
+          },
+          {
+            "passed": false,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_positive",
+      "condition": "true",
+      "evidence_events": 115,
+      "passed": false,
+      "response": "```python\ndef measure(values):\n    return min(values)\n```",
+      "patch": "def measure(values):\n    return min(values)\n",
+      "validation": {
+        "passed": false,
+        "tests": [
+          {
+            "passed": false,
+            "actual": "-1"
+          },
+          {
+            "passed": false,
+            "actual": "1"
+          },
+          {
+            "passed": false,
+            "actual": "-3"
+          },
+          {
+            "passed": false,
+            "error": "ValueError: min() arg is an empty sequence"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_positive",
+      "condition": "paired_swap",
+      "evidence_events": 116,
+      "passed": true,
+      "response": "```python\ndef measure(values):\n    return len([x for x in values if x > 0])\n```",
+      "patch": "def measure(values):\n    return len([x for x in values if x > 0])\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "measure_positive",
+      "condition": "expected_removed",
+      "evidence_events": 115,
+      "passed": true,
+      "response": "```python\ndef measure(values):\n    return len([x for x in values if x > 0])\n```",
+      "patch": "def measure(values):\n    return len([x for x in values if x > 0])\n",
+      "validation": {
+        "passed": true,
+        "tests": [
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": true,
+            "actual": "2"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          },
+          {
+            "passed": true,
+            "actual": "0"
+          }
+        ]
+      }
+    }
+  ]
+}
