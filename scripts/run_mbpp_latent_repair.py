@@ -24,8 +24,10 @@ from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.mbpp import (
     MBPPMutation,
     MBPPTask,
+    generate_expanded_mutants,
     generate_mutants,
     load_mbpp,
+    run_mbpp_calls,
     run_mbpp_tests,
     trace_mbpp_tests,
 )
@@ -77,15 +79,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--latent-slots", type=int, default=8)
-    parser.add_argument("--max-mutants-per-task", type=int, default=2)
+    parser.add_argument("--expanded-mutations", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--candidate-mutants-per-task", type=int, default=32)
+    parser.add_argument("--max-mutants-per-task", type=int, default=4)
+    parser.add_argument("--fuzz-calls", type=int, default=16)
+    parser.add_argument("--fuzz-bundles-per-mutant", type=int, default=1)
     parser.add_argument("--max-events-per-test", type=int, default=24)
-    parser.add_argument("--max-train-examples", type=int, default=256)
+    parser.add_argument("--max-train-examples", type=int, default=768)
     parser.add_argument("--max-eval-examples", type=int, default=36)
     parser.add_argument("--generation-examples", type=int, default=8)
     parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument("--max-sequence-tokens", type=int, default=768)
     parser.add_argument("--workers", type=int, default=24)
     parser.add_argument("--seed", type=int, default=173)
+    parser.add_argument("--contrastive-weight", type=float, default=1.0)
+    parser.add_argument("--contrastive-margin", type=float, default=0.1)
     parser.add_argument("--min-free-gib", type=float, default=24.0)
     parser.add_argument("--cache-dir", default=".local/cache/mbpp_latent_repair")
     parser.add_argument(
@@ -172,17 +180,145 @@ def _example_from_trace(
     )
 
 
+def _literal_calls(task: MBPPTask) -> list[tuple[str, list[object]]]:
+    definitions = {
+        node.name
+        for node in ast.parse(task.canonical_source).body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    calls = []
+    seen = set()
+    for test in task.tests:
+        for node in ast.walk(ast.parse(test)):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                continue
+            if node.func.id not in definitions or node.keywords:
+                continue
+            try:
+                arguments = [ast.literal_eval(argument) for argument in node.args]
+            except (ValueError, TypeError):
+                continue
+            key = (node.func.id, repr(arguments))
+            if key not in seen:
+                seen.add(key)
+                calls.append((node.func.id, arguments))
+    return calls
+
+
+def _value_variants(value: object) -> list[object]:
+    if type(value) is int:
+        return [0, 1, -1, value - 1, value + 1, -value, value * 2]
+    if type(value) is float:
+        return [0.0, 1.0, -1.0, value - 1.0, value + 1.0, -value]
+    if isinstance(value, str):
+        return ["", value[:1], value[:-1], value[::-1], value + value[:1]]
+    if isinstance(value, (list, tuple)):
+        constructor = type(value)
+        sequence = list(value)
+        variants = [constructor(), constructor(reversed(sequence)), constructor(sequence[:-1])]
+        if sequence:
+            variants.append(constructor(sequence + [sequence[0]]))
+            for replacement in _value_variants(sequence[0])[:3]:
+                changed = list(sequence)
+                changed[0] = replacement
+                variants.append(constructor(changed))
+        return variants
+    if isinstance(value, set):
+        return [set(), set(list(value)[:-1])]
+    if isinstance(value, dict):
+        return [{}]
+    return []
+
+
+def _fuzzed_calls(task: MBPPTask, *, limit: int, seed: int) -> list[str]:
+    candidates = []
+    for function_name, arguments in _literal_calls(task):
+        candidates.append(f"{function_name}({', '.join(map(repr, arguments))})")
+        for argument_index, argument in enumerate(arguments):
+            for replacement in _value_variants(argument):
+                changed = list(arguments)
+                changed[argument_index] = replacement
+                candidates.append(f"{function_name}({', '.join(map(repr, changed))})")
+    candidates = list(dict.fromkeys(candidates))
+    random.Random(seed).shuffle(candidates)
+    return candidates[:limit]
+
+
+def _examples_from_calls(
+    task: MBPPTask,
+    mutation: MBPPMutation,
+    calls: list[str],
+    oracle: dict,
+    actual: dict,
+    *,
+    max_events_per_test: int,
+    max_bundles: int,
+) -> list[RepairExample]:
+    if oracle.get("status") != "ok" or actual.get("status") != "ok":
+        return []
+    records = []
+    for call, expected, observed in zip(calls, oracle["calls"], actual["calls"]):
+        if expected["status"] != "ok":
+            continue
+        matches = observed["status"] == "ok" and observed["output"] == expected["output"]
+        records.append((call, expected, observed, matches))
+    passing = [record for record in records if record[3]]
+    failing = [record for record in records if not record[3]]
+    examples = []
+    for bundle_index in range(min(max_bundles, len(passing), len(failing))):
+        selected = (passing[bundle_index], failing[bundle_index])
+        contents: list[str] = []
+        roles: list[int] = []
+        test_ids: list[int] = []
+        for test_id, (call, expected, observed, matches) in enumerate(selected):
+            contents.append(
+                f"call {call} expected {expected['output']} observed {observed['output']}"
+            )
+            roles.append(TEST)
+            test_ids.append(test_id)
+            for event in _select_events(observed["trace"], max_events_per_test):
+                contents.append(_event_text(event))
+                roles.append(_event_role(event))
+                test_ids.append(test_id)
+            contents.append(f"test outcome {'pass' if matches else 'fail'}")
+            roles.append(PASS if matches else FAIL)
+            test_ids.append(test_id)
+        failed_call, expected, observed, _ = selected[1]
+        examples.append(
+            RepairExample(
+                task_id=task.task_id,
+                mutation_kind=mutation.kind + ":fuzz",
+                buggy_source=mutation.source,
+                target_source=task.canonical_source,
+                setup_source=task.setup_source,
+                failing_test=(
+                    f"{failed_call} expected {expected['output']} but produced {observed['output']}"
+                ),
+                tests=task.tests,
+                contents=tuple(contents),
+                roles=tuple(roles),
+                test_ids=tuple(test_ids),
+            )
+        )
+    return examples
+
+
 def _build_examples(
     tasks: tuple[MBPPTask, ...],
     *,
     max_mutants_per_task: int,
+    candidate_mutants_per_task: int,
+    expanded_mutations: bool,
+    fuzz_calls: int,
+    fuzz_bundles_per_mutant: int,
     max_events_per_test: int,
     workers: int,
 ) -> list[RepairExample]:
+    generator = generate_expanded_mutants if expanded_mutations else generate_mutants
     candidate_jobs = [
         (task, mutation)
         for task in tasks
-        for mutation in generate_mutants(task, limit=12)
+        for mutation in generator(task, limit=candidate_mutants_per_task)
     ]
 
     def classify(job):
@@ -206,13 +342,37 @@ def _build_examples(
         return _example_from_trace(task, mutation, result, max_events_per_test)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        examples = list(pool.map(trace, mixed_jobs))
-    return [example for example in examples if example is not None]
+        base_examples = list(pool.map(trace, mixed_jobs))
+
+    def fuzz(job):
+        task, mutation = job
+        calls = _fuzzed_calls(task, limit=fuzz_calls, seed=task.task_id + mutation.ordinal)
+        if not calls:
+            return []
+        oracle = run_mbpp_calls(task, calls, collect_trace=False)
+        actual = run_mbpp_calls(task, calls, mutation.source, collect_trace=True)
+        return _examples_from_calls(
+            task,
+            mutation,
+            calls,
+            oracle,
+            actual,
+            max_events_per_test=max_events_per_test,
+            max_bundles=fuzz_bundles_per_mutant,
+        )
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        fuzzed = list(pool.map(fuzz, mixed_jobs))
+    return [example for example in base_examples if example is not None] + [
+        example for group in fuzzed for example in group
+    ]
 
 
 def _load_or_build_examples(args, split: str) -> list[RepairExample]:
     cache = Path(args.cache_dir) / (
-        f"{split}_m{args.max_mutants_per_task}_e{args.max_events_per_test}.json"
+        f"v2_{split}_x{int(args.expanded_mutations)}_c{args.candidate_mutants_per_task}"
+        f"_m{args.max_mutants_per_task}_f{args.fuzz_calls}"
+        f"_b{args.fuzz_bundles_per_mutant}_e{args.max_events_per_test}.json"
     )
     if cache.exists():
         return [
@@ -230,6 +390,10 @@ def _load_or_build_examples(args, split: str) -> list[RepairExample]:
     examples = _build_examples(
         load_mbpp(args.dataset, split=split),
         max_mutants_per_task=args.max_mutants_per_task,
+        candidate_mutants_per_task=args.candidate_mutants_per_task,
+        expanded_mutations=args.expanded_mutations,
+        fuzz_calls=args.fuzz_calls,
+        fuzz_bundles_per_mutant=args.fuzz_bundles_per_mutant,
         max_events_per_test=args.max_events_per_test,
         workers=args.workers,
     )
@@ -306,12 +470,12 @@ def _batch_encoder_inputs(example, table, device):
     return table[content_ids], roles, tests, mask
 
 
-def _repair_loss(model, tokenizer, encoder, example, table):
-    contents, roles, tests, mask = _batch_encoder_inputs(example, table, model.device)
+def _repair_loss(model, tokenizer, encoder, prompt_example, evidence_example, table):
+    contents, roles, tests, mask = _batch_encoder_inputs(evidence_example, table, model.device)
     latent = encoder(contents, roles, tests, mask).to(model.get_input_embeddings().weight.dtype)
-    prompt = _render(tokenizer, example.example, MARKER)
+    prompt = _render(tokenizer, prompt_example.example, MARKER)
     prompt_embeds = splice(model, tokenizer, prompt, latent)
-    targets = target_ids(tokenizer, example.example.target_source, model.device)
+    targets = target_ids(tokenizer, prompt_example.example.target_source, model.device)
     teacher = model.get_input_embeddings()(targets[:, :-1])
     inputs = torch.cat((prompt_embeds, teacher), dim=1)
     attention = torch.ones(inputs.shape[:2], dtype=torch.long, device=model.device)
@@ -413,6 +577,21 @@ def main() -> None:
     eval_raw = _one_example_per_task(_load_or_build_examples(args, "validation"))[
         : args.max_eval_examples
     ]
+    print(
+        json.dumps(
+            {
+                "event": "data_ready",
+                "train_examples_before_token_filter": len(train_raw),
+                "train_tasks": len({example.task_id for example in train_raw}),
+                "train_fuzz_examples": sum(
+                    example.mutation_kind.endswith(":fuzz") for example in train_raw
+                ),
+                "eval_examples_before_token_filter": len(eval_raw),
+                "eval_tasks": len({example.task_id for example in eval_raw}),
+            }
+        ),
+        flush=True,
+    )
 
     model_path = resolve_local_model(args.model)
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
@@ -424,7 +603,11 @@ def main() -> None:
     model.config.use_cache = False
 
     def within_budget(example):
-        prompt_length = len(tokenizer(_render(tokenizer, example, MARKER), add_special_tokens=False).input_ids)
+        prompt_length = len(
+            tokenizer(
+                _render(tokenizer, example, MARKER), add_special_tokens=False
+            ).input_ids
+        )
         target_length = len(tokenizer(example.target_source, add_special_tokens=False).input_ids)
         return prompt_length + target_length <= args.max_sequence_tokens
 
@@ -433,8 +616,14 @@ def main() -> None:
     vocabulary = sorted({content for example in train_raw + eval_raw for content in example.contents})
     content_to_id = {content: index for index, content in enumerate(vocabulary)}
     table = _native_content_table(model, tokenizer, vocabulary)
-    train = [NumericExample(example, tuple(content_to_id[x] for x in example.contents)) for example in train_raw]
-    evaluation = [NumericExample(example, tuple(content_to_id[x] for x in example.contents)) for example in eval_raw]
+    train = [
+        NumericExample(example, tuple(content_to_id[x] for x in example.contents))
+        for example in train_raw
+    ]
+    evaluation = [
+        NumericExample(example, tuple(content_to_id[x] for x in example.contents))
+        for example in eval_raw
+    ]
 
     anchor_ids = tokenizer(
         " runtime evidence observed behavior state values result details",
@@ -457,8 +646,13 @@ def main() -> None:
     started = time.perf_counter()
     optimizer.zero_grad(set_to_none=True)
     for step in range(1, args.steps + 1):
-        example = train[rng.randrange(len(train))]
-        loss = _repair_loss(model, tokenizer, encoder, example, table)
+        example_index = rng.randrange(len(train))
+        example = train[example_index]
+        shuffled = _different_task_example(train, example_index)
+        true_loss = _repair_loss(model, tokenizer, encoder, example, example, table)
+        shuffled_loss = _repair_loss(model, tokenizer, encoder, example, shuffled, table)
+        ranking_loss = nn.functional.relu(args.contrastive_margin + true_loss - shuffled_loss)
+        loss = true_loss + args.contrastive_weight * ranking_loss
         (loss / args.gradient_accumulation).backward()
         if step % args.gradient_accumulation == 0:
             nn.utils.clip_grad_norm_(encoder.parameters(), 1.0)
@@ -470,6 +664,9 @@ def main() -> None:
                     {
                         "step": step,
                         "loss": round(loss.item(), 5),
+                        "true_patch_loss": round(true_loss.item(), 5),
+                        "shuffled_patch_loss": round(shuffled_loss.item(), 5),
+                        "ranking_loss": round(ranking_loss.item(), 5),
                         "gpu_allocated_gib": round(torch.cuda.memory_allocated() / 2**30, 2),
                         "gpu_peak_gib": round(torch.cuda.max_memory_allocated() / 2**30, 2),
                     }
@@ -525,8 +722,14 @@ def main() -> None:
         "seed": args.seed,
         "steps": args.steps,
         "train_examples": len(train),
+        "train_tasks": len({example.example.task_id for example in train}),
+        "train_fuzz_examples": sum(
+            example.example.mutation_kind.endswith(":fuzz") for example in train
+        ),
         "eval_examples": len(evaluation),
         "latent_slots": args.latent_slots,
+        "contrastive_weight": args.contrastive_weight,
+        "contrastive_margin": args.contrastive_margin,
         "trainable_parameters": trainable_parameter_count(encoder),
         "training_seconds": time.perf_counter() - started,
         "teacher_forced_patch_loss": mean_losses,

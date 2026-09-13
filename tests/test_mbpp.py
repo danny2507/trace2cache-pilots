@@ -7,8 +7,10 @@ from pathlib import Path
 
 from trace2cache.mbpp import (
     MBPPTask,
+    generate_expanded_mutants,
     generate_mutants,
     load_mbpp,
+    run_mbpp_calls,
     run_mbpp_tests,
     trace_mbpp_tests,
 )
@@ -59,6 +61,37 @@ class MBPPTests(unittest.TestCase):
         self.assertEqual(len(result["traces"]), 2)
         self.assertTrue(all(trace[0]["event"] == "call" for trace in result["traces"]))
         self.assertEqual(result["traces"][0][-1]["value"], "1")
+
+    def test_expanded_mutants_include_structural_changes(self):
+        task = MBPPTask(
+            task_id=602,
+            description="Accumulate positive values.",
+            canonical_source=(
+                "def total(xs):\n"
+                "    result = 0\n"
+                "    for x in xs:\n"
+                "        if x > 0:\n"
+                "            result += x\n"
+                "    return result\n"
+            ),
+            tests=("assert total([-1, 2]) == 2",),
+        )
+        mutations = generate_expanded_mutants(task, limit=64)
+        kinds = {mutation.kind.split(":")[0] for mutation in mutations}
+        self.assertIn("negate_condition", kinds)
+        self.assertIn("delete_assignment", kinds)
+        self.assertIn("augassign", kinds)
+
+    def test_evaluates_and_traces_literal_calls(self):
+        task = MBPPTask(
+            task_id=603,
+            description="Double x.",
+            canonical_source="def double(x):\n    return x * 2\n",
+            tests=(),
+        )
+        result = run_mbpp_calls(task, ["double(3)", "double(-2)"])
+        self.assertEqual([row["output"] for row in result["calls"]], ["6", "-4"])
+        self.assertTrue(all(row["trace"] for row in result["calls"]))
 
 
 if __name__ == "__main__":

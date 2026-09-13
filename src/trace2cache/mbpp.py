@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import copy
 import json
+import os
 import random
 import subprocess
 import sys
@@ -39,6 +40,13 @@ class MBPPMutation:
     kind: str
     ordinal: int
     source: str
+
+
+@dataclass(frozen=True)
+class _ExpandedSite:
+    category: str
+    ordinal: int
+    variant: str
 
 
 def split_for_task_id(task_id: int) -> Split:
@@ -167,6 +175,145 @@ def generate_mutants(
     return tuple(mutations)
 
 
+def _expanded_category(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Compare) and len(node.ops) == 1:
+        return "compare"
+    if isinstance(node, ast.BinOp):
+        return "binop"
+    if isinstance(node, ast.AugAssign):
+        return "augassign"
+    if isinstance(node, ast.BoolOp):
+        return "boolop"
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+        return "remove_not"
+    if isinstance(node, (ast.If, ast.While)):
+        return "negate_condition"
+    if isinstance(node, (ast.Assign, ast.AugAssign)):
+        return "delete_assignment"
+    if isinstance(node, ast.Constant) and type(node.value) is bool:
+        return "boolean"
+    if isinstance(node, ast.Constant) and type(node.value) is int and -100 <= node.value <= 100:
+        return "constant"
+    return None
+
+
+def _operator_name(operator: ast.AST) -> str:
+    return type(operator).__name__
+
+
+def _expanded_sites(tree: ast.AST) -> list[_ExpandedSite]:
+    compare_ops = (ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq)
+    arithmetic_ops = (ast.Add, ast.Sub, ast.Mult, ast.FloorDiv, ast.Mod)
+    counts: dict[str, int] = {}
+    sites = []
+    for node in ast.walk(tree):
+        category = _expanded_category(node)
+        if category is None:
+            continue
+        ordinal = counts.get(category, 0)
+        counts[category] = ordinal + 1
+        if category == "compare":
+            variants = [
+                _operator_name(operator())
+                for operator in compare_ops
+                if not isinstance(node.ops[0], operator)
+            ]
+        elif category in {"binop", "augassign"}:
+            variants = [
+                _operator_name(operator())
+                for operator in arithmetic_ops
+                if not isinstance(node.op, operator)
+            ]
+        elif category == "constant":
+            variants = ("plus_one", "minus_one", "zero", "one")
+        else:
+            variants = ("toggle",)
+        sites.extend(_ExpandedSite(category, ordinal, variant) for variant in variants)
+    return sites
+
+
+_OPERATOR_CLASSES = {
+    operator.__name__: operator
+    for operator in (
+        ast.Add,
+        ast.Sub,
+        ast.Mult,
+        ast.FloorDiv,
+        ast.Mod,
+        ast.Lt,
+        ast.LtE,
+        ast.Gt,
+        ast.GtE,
+        ast.Eq,
+        ast.NotEq,
+    )
+}
+
+
+class _ExpandedMutation(ast.NodeTransformer):
+    def __init__(self, site: _ExpandedSite) -> None:
+        self.site = site
+        self.counts: dict[str, int] = {}
+        self.done = False
+
+    def generic_visit(self, node: ast.AST):
+        category = _expanded_category(node)
+        if not self.done and category == self.site.category:
+            ordinal = self.counts.get(category, 0)
+            self.counts[category] = ordinal + 1
+            if ordinal == self.site.ordinal:
+                if category == "compare":
+                    node.ops[0] = _OPERATOR_CLASSES[self.site.variant]()
+                elif category in {"binop", "augassign"}:
+                    node.op = _OPERATOR_CLASSES[self.site.variant]()
+                elif category == "boolop":
+                    node.op = ast.Or() if isinstance(node.op, ast.And) else ast.And()
+                elif category == "remove_not":
+                    self.done = True
+                    return self.visit(node.operand)
+                elif category == "negate_condition":
+                    node.test = ast.UnaryOp(op=ast.Not(), operand=node.test)
+                elif category == "delete_assignment":
+                    self.done = True
+                    return ast.copy_location(ast.Pass(), node)
+                elif category == "boolean":
+                    node.value = not node.value
+                elif self.site.variant == "plus_one":
+                    node.value += 1
+                elif self.site.variant == "minus_one":
+                    node.value -= 1
+                elif self.site.variant == "zero":
+                    node.value = 0
+                else:
+                    node.value = 1
+                self.done = True
+        return super().generic_visit(node)
+
+
+def generate_expanded_mutants(
+    task: MBPPTask, *, limit: int = 32, seed: int | None = None
+) -> tuple[MBPPMutation, ...]:
+    """Generate a broader deterministic family of first-order semantic mutants."""
+    tree = ast.parse(task.canonical_source)
+    sites = _expanded_sites(tree)
+    random.Random(task.task_id if seed is None else seed).shuffle(sites)
+    mutations = []
+    seen = set()
+    for site in sites:
+        transformer = _ExpandedMutation(site)
+        mutated = transformer.visit(copy.deepcopy(tree))
+        ast.fix_missing_locations(mutated)
+        source = ast.unparse(mutated) + "\n"
+        if transformer.done and source not in seen and source.strip() != task.canonical_source.strip():
+            seen.add(source)
+            mutations.append(
+                MBPPMutation(f"{site.category}:{site.variant}", site.ordinal, source)
+            )
+        if len(mutations) >= limit:
+            break
+    return tuple(mutations)
+
+
 def _run_mbpp_worker(
     task: MBPPTask,
     source: str | None,
@@ -190,6 +337,7 @@ def _run_mbpp_worker(
             capture_output=True,
             timeout=timeout_seconds,
             check=False,
+            env={**os.environ, "PYTHONHASHSEED": "0"},
         )
     except subprocess.TimeoutExpired:
         return {"status": "timeout", "tests": []}
@@ -230,3 +378,41 @@ def trace_mbpp_tests(
         collect_trace=True,
         max_events=max_events,
     )
+
+
+def run_mbpp_calls(
+    task: MBPPTask,
+    calls: list[str],
+    source: str | None = None,
+    *,
+    timeout_seconds: float = 3.0,
+    collect_trace: bool = True,
+    max_events: int = 512,
+) -> dict:
+    """Evaluate literal function-call expressions and optionally trace their execution."""
+    payload = {
+        "source": task.canonical_source if source is None else source,
+        "setup_source": task.setup_source,
+        "calls": calls,
+        "collect_trace": collect_trace,
+        "max_events": max_events,
+    }
+    try:
+        result = subprocess.run(
+            [sys.executable, "-I", str(Path(__file__).with_name("_mbpp_worker.py"))],
+            input=json.dumps(payload),
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+            env={**os.environ, "PYTHONHASHSEED": "0"},
+        )
+    except subprocess.TimeoutExpired:
+        return {"status": "timeout", "calls": []}
+    if result.returncode != 0:
+        return {
+            "status": "worker_error",
+            "calls": [],
+            "error": result.stderr.strip() or result.stdout.strip(),
+        }
+    return json.loads(result.stdout)

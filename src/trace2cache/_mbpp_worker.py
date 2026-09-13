@@ -57,11 +57,58 @@ def _execute_test(test: str, namespace: dict, *, collect_trace: bool, max_events
         outcome = "pass"
     except AssertionError:
         outcome = "fail"
-    except Exception as exc:  # noqa: BLE001 -- runtime error is an outcome
+    except Exception as exc:  # noqa: BLE001
         outcome = f"error:{type(exc).__name__}"
     finally:
         sys.settrace(None)
     return outcome, events
+
+
+def _execute_call(call: str, namespace: dict, *, collect_trace: bool, max_events: int):
+    events = []
+
+    def tracer(frame, event, argument):
+        if frame.f_code.co_filename != PROGRAM_FILENAME:
+            return tracer
+        if len(events) >= max_events:
+            raise RuntimeError(f"trace exceeded max_events={max_events}")
+        if event in {"call", "line", "return", "exception"}:
+            value = None
+            if event == "return":
+                value = _safe_value(argument)
+            elif event == "exception":
+                exc_type, exc_value, _ = argument
+                value = f"{exc_type.__name__}: {_safe_value(exc_value)}"
+            events.append(
+                {
+                    "step": len(events),
+                    "event": event,
+                    "function": frame.f_code.co_name,
+                    "line": frame.f_lineno,
+                    "source": linecache.getline(PROGRAM_FILENAME, frame.f_lineno).strip(),
+                    "locals": {
+                        name: _safe_value(value)
+                        for name, value in sorted(frame.f_locals.items())
+                    },
+                    "value": value,
+                }
+            )
+        return tracer
+
+    try:
+        if collect_trace:
+            sys.settrace(tracer)
+        value = eval(compile(call, "<mbpp-call>", "eval"), namespace)
+        result = {"status": "ok", "output": _safe_value(value), "trace": events}
+    except Exception as exc:  # noqa: BLE001
+        result = {
+            "status": f"error:{type(exc).__name__}",
+            "output": _safe_value(exc),
+            "trace": events,
+        }
+    finally:
+        sys.settrace(None)
+    return result
 
 
 def main() -> None:
@@ -78,9 +125,25 @@ def main() -> None:
     try:
         # Some MBPP setup snippets instantiate classes defined by the solution.
         exec(compile(source, PROGRAM_FILENAME, "exec"), namespace)  # noqa: S102
-        exec(compile(payload.get("setup_source", ""), "<mbpp-setup>", "exec"), namespace)  # noqa: S102
-    except Exception as exc:  # noqa: BLE001 -- report benchmark runtime errors
+        exec(  # noqa: S102
+            compile(payload.get("setup_source", ""), "<mbpp-setup>", "exec"), namespace
+        )
+    except Exception as exc:  # noqa: BLE001
         print(json.dumps({"status": "load_error", "tests": [], "error": type(exc).__name__}))
+        return
+
+    if "calls" in payload:
+        calls = [
+            _execute_call(
+                call,
+                namespace,
+                collect_trace=payload.get("collect_trace", False),
+                max_events=payload.get("max_events", 512),
+            )
+            for call in payload["calls"]
+        ]
+        print(json.dumps({"status": "ok", "calls": calls}))
+        linecache.cache.pop(PROGRAM_FILENAME, None)
         return
 
     outcomes = []
