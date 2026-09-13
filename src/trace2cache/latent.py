@@ -1,0 +1,186 @@
+"""Small model-native event resampler used by the latent sufficiency pilot."""
+
+from __future__ import annotations
+
+import math
+
+import torch
+from torch import nn
+
+
+class NativePairCodebook(nn.Module):
+    """Oracle bottleneck: one learned native-anchored vector for each value pair.
+
+    This deliberately removes trace encoding from the experiment. If the frozen
+    receiver cannot recover both values from these codes, a more complex trace
+    encoder cannot rescue the one-slot interface.
+    """
+
+    def __init__(self, token_embedding: nn.Embedding, digit_token_ids: list[int]) -> None:
+        super().__init__()
+        if len(digit_token_ids) != 10:
+            raise ValueError("expected token ids for digits 0 through 9")
+        self.token_embedding = token_embedding
+        self.token_embedding.requires_grad_(False)
+        self.register_buffer("digit_token_ids", torch.tensor(digit_token_ids, dtype=torch.long))
+        self.residual = nn.Embedding(100, token_embedding.embedding_dim)
+        nn.init.zeros_(self.residual.weight)
+
+    def forward(self, reference_values: torch.Tensor, buggy_values: torch.Tensor) -> torch.Tensor:
+        pair_ids = reference_values * 10 + buggy_values
+        reference_token_ids = self.digit_token_ids[reference_values]
+        anchor = self.token_embedding(reference_token_ids).float()
+        return (anchor + self.residual(pair_ids)).unsqueeze(1)
+
+
+class NativePairEncoder(nn.Module):
+    """Parametric one-slot encoder that must compose previously unseen value pairs."""
+
+    def __init__(
+        self,
+        token_embedding: nn.Embedding,
+        digit_token_ids: list[int],
+        *,
+        hidden_width: int = 512,
+    ) -> None:
+        super().__init__()
+        if len(digit_token_ids) != 10:
+            raise ValueError("expected token ids for digits 0 through 9")
+        self.token_embedding = token_embedding
+        self.token_embedding.requires_grad_(False)
+        self.register_buffer("digit_token_ids", torch.tensor(digit_token_ids, dtype=torch.long))
+        model_width = token_embedding.embedding_dim
+        self.residual = nn.Sequential(
+            nn.LayerNorm(model_width * 3),
+            nn.Linear(model_width * 3, hidden_width),
+            nn.GELU(),
+            nn.Linear(hidden_width, model_width),
+        )
+        # Exact native reference anchor at initialization while retaining a direct
+        # gradient into the output layer from the first optimization step.
+        nn.init.zeros_(self.residual[-1].weight)
+        nn.init.zeros_(self.residual[-1].bias)
+
+    def forward(self, reference_values: torch.Tensor, buggy_values: torch.Tensor) -> torch.Tensor:
+        reference_ids = self.digit_token_ids[reference_values]
+        buggy_ids = self.digit_token_ids[buggy_values]
+        reference = self.token_embedding(reference_ids).float()
+        buggy = self.token_embedding(buggy_ids).float()
+        features = torch.cat((reference, buggy, buggy - reference), dim=-1)
+        return (reference + self.residual(features)).unsqueeze(1)
+
+
+class NativeEventResampler(nn.Module):
+    """Compress structured runtime events to K vectors in the receiver embedding space.
+
+    Scalar values enter through the frozen receiver's native token embedding table. Event type and
+    temporal position remain explicit structural fields.
+    """
+
+    def __init__(
+        self,
+        token_embedding: nn.Embedding,
+        *,
+        model_width: int,
+        hidden_width: int = 256,
+        num_latents: int = 4,
+        num_event_types: int = 3,
+        max_events: int = 32,
+        num_layers: int = 2,
+        num_heads: int = 4,
+        native_sink_anchor: bool = False,
+        zero_output_init: bool = False,
+        fixed_positions: bool = False,
+    ) -> None:
+        super().__init__()
+        self.token_embedding = token_embedding
+        self.token_embedding.requires_grad_(False)
+        self.type_embedding = nn.Embedding(num_event_types, hidden_width)
+        self.fixed_positions = fixed_positions
+        self.position_embedding = nn.Embedding(max_events, hidden_width)
+        if fixed_positions:
+            positions = torch.arange(max_events, dtype=torch.float32).unsqueeze(1)
+            frequencies = torch.exp(
+                torch.arange(0, hidden_width, 2, dtype=torch.float32)
+                * (-math.log(10_000.0) / hidden_width)
+            )
+            encoding = torch.zeros(max_events, hidden_width)
+            encoding[:, 0::2] = torch.sin(positions * frequencies)
+            encoding[:, 1::2] = torch.cos(positions * frequencies[: encoding[:, 1::2].shape[1]])
+            self.register_buffer("fixed_position_encoding", encoding)
+        self.native_projection = nn.Linear(model_width * 2, hidden_width)
+        layer = nn.TransformerEncoderLayer(
+            d_model=hidden_width,
+            nhead=num_heads,
+            dim_feedforward=hidden_width * 4,
+            dropout=0.0,
+            activation="gelu",
+            batch_first=True,
+            norm_first=True,
+        )
+        self.event_encoder = nn.TransformerEncoder(layer, num_layers=num_layers)
+        self.latent_queries = nn.Parameter(torch.randn(num_latents, hidden_width) * 0.02)
+        self.resampler = nn.MultiheadAttention(
+            hidden_width, num_heads=num_heads, dropout=0.0, batch_first=True
+        )
+        self.output = nn.Sequential(
+            nn.LayerNorm(hidden_width),
+            nn.Linear(hidden_width, hidden_width * 4),
+            nn.GELU(),
+            nn.Linear(hidden_width * 4, model_width),
+        )
+        if zero_output_init:
+            nn.init.zeros_(self.output[-1].weight)
+            nn.init.zeros_(self.output[-1].bias)
+        self.native_sink_anchor = native_sink_anchor
+        # Exact native anchor at initialization; the residual can open gradually during training.
+        self.residual_gate = nn.Parameter(torch.tensor(0.0))
+
+    @property
+    def num_latents(self) -> int:
+        return self.latent_queries.shape[0]
+
+    def forward(
+        self,
+        event_types: torch.Tensor,
+        argument_token_ids: torch.Tensor,
+        state_token_ids: torch.Tensor,
+        event_mask: torch.Tensor,
+        anchor_token_ids: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        batch_size, event_count = event_types.shape
+        if event_count > self.position_embedding.num_embeddings:
+            raise ValueError("event sequence exceeds configured max_events")
+        # The receiver embedding table is BF16 on GPU; the small adapter trains in FP32.
+        argument = self.token_embedding(argument_token_ids).float()
+        state = self.token_embedding(state_token_ids).float()
+        native = self.native_projection(torch.cat((argument, state), dim=-1))
+        positions = torch.arange(event_count, device=event_types.device).unsqueeze(0)
+        position = (
+            self.fixed_position_encoding[:event_count].unsqueeze(0)
+            if self.fixed_positions
+            else self.position_embedding(positions)
+        )
+        events = native + self.type_embedding(event_types) + position
+        padding_mask = ~event_mask.bool()
+        events = self.event_encoder(events, src_key_padding_mask=padding_mask)
+        queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
+        latents, _ = self.resampler(
+            queries, events, events, key_padding_mask=padding_mask, need_weights=False
+        )
+        output = self.output(latents)
+        if self.native_sink_anchor:
+            if anchor_token_ids is None:
+                last_indices = event_mask.long().sum(dim=1).sub(1).clamp_min(0)
+                batch_indices = torch.arange(batch_size, device=event_types.device)
+                sink = state[batch_indices, last_indices].unsqueeze(1)
+            else:
+                sink = self.token_embedding(anchor_token_ids).float().unsqueeze(1)
+            sink = sink.expand(-1, self.num_latents, -1)
+            # Stay close to a representation already understood by the frozen receiver.
+            output = sink + self.residual_gate * torch.tanh(output)
+        return output
+
+
+def trainable_parameter_count(module: nn.Module) -> int:
+    return sum(parameter.numel() for parameter in module.parameters() if parameter.requires_grad)
