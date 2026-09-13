@@ -1,0 +1,65 @@
+{
+  "size_per_split": 128,
+  "metrics": {
+    "new_short_in_range": {
+      "nearest_code_accuracy": 0.7890625,
+      "cosine_similarity": 0.9025833606719971,
+      "rmse": 0.02100936882197857,
+      "nearest_code_accuracy_by_behavior": {
+        "locate_first": 0.8125,
+        "locate_last": 1.0,
+        "aggregate_sum": 0.8125,
+        "aggregate_product": 0.8125,
+        "extreme_max": 1.0,
+        "extreme_min": 0.875,
+        "measure_even": 0.0,
+        "measure_positive": 1.0
+      }
+    },
+    "long_in_range": {
+      "nearest_code_accuracy": 0.7578125,
+      "cosine_similarity": 0.8890242576599121,
+      "rmse": 0.022681009024381638,
+      "nearest_code_accuracy_by_behavior": {
+        "locate_first": 0.625,
+        "locate_last": 1.0,
+        "aggregate_sum": 0.75,
+        "aggregate_product": 0.75,
+        "extreme_max": 1.0,
+        "extreme_min": 0.9375,
+        "measure_even": 0.0,
+        "measure_positive": 1.0
+      }
+    },
+    "short_ood_values": {
+      "nearest_code_accuracy": 0.4765625,
+      "cosine_similarity": 0.7211249470710754,
+      "rmse": 0.03236444666981697,
+      "nearest_code_accuracy_by_behavior": {
+        "locate_first": 0.1875,
+        "locate_last": 0.875,
+        "aggregate_sum": 0.1875,
+        "aggregate_product": 0.0,
+        "extreme_max": 0.8125,
+        "extreme_min": 1.0,
+        "measure_even": 0.0625,
+        "measure_positive": 0.6875
+      }
+    },
+    "long_ood_values": {
+      "nearest_code_accuracy": 0.515625,
+      "cosine_similarity": 0.7344520688056946,
+      "rmse": 0.03194079548120499,
+      "nearest_code_accuracy_by_behavior": {
+        "locate_first": 0.0625,
+        "locate_last": 0.9375,
+        "aggregate_sum": 0.3125,
+        "aggregate_product": 0.0625,
+        "extreme_max": 0.8125,
+        "extreme_min": 1.0,
+        "measure_even": 0.375,
+        "measure_positive": 0.5625
+      }
+    }
+  }
+}

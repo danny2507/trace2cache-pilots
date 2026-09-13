@@ -413,3 +413,51 @@ test executions—including inputs, expected/actual outputs, and typed causal ev
 successful repair codes, with held-out evidence bundles and expected-value/trace-shuffle controls.
 
 Artifact: `artifacts/repair_latent/repair_codebook_seed131.json`.
+
+## 11. Role-aware runtime-to-repair distillation
+
+A 4.08M-parameter role-aware Transformer was trained to replace the oracle lookup. Its input is a
+bundle of actual buggy executions with separate roles for test boundary, input, call, executed line,
+branch, state definition, return, actual output, expected output, and test status. Event contents
+enter through means of the frozen receiver's native token embeddings; role, test identity, and
+event position remain separate. Eight cross-attention queries produce the eight repair-code slots.
+
+Training used 512 generated bundles containing 2–4 tests per bundle and small value ranges. The
+encoder was distilled for 1,200 steps into the successful frozen repair codebook. Evaluation used
+128 new bundles with 5–8 tests, longer traces, and disjoint/wider value ranges.
+
+Training-batch cosine reached approximately 0.93, but joint held-out performance did not pass:
+
+| Joint held-out metric | Result |
+|---|---:|
+| Nearest repair-code accuracy | 47.7% |
+| Target-code cosine | 0.698 |
+| Full repair with true evidence | 3/8 |
+| Full repair with paired behavior swap | 3/8 |
+| Full repair with expected values removed | 2/8 |
+
+The absence of a true-versus-paired-swap repair gap means the end-to-end trace encoder claim is not
+yet supported. A factorial transfer audit isolates the failure:
+
+| Evidence split | Nearest code | Cosine |
+|---|---:|---:|
+| New short bundles, in-range values | 78.9% | 0.903 |
+| Long bundles, in-range values | 75.8% | 0.889 |
+| Short bundles, OOD values | 47.7% | 0.721 |
+| Long bundles, OOD values | 51.6% | 0.734 |
+
+Length transfer is therefore not the main bottleneck: increasing from 2–4 to 5–8 tests costs only
+3.1 points when values remain in range. Numeric/relational extrapolation is the failure. In the OOD
+audit, max/min remain 81–100% accurate, whereas first-index, sum/product, and even-count degrade
+sharply. Mean native embeddings preserve lexical value identity but do not give the small event
+Transformer a reliable inductive bias for arithmetic, parity, or index relations outside the
+training range.
+
+The next intervention should add structured scalar and relational fields rather than more steps or
+more latent slots: normalized scalar values, equality/delta features, branch outcomes, and explicit
+data-dependence edges. It must retain the same paired-swap and role-removal controls. This result
+also argues against treating arbitrary text-embedding averages as a sufficient "model-native"
+runtime representation.
+
+Artifacts: `artifacts/repair_latent/role_aware_repair_seed151.json` and
+`artifacts/repair_latent/role_aware_transfer_audit_seed151.json`.
