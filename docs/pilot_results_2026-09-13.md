@@ -2,6 +2,32 @@
 
 These are directional diagnostics, not publication-level estimates.
 
+## 0. MBPP data-feasibility audit
+
+The original 974-task MBPP release was downloaded only into the project-local ignored data
+directory. Running each canonical solution against its three published assertions in an isolated
+Python subprocess gave 973/974 passing tasks. Task 123 timed out because its reference amicable-
+number implementation is unusually slow; all 374 official training tasks passed.
+
+A deterministic first-order AST mutator was then applied to the 374 training tasks, with at most
+12 candidates per task. Comparison, boolean, arithmetic, and integer-boundary mutations produced:
+
+| Quantity | Count |
+|---|---:|
+| Candidate mutants executed | 1,997 |
+| Mutants with both passing and failing tests | 508 |
+| Training tasks with at least one mixed mutant | 142 |
+| Training tasks with at least two mixed mutants | 104 |
+| Mutants failing every published test | 1,033 |
+| Equivalent/surviving mutants | 410 |
+| Timed-out mutants | 46 |
+
+This is enough data for an initial cross-program trace encoder without an LLM data-generation API.
+Splits must remain task-disjoint: only task IDs 601--974 may produce training mutants. MBPP+ is
+reserved for evaluation and contributes 39,841 extended inputs over 378 curated tasks; because it
+also contains some IDs from the original train split, only official test IDs 11--510 are eligible
+for the final MBPP+ evaluation.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.

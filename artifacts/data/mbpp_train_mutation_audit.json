@@ -1,0 +1,52 @@
+{
+  "canonical_status": {
+    "all_pass": 374
+  },
+  "created_at": "2026-09-13T10:42:58.276783+00:00",
+  "dataset": ".local/datasets/mbpp/mbpp.jsonl",
+  "elapsed_seconds": 23.974,
+  "mutation_count": 1997,
+  "mutation_kind_status": {
+    "binop": {
+      "all_fail": 275,
+      "all_pass": 43,
+      "mixed": 89,
+      "timeout": 12
+    },
+    "boolop": {
+      "all_fail": 11,
+      "all_pass": 6,
+      "mixed": 20
+    },
+    "compare": {
+      "all_fail": 107,
+      "all_pass": 62,
+      "mixed": 78,
+      "timeout": 2
+    },
+    "constant+1": {
+      "all_fail": 306,
+      "all_pass": 157,
+      "mixed": 176,
+      "timeout": 9
+    },
+    "constant-1": {
+      "all_fail": 334,
+      "all_pass": 142,
+      "mixed": 145,
+      "timeout": 23
+    }
+  },
+  "mutation_status": {
+    "all_fail": 1033,
+    "all_pass": 410,
+    "mixed": 508,
+    "timeout": 46
+  },
+  "split": "train",
+  "task_count": 374,
+  "tasks_with_failing_mutant": 260,
+  "tasks_with_mixed_mutant": 142,
+  "tasks_with_mutations": 270,
+  "tasks_with_two_mixed_mutants": 104
+}
