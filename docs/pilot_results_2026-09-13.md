@@ -173,6 +173,32 @@ is paradoxically best in the four decoded tasks. Thus external semantic heads an
 insertion are insufficient interface alignment; train a frozen-Qwen short semantic answer task
 before attempting open-ended repair transfer.
 
+### Frozen-Qwen latent interface alignment (2026-09-16)
+
+The semantic encoder was next trained through a completely frozen Qwen2.5-Coder-3B-Instruct
+decoder. The prompt disclosed no trace text and asked only whether the internal latent state was a
+coherent role/value/test binding; target tokens were `VALID` for the original trace and `INVALID`
+for each same-example corruption. This directly aligns encoder output states to the receiver's
+native token likelihood geometry. Training used 1,024 examples from 182 train tasks for 600 steps;
+evaluation used 192 examples from 46 task-disjoint validation tasks.
+
+| Held-out decoder metric | Result |
+|---|---:|
+| Four-view `VALID`/`INVALID` macro accuracy | 87.37% |
+| Correct original trace classified valid | 70.83% |
+| Role swap classified invalid | 79.17% |
+| Value swap classified invalid | 99.48% |
+| Pass/fail reassignment classified invalid | 100.00% |
+| Original score exceeds role swap | 71.88% |
+| Original score exceeds value swap | 98.96% |
+| Original score exceeds reassignment | 100.00% |
+
+This is the first real-MBPP result where the **frozen target decoder**, rather than an external
+probe head, uses the latent interface to distinguish role-aware execution evidence. The task is
+still a synthetic trace-coherence question, so it is an interface gate rather than a repair claim.
+The next transfer freezes this interface-aligned encoder while measuring whether repair likelihood
+and generated patches retain true-versus-corruption sensitivity.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.

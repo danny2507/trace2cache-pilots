@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-09-16T07:03:46.962323+00:00",
+  "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+  "seed": 307,
+  "steps": 600,
+  "train_examples": 1024,
+  "train_tasks": 182,
+  "eval_examples": 192,
+  "eval_tasks": 46,
+  "encoder_init": "checkpoints/mbpp_repair/semantic_pretrain_seed211.pt",
+  "trainable_parameters": 4734208,
+  "training_seconds": 216.42225471511483,
+  "gpu_peak_gib": 6.870577812194824,
+  "metrics": {
+    "view_accuracy": {
+      "true": 0.7083333333333334,
+      "role_swap": 0.7916666666666666,
+      "value_swap": 0.9947916666666666,
+      "trace_reassigned": 1.0
+    },
+    "macro_view_accuracy": 0.8736979166666666,
+    "true_over_corruption_accuracy": {
+      "role_swap": 0.71875,
+      "value_swap": 0.9895833333333334,
+      "trace_reassigned": 1.0
+    },
+    "mean_true_minus_corruption_score": {
+      "role_swap": 2.879308577673631,
+      "value_swap": 4.516647253904618,
+      "trace_reassigned": 4.639180549705998
+    }
+  }
+}
