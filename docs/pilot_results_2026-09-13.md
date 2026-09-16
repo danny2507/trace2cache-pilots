@@ -199,6 +199,29 @@ still a synthetic trace-coherence question, so it is an interface gate rather th
 The next transfer freezes this interface-aligned encoder while measuring whether repair likelihood
 and generated patches retain true-versus-corruption sensitivity.
 
+### Frozen interface-aligned encoder repair transfer (2026-09-16)
+
+The 600-step interface-aligned encoder was inserted unchanged into frozen Qwen-Coder repair
+(`steps=0`) and evaluated on 36 task-disjoint validation traces. It slightly changed repair behavior
+relative to the semantic-head-only encoder but did not preserve every causal control.
+
+| Condition | Mean teacher-forced patch loss | Repair@1 (4-task decode sample) |
+|---|---:|---:|
+| No runtime evidence | 0.57602 | 2/4 |
+| Text trace | 0.55831 | 3/4 |
+| True interface latent | 0.57156 | 4/4 |
+| Different-task shuffled latent | 0.57032 | 2/4 |
+| Role-swapped latent | 0.57469 | 3/4 |
+| Value-swapped latent | 0.57218 | 4/4 |
+| Pass/fail-reassigned latent | 0.57177 | 4/4 |
+
+True evidence obtains a promising `4/4` versus shuffled `2/4` decode direction, and it repairs one
+task that shuffled evidence leaves mixed. However, true patch likelihood is not better than
+shuffled, while value-swap and pass/fail-reassignment decode equally well. The sample is too small
+and the controls are inconsistent, so this does not establish role-aware repair. The next method
+must retain decoder-interface supervision jointly with patch loss, rather than allowing repair-only
+updates to discard it.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
