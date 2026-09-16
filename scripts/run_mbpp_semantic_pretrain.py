@@ -168,7 +168,12 @@ def evaluate(model, examples, table, mutation_to_id, batch_size):
         true_indices = torch.arange(0, len(views), len(VIEW_NAMES), device=device)
         true_repr = representation[true_indices]
         mutation_labels = torch.tensor(
-            [mutation_to_id[mutation_family(example.example.mutation_kind)] for example in selected],
+            [
+                mutation_to_id.get(
+                    mutation_family(example.example.mutation_kind), mutation_to_id["<other>"]
+                )
+                for example in selected
+            ],
             device=device,
         )
         mutation_prediction = model.mutation_head(true_repr).argmax(-1)
@@ -220,11 +225,10 @@ def main() -> None:
     vocabulary = sorted(
         {content for example in train_raw + eval_raw for content in example.contents}
     )
-    mutation_names = sorted({mutation_family(example.mutation_kind) for example in train_raw})
-    eval_families = {mutation_family(example.mutation_kind) for example in eval_raw}
-    missing = eval_families - set(mutation_names)
-    if missing:
-        raise RuntimeError(f"validation has unseen mutation families: {sorted(missing)}")
+    mutation_names = [
+        "<other>",
+        *sorted({mutation_family(example.mutation_kind) for example in train_raw}),
+    ]
     mutation_to_id = {name: index for index, name in enumerate(mutation_names)}
 
     model_path = resolve_local_model(args.model)
@@ -293,7 +297,12 @@ def main() -> None:
 
         true_repr = representation[:: len(VIEW_NAMES)]
         mutation_labels = torch.tensor(
-            [mutation_to_id[mutation_family(example.example.mutation_kind)] for example in selected],
+            [
+                mutation_to_id.get(
+                    mutation_family(example.example.mutation_kind), mutation_to_id["<other>"]
+                )
+                for example in selected
+            ],
             device="cuda",
         )
         mutation_loss = nn.functional.cross_entropy(
