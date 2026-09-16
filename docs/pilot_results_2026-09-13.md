@@ -222,6 +222,35 @@ and the controls are inconsistent, so this does not establish role-aware repair.
 must retain decoder-interface supervision jointly with patch loss, rather than allowing repair-only
 updates to discard it.
 
+### Joint decoder-interface and repair training (2026-09-16)
+
+The interface-aligned encoder was initialized from the frozen-Qwen `VALID`/`INVALID` checkpoint and
+then trained for 400 repair microsteps on 512 bundles from 172 MBPP train tasks. Each update retained
+one true-interface label and one randomly selected same-example corruption label with weight 0.5,
+alongside patch likelihood and patch-ranking losses. Evaluation uses 24 task-disjoint validation
+traces.
+
+| Condition | Mean teacher-forced patch loss | Repair@1 (4-task decode sample) |
+|---|---:|---:|
+| No runtime evidence | 0.52121 | 2/4 |
+| Text trace | 0.50886 | 3/4 |
+| True joint latent | 0.26133 | 3/4 |
+| Different-task shuffled latent | 0.26292 | 3/4 |
+| Role-swapped latent | 0.37344 | 3/4 |
+| Value-swapped latent | 0.60446 | 2/4 |
+| Pass/fail-reassigned latent | 0.60080 | 3/4 |
+
+This is the strongest real-code role-aware likelihood result so far: true evidence beats role swap
+by 0.11211, value swap by 0.34313, and pass/fail reassignment by 0.33947, while retaining a small
+0.00160 advantage over different-task shuffled evidence. The decoder is therefore not merely
+receiving a generic latent repair prefix; its gold-patch likelihood depends strongly on correctly
+bound role/value/test structure.
+
+However, generated Repair@1 remains insensitive except for value swap (true 3/4 versus value 2/4).
+This is a valid representation/interface result, not yet a reliable open-ended repair improvement.
+The next evaluation should increase generation to at least 24--36 tasks and use paired ambiguous
+repair targets, where runtime evidence is required to choose among distinct valid patches.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
