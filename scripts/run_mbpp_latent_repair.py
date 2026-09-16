@@ -120,6 +120,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--counterfactual-weight", type=float, default=1.0)
     parser.add_argument("--counterfactual-margin", type=float, default=0.1)
     parser.add_argument("--role-factorized-slots", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--encoder-init",
+        default=None,
+        help="Optional semantic-pretraining checkpoint containing an `encoder` state dict.",
+    )
     parser.add_argument("--min-free-gib", type=float, default=24.0)
     parser.add_argument("--cache-dir", default=".local/cache/mbpp_latent_repair")
     parser.add_argument(
@@ -737,6 +742,13 @@ def main() -> None:
         max_tests=2,
         slot_roles=ROLE_FACTORIZED_SLOTS if args.role_factorized_slots else None,
     ).to(model.device)
+    if args.encoder_init:
+        initialization = torch.load(args.encoder_init, map_location="cpu", weights_only=True)
+        encoder.load_state_dict(initialization["encoder"], strict=True)
+        print(
+            json.dumps({"event": "loaded_encoder_init", "path": args.encoder_init}),
+            flush=True,
+        )
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     rng = random.Random(args.seed)
     started = time.perf_counter()
