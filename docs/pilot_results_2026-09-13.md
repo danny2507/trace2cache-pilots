@@ -88,6 +88,40 @@ shortcut, and this run still fails the instance-specific communication gate. The
 needs direct semantic supervision (for example trace-fact reconstruction/matching) or same-prompt
 counterfactual targets; simply increasing the hinge weight is not well motivated by this result.
 
+### Role-factorized hard-counterfactual repair pilot (2026-09-16)
+
+The next pilot replaced eight anonymous latent slots with fixed evidence budgets: failing return,
+causal branch, last state update, local state context, passing reference behavior, pass/fail delta,
+control-to-data link, and one integration slot. It also trained against three same-example hard
+counterfactuals, all of which preserve buggy code, target patch, event count, and event vocabulary:
+`role_swap` exchanges branch/state identities, `value_swap` moves event text/value bundles between
+dynamic positions, and `trace_reassigned` assigns dynamic events to the opposite pass/fail test.
+
+The frozen receiver was again Qwen2.5-Coder-3B-Instruct. The 4.73M-parameter encoder trained for
+400 microsteps on 512 bundles from 172 official MBPP train tasks (262 fuzz-derived) and evaluated
+on 24 task-disjoint validation tasks. Peak GPU allocation was 19.55 GiB.
+
+| Validation condition | Mean teacher-forced patch loss | Repair@1 (4-task decode sample) |
+|---|---:|---:|
+| No runtime evidence | 0.52121 | 2/4 |
+| Text trace | 0.50886 | 3/4 |
+| True latent trace | 0.26016 | 2/4 |
+| Different-task shuffled latent | 0.26246 | 2/4 |
+| Role-swapped latent | 0.26244 | 2/4 |
+| Value-swapped latent | 0.26026 | 2/4 |
+| Pass/fail-reassigned latent | 0.26006 | 2/4 |
+
+The role-swap loss gap (0.00228) and shuffled gap (0.00230) are directional but tiny; value swap
+is effectively tied, and pass/fail reassignment is marginally *better* than true evidence. More
+decisively, all four true-versus-role-swap generated responses were exactly identical. Therefore
+the role-factorized architecture and patch-ranking loss do not by themselves make causal roles
+necessary for repair. The result rejects this version of the method rather than validating a
+role-aware real-code channel.
+
+The next gate should be an auxiliary semantic task with direct labels (branch taken, last
+definition, expected/observed return, and pass/fail delta) followed by repair, or a benchmark whose
+same visible prompt admits different gold patches selected only by hidden behavioral evidence.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
