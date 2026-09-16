@@ -150,6 +150,29 @@ state for repair: the validity and corruption heads are trainable. The next expe
 the repair encoder from this checkpoint and retains the semantic losses as an anti-collapse
 regularizer.
 
+### Frozen semantic encoder / Qwen-Coder interface check (2026-09-16)
+
+The semantic-pretrained encoder was inserted unchanged into frozen Qwen2.5-Coder-3B-Instruct and
+evaluated on 36 task-disjoint MBPP validation examples (`steps=0`). This isolates whether the
+receiver is sensitive to the learned continuous states before patch fine-tuning can overwrite them.
+
+| Condition | Mean teacher-forced patch loss | Repair@1 (4-task decode sample) |
+|---|---:|---:|
+| No runtime evidence | 0.57602 | 2/4 |
+| Text trace | 0.55831 | 3/4 |
+| True semantic latent | 0.57566 | 3/4 |
+| Different-task shuffled latent | 0.57648 | 3/4 |
+| Role-swapped latent | 0.57757 | 3/4 |
+| Value-swapped latent | 0.58310 | 4/4 |
+| Pass/fail-reassigned latent | 0.57882 | 3/4 |
+
+The true latent is better than all three hard corruptions in mean patch likelihood, especially the
+value swap (gap 0.00745). This is weak but real receiver sensitivity to the learned representation.
+It does not pass the repair gate: generation remains largely unchanged and the value-swap control
+is paradoxically best in the four decoded tasks. Thus external semantic heads and native soft-state
+insertion are insufficient interface alignment; train a frozen-Qwen short semantic answer task
+before attempting open-ended repair transfer.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.
