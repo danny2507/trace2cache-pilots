@@ -122,6 +122,34 @@ The next gate should be an auxiliary semantic task with direct labels (branch ta
 definition, expected/observed return, and pass/fail delta) followed by repair, or a benchmark whose
 same visible prompt admits different gold patches selected only by hidden behavioral evidence.
 
+### Semantic trace pretraining gate (2026-09-16)
+
+Rather than ranking a long gold patch directly, a role-factorized encoder was trained on explicit
+same-example trace controls. A frozen Qwen2.5-Coder-3B input embedding table supplied native event
+vectors; Qwen itself was unloaded before adapter training. Each batch contained a valid execution
+and three views with the same code, event vocabulary, length, and target: `role_swap`, `value_swap`,
+and `trace_reassigned`. The objective combined true-versus-corrupt validity ranking, four-way view
+classification, mutation-family prediction, and per-event role reconstruction.
+
+The encoder trained for 1,500 steps over 1,024 examples from official MBPP train tasks and was
+evaluated on 192 task-disjoint validation traces. It has 4.75M encoder parameters; the peak
+allocation was below 0.3 GiB after the one-time frozen embedding-table construction.
+
+| Held-out metric | Result |
+|---|---:|
+| True validity exceeds role swap | 78.65% |
+| True validity exceeds value swap | 99.48% |
+| True validity exceeds pass/fail reassignment | 100.00% |
+| Four-way true/corruption macro accuracy | 91.28% |
+| Event-role reconstruction accuracy | 85.71% |
+| Mutation-family accuracy | 32.29% |
+
+This is the first task-disjoint real-MBPP evidence that the encoder can preserve the role/value/test
+structure of an execution trace. It is not yet evidence that a frozen decoder uses this semantic
+state for repair: the validity and corruption heads are trainable. The next experiment initializes
+the repair encoder from this checkpoint and retains the semantic losses as an anti-collapse
+regularizer.
+
 ## 1. Synthetic repair harness
 
 Model: frozen `Qwen2.5-Coder-3B-Instruct`, BF16, greedy decoding.

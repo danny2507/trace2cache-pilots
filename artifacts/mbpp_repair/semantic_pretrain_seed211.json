@@ -1,0 +1,46 @@
+{
+  "timestamp": "2026-09-16T06:48:18.702266+00:00",
+  "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+  "seed": 211,
+  "steps": 1500,
+  "train_examples": 1024,
+  "train_tasks": 182,
+  "eval_examples": 192,
+  "eval_tasks": 46,
+  "mutation_families": [
+    "<other>",
+    "augassign",
+    "binop",
+    "boolean",
+    "boolop",
+    "compare",
+    "constant",
+    "delete_assignment",
+    "negate_condition",
+    "remove_not"
+  ],
+  "trainable_parameters": 4779287,
+  "training_seconds": 48.437127094715834,
+  "gpu_peak_gib": 6.686777114868164,
+  "metrics": {
+    "pairwise_validity_accuracy": {
+      "role_swap": 0.7864583333333334,
+      "value_swap": 0.9947916666666666,
+      "trace_reassigned": 1.0
+    },
+    "mean_validity_score_gap": {
+      "role_swap": 7.818277990445495,
+      "value_swap": 20.712942122171324,
+      "trace_reassigned": 15.450946345925331
+    },
+    "corruption_accuracy": {
+      "true": 0.7864583333333334,
+      "role_swap": 0.9427083333333334,
+      "value_swap": 0.921875,
+      "trace_reassigned": 1.0
+    },
+    "corruption_macro_accuracy": 0.9127604166666667,
+    "mutation_accuracy": 0.3229166666666667,
+    "event_role_accuracy": 0.8570917546056162
+  }
+}
