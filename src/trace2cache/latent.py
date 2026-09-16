@@ -196,6 +196,7 @@ class RoleAwareEventEncoder(nn.Module):
         max_tests: int = 8,
         num_layers: int = 2,
         num_heads: int = 4,
+        slot_roles: tuple[tuple[int, ...], ...] | None = None,
     ) -> None:
         super().__init__()
         if output_anchor.ndim != 2 or output_anchor.shape[1] != model_width:
@@ -225,6 +226,17 @@ class RoleAwareEventEncoder(nn.Module):
         self.resampler = nn.MultiheadAttention(
             hidden_width, num_heads=num_heads, dropout=0.0, batch_first=True
         )
+        self.num_heads = num_heads
+        if slot_roles is None:
+            slot_roles = tuple(tuple(range(num_roles)) for _ in range(output_anchor.shape[0]))
+        if len(slot_roles) != output_anchor.shape[0]:
+            raise ValueError("slot_roles must specify one allowed-role set per latent slot")
+        allowed = torch.zeros(output_anchor.shape[0], num_roles, dtype=torch.bool)
+        for slot, roles in enumerate(slot_roles):
+            if not roles or any(role < 0 or role >= num_roles for role in roles):
+                raise ValueError("slot_roles contains an invalid or empty role set")
+            allowed[slot, list(roles)] = True
+        self.register_buffer("slot_role_mask", allowed)
         self.output = nn.Sequential(
             nn.LayerNorm(hidden_width),
             nn.Linear(hidden_width, hidden_width * 4),
@@ -275,8 +287,16 @@ class RoleAwareEventEncoder(nn.Module):
         padding_mask = ~event_mask.bool()
         events = self.event_encoder(events, src_key_padding_mask=padding_mask)
         queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
+        # Each latent slot has a declared evidence budget.  This makes a branch
+        # slot unable to silently attend to arbitrary state events, while the
+        # test role can be included as a stable fallback for sparse traces.
+        allowed = self.slot_role_mask[:, role_ids].permute(1, 0, 2)
+        blocked = padding_mask.unsqueeze(1) | ~allowed
+        attention_mask = blocked.unsqueeze(1).expand(
+            -1, self.num_heads, -1, -1
+        ).reshape(batch_size * self.num_heads, self.num_latents, event_count)
         latents, _ = self.resampler(
-            queries, events, events, key_padding_mask=padding_mask, need_weights=False
+            queries, events, events, attn_mask=attention_mask, need_weights=False
         )
         return self.output_anchor.unsqueeze(0) + self.output(latents)
 

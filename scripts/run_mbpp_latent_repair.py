@@ -33,6 +33,18 @@ from trace2cache.mbpp import (
 )
 
 TEST, CALL, BRANCH, STATE, LINE, RETURN, PASS, FAIL = range(8)
+# Fixed semantic jobs for the eight latent states. TEST is retained as a
+# fallback in sparse traces; the remaining roles make each state specialize.
+ROLE_FACTORIZED_SLOTS = (
+    (TEST, FAIL, RETURN),       # failed assertion / observed return
+    (TEST, BRANCH, FAIL),       # causal control decision
+    (TEST, STATE, RETURN),      # last state update
+    (TEST, LINE, STATE),        # source-local state context
+    (TEST, PASS, RETURN),       # passing reference behavior
+    (TEST, PASS, FAIL, STATE),  # pass/fail behavioral delta
+    (TEST, BRANCH, STATE),      # control-to-data link
+    tuple(range(8)),            # integration slot
+)
 SAFE_IMPORTS = {
     "array",
     "bisect",
@@ -70,6 +82,17 @@ class NumericExample:
     content_ids: tuple[int, ...]
 
 
+@dataclass(frozen=True)
+class NumericEvidence:
+    """One trace view, possibly a causal counterfactual of an example."""
+
+    example: RepairExample
+    content_ids: tuple[int, ...]
+    roles: tuple[int, ...]
+    test_ids: tuple[int, ...]
+    name: str = "true"
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="Qwen/Qwen2.5-Coder-3B-Instruct")
@@ -94,6 +117,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int, default=173)
     parser.add_argument("--contrastive-weight", type=float, default=1.0)
     parser.add_argument("--contrastive-margin", type=float, default=0.1)
+    parser.add_argument("--counterfactual-weight", type=float, default=1.0)
+    parser.add_argument("--counterfactual-margin", type=float, default=0.1)
+    parser.add_argument("--role-factorized-slots", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--min-free-gib", type=float, default=24.0)
     parser.add_argument("--cache-dir", default=".local/cache/mbpp_latent_repair")
     parser.add_argument(
@@ -418,6 +444,63 @@ def _different_task_example(examples: list[NumericExample], index: int) -> Numer
     raise ValueError("shuffled control requires at least two distinct task IDs")
 
 
+def _as_evidence(example: NumericExample) -> NumericEvidence:
+    return NumericEvidence(
+        example=example.example,
+        content_ids=example.content_ids,
+        roles=example.example.roles,
+        test_ids=example.example.test_ids,
+    )
+
+
+def _counterfactual_evidence(example: NumericExample, kind: str) -> NumericEvidence:
+    """Corrupt one causal field while keeping code, target, and event count fixed.
+
+    These are deliberately much harder negatives than a different-task trace:
+    every view shares the buggy source, target patch, event vocabulary, and
+    trace length.  Only its typed runtime interpretation changes.
+    """
+    roles = list(example.example.roles)
+    content_ids = list(example.content_ids)
+    test_ids = list(example.example.test_ids)
+    dynamic = [
+        index
+        for index, role in enumerate(roles)
+        if role not in {TEST, PASS, FAIL}
+    ]
+    if kind == "role_swap":
+        # Exchange control-flow and state-update identities, preserving all
+        # text/value tokens and temporal positions.
+        for index, role in enumerate(roles):
+            if role == BRANCH:
+                roles[index] = STATE
+            elif role == STATE:
+                roles[index] = BRANCH
+    elif kind == "value_swap":
+        # Move event text/value bundles between dynamic locations but retain
+        # their source-role labels and test membership.
+        if len(dynamic) >= 2:
+            first, last = dynamic[0], dynamic[-1]
+            content_ids[first], content_ids[last] = content_ids[last], content_ids[first]
+    elif kind == "trace_reassigned":
+        # Attribute dynamic events to the opposite pass/fail execution while
+        # keeping test assertions and outcome tokens untouched.
+        for index in dynamic:
+            test_ids[index] = 1 - test_ids[index]
+    else:
+        raise ValueError(f"unknown counterfactual kind: {kind}")
+    return NumericEvidence(
+        example=example.example,
+        content_ids=tuple(content_ids),
+        roles=tuple(roles),
+        test_ids=tuple(test_ids),
+        name=kind,
+    )
+
+
+COUNTERFACTUAL_KINDS = ("role_swap", "value_swap", "trace_reassigned")
+
+
 def _render(tokenizer, example: RepairExample, evidence: str) -> str:
     user = f"""Repair this Python program using the failing test and runtime evidence.
 
@@ -464,8 +547,8 @@ def _native_content_table(model, tokenizer, vocabulary: list[str], batch_size: i
 
 def _batch_encoder_inputs(example, table, device):
     content_ids = torch.tensor(example.content_ids, device=device).unsqueeze(0)
-    roles = torch.tensor(example.example.roles, device=device).unsqueeze(0)
-    tests = torch.tensor(example.example.test_ids, device=device).unsqueeze(0)
+    roles = torch.tensor(example.roles, device=device).unsqueeze(0)
+    tests = torch.tensor(example.test_ids, device=device).unsqueeze(0)
     mask = torch.ones_like(roles, dtype=torch.bool)
     return table[content_ids], roles, tests, mask
 
@@ -487,8 +570,13 @@ def _repair_loss(model, tokenizer, encoder, prompt_example, evidence_example, ta
 
 @torch.no_grad()
 def _condition_loss(model, tokenizer, encoder, example, table, condition, shuffled=None):
-    if condition in {"true_latent", "shuffled_latent"}:
-        evidence = example if condition == "true_latent" else shuffled
+    if condition in {"true_latent", "shuffled_latent", *COUNTERFACTUAL_KINDS}:
+        if condition == "true_latent":
+            evidence = _as_evidence(example)
+        elif condition == "shuffled_latent":
+            evidence = _as_evidence(shuffled)
+        else:
+            evidence = _counterfactual_evidence(example, condition)
         contents, roles, tests, mask = _batch_encoder_inputs(evidence, table, model.device)
         latent = encoder(contents, roles, tests, mask).to(model.get_input_embeddings().weight.dtype)
         prompt = _render(tokenizer, example.example, MARKER)
@@ -531,8 +619,13 @@ def _extract_source(response: str) -> str:
 @torch.inference_mode()
 def _generate(model, tokenizer, encoder, numeric, table, condition, shuffled, max_new_tokens):
     example = numeric.example
-    if condition in {"true_latent", "shuffled_latent"}:
-        evidence = numeric if condition == "true_latent" else shuffled
+    if condition in {"true_latent", "shuffled_latent", *COUNTERFACTUAL_KINDS}:
+        if condition == "true_latent":
+            evidence = _as_evidence(numeric)
+        elif condition == "shuffled_latent":
+            evidence = _as_evidence(shuffled)
+        else:
+            evidence = _counterfactual_evidence(numeric, condition)
         contents, roles, tests, mask = _batch_encoder_inputs(evidence, table, model.device)
         latent = encoder(contents, roles, tests, mask)
         rendered = _render(tokenizer, example, MARKER)
@@ -642,6 +735,7 @@ def main() -> None:
         num_roles=8,
         max_events=args.max_events_per_test * 2 + 4,
         max_tests=2,
+        slot_roles=ROLE_FACTORIZED_SLOTS if args.role_factorized_slots else None,
     ).to(model.device)
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     rng = random.Random(args.seed)
@@ -651,10 +745,32 @@ def main() -> None:
         example_index = rng.randrange(len(train))
         example = train[example_index]
         shuffled = _different_task_example(train, example_index)
-        true_loss = _repair_loss(model, tokenizer, encoder, example, example, table)
-        shuffled_loss = _repair_loss(model, tokenizer, encoder, example, shuffled, table)
+        true_evidence = _as_evidence(example)
+        true_loss = _repair_loss(model, tokenizer, encoder, example, true_evidence, table)
+        shuffled_loss = _repair_loss(
+            model, tokenizer, encoder, example, _as_evidence(shuffled), table
+        )
         ranking_loss = nn.functional.relu(args.contrastive_margin + true_loss - shuffled_loss)
-        loss = true_loss + args.contrastive_weight * ranking_loss
+        counterfactual_losses = {
+            kind: _repair_loss(
+                model,
+                tokenizer,
+                encoder,
+                example,
+                _counterfactual_evidence(example, kind),
+                table,
+            )
+            for kind in COUNTERFACTUAL_KINDS
+        }
+        counterfactual_ranking = sum(
+            nn.functional.relu(args.counterfactual_margin + true_loss - negative_loss)
+            for negative_loss in counterfactual_losses.values()
+        ) / len(counterfactual_losses)
+        loss = (
+            true_loss
+            + args.contrastive_weight * ranking_loss
+            + args.counterfactual_weight * counterfactual_ranking
+        )
         (loss / args.gradient_accumulation).backward()
         if step % args.gradient_accumulation == 0:
             nn.utils.clip_grad_norm_(encoder.parameters(), 1.0)
@@ -669,6 +785,11 @@ def main() -> None:
                         "true_patch_loss": round(true_loss.item(), 5),
                         "shuffled_patch_loss": round(shuffled_loss.item(), 5),
                         "ranking_loss": round(ranking_loss.item(), 5),
+                        "counterfactual_patch_loss": {
+                            kind: round(value.item(), 5)
+                            for kind, value in counterfactual_losses.items()
+                        },
+                        "counterfactual_ranking_loss": round(counterfactual_ranking.item(), 5),
                         "gpu_allocated_gib": round(torch.cuda.memory_allocated() / 2**30, 2),
                         "gpu_peak_gib": round(torch.cuda.max_memory_allocated() / 2**30, 2),
                     }
@@ -677,7 +798,13 @@ def main() -> None:
             )
 
     encoder.eval()
-    conditions = ("no_evidence", "trace_text", "true_latent", "shuffled_latent")
+    conditions = (
+        "no_evidence",
+        "trace_text",
+        "true_latent",
+        "shuffled_latent",
+        *COUNTERFACTUAL_KINDS,
+    )
     losses = {condition: [] for condition in conditions}
     for index, example in enumerate(evaluation):
         shuffled = _different_task_example(evaluation, index)
@@ -732,6 +859,9 @@ def main() -> None:
         "latent_slots": args.latent_slots,
         "contrastive_weight": args.contrastive_weight,
         "contrastive_margin": args.contrastive_margin,
+        "counterfactual_weight": args.counterfactual_weight,
+        "counterfactual_margin": args.counterfactual_margin,
+        "role_factorized_slots": args.role_factorized_slots,
         "trainable_parameters": trainable_parameter_count(encoder),
         "training_seconds": time.perf_counter() - started,
         "teacher_forced_patch_loss": mean_losses,
