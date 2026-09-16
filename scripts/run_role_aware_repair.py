@@ -85,6 +85,46 @@ def expected_for(item: AmbiguousRepairCase, args: list[object]) -> object:
         return sum(value % 2 == 0 for value in values)
     if case_id == "measure_positive":
         return sum(value > 0 for value in values)
+    if case_id == "arrange_ascending":
+        return sorted(values)
+    if case_id == "arrange_descending":
+        return sorted(values, reverse=True)
+    if case_id == "choose_shortest":
+        return min(values, key=len)
+    if case_id == "choose_longest":
+        return max(values, key=len)
+    if case_id == "truth_any_positive":
+        return any(value > 0 for value in values)
+    if case_id == "truth_all_positive":
+        return all(value > 0 for value in values)
+    if case_id == "unique_first":
+        result = []
+        for value in values:
+            if value not in result:
+                result.append(value)
+        return result
+    if case_id == "unique_last":
+        result = []
+        for index, value in enumerate(values):
+            if value not in values[index + 1 :]:
+                result.append(value)
+        return result
+    if case_id == "median_lower":
+        return sorted(values)[(len(values) - 1) // 2]
+    if case_id == "median_upper":
+        return sorted(values)[len(values) // 2]
+    if case_id == "rotate_left":
+        return values[1:] + values[:1]
+    if case_id == "rotate_right":
+        return values[-1:] + values[:-1]
+    if case_id == "transform_absolute":
+        return sum(abs(value) for value in values)
+    if case_id == "transform_square":
+        return sum(value * value for value in values)
+    if case_id == "filter_even":
+        return [value for value in values if value % 2 == 0]
+    if case_id == "filter_positive":
+        return [value for value in values if value > 0]
     raise ValueError(case_id)
 
 
@@ -125,6 +165,46 @@ def sample_args(
             values = [rng.randint(low, high) for _ in range(length)]
             even = sum(value % 2 == 0 for value in values)
             positive = sum(value > 0 for value in values)
+            if even != positive:
+                return [values]
+        elif pair == "arrange":
+            length = rng.randint(5, 8) if heldout_values else rng.randint(3, 5)
+            low, high = (-15, 15) if heldout_values else (-5, 5)
+            values = [rng.randint(low, high) for _ in range(length)]
+            if min(values) != max(values):
+                return [values]
+        elif pair == "choose":
+            lengths = rng.sample(range(1, 10 if heldout_values else 6), 3)
+            return [["x" * length for length in lengths]]
+        elif pair == "truth":
+            length = rng.randint(5, 8) if heldout_values else rng.randint(3, 5)
+            values = [rng.randint(-5, 5) for _ in range(length)]
+            if any(value > 0 for value in values) and not all(value > 0 for value in values):
+                return [values]
+        elif pair == "unique":
+            length = rng.randint(6, 9) if heldout_values else rng.randint(4, 6)
+            values = [rng.randint(0, 6 if heldout_values else 3) for _ in range(length)]
+            if len(set(values)) < len(values):
+                return [values]
+        elif pair == "median":
+            length = rng.choice((6, 8) if heldout_values else (4, 6))
+            values = rng.sample(range(-20 if heldout_values else -8, 21 if heldout_values else 9), length)
+            return [values]
+        elif pair == "rotate":
+            length = rng.randint(5, 8) if heldout_values else rng.randint(3, 5)
+            return [[rng.randint(-9, 9) for _ in range(length)]]
+        elif pair == "transform":
+            length = rng.randint(5, 8) if heldout_values else rng.randint(3, 5)
+            values = [rng.randint(-8, 8) for _ in range(length)]
+            absolute = sum(abs(value) for value in values)
+            squared = sum(value * value for value in values)
+            if absolute != squared:
+                return [values]
+        elif pair == "filter":
+            length = rng.randint(5, 8) if heldout_values else rng.randint(3, 5)
+            values = [rng.randint(-8, 8) for _ in range(length)]
+            even = [value for value in values if value % 2 == 0]
+            positive = [value for value in values if value > 0]
             if even != positive:
                 return [values]
 
