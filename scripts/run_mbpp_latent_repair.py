@@ -119,6 +119,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--contrastive-margin", type=float, default=0.1)
     parser.add_argument("--counterfactual-weight", type=float, default=1.0)
     parser.add_argument("--counterfactual-margin", type=float, default=0.1)
+    parser.add_argument(
+        "--interface-weight",
+        type=float,
+        default=0.0,
+        help="Keep frozen-Qwen VALID/INVALID interface supervision during repair training.",
+    )
     parser.add_argument("--role-factorized-slots", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument(
         "--encoder-init",
@@ -531,6 +537,23 @@ Return only the complete corrected Python source in one code block.
     )
 
 
+def _interface_render(tokenizer) -> str:
+    user = f"""A runtime execution has been supplied through the internal evidence channel.
+
+Runtime evidence: {MARKER}
+
+Is the evidence a coherent execution trace, with correctly bound event roles, values, and pass/fail test identity?
+Answer exactly VALID or INVALID."""
+    return tokenizer.apply_chat_template(
+        [
+            {"role": "system", "content": "You are a precise runtime-evidence verifier."},
+            {"role": "user", "content": user},
+        ],
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+
 @torch.no_grad()
 def _native_content_table(model, tokenizer, vocabulary: list[str], batch_size: int = 128):
     embedding = model.get_input_embeddings()
@@ -568,6 +591,23 @@ def _repair_loss(model, tokenizer, encoder, prompt_example, evidence_example, ta
     inputs = torch.cat((prompt_embeds, teacher), dim=1)
     attention = torch.ones(inputs.shape[:2], dtype=torch.long, device=model.device)
     logits = model(inputs_embeds=inputs, attention_mask=attention, use_cache=False).logits
+    start = prompt_embeds.shape[1] - 1
+    predicted = logits[:, start : start + targets.shape[1]].float()
+    return nn.functional.cross_entropy(predicted.flatten(0, 1), targets.flatten())
+
+
+def _interface_loss(model, tokenizer, encoder, rendered, evidence_example, table, label: str):
+    contents, roles, tests, mask = _batch_encoder_inputs(evidence_example, table, model.device)
+    latent = encoder(contents, roles, tests, mask).to(model.get_input_embeddings().weight.dtype)
+    prompt_embeds = splice(model, tokenizer, rendered, latent)
+    label_tokens = tokenizer(
+        " " + label, add_special_tokens=False, return_tensors="pt"
+    )["input_ids"].to(model.device)
+    eos = torch.tensor([[tokenizer.eos_token_id]], device=model.device)
+    targets = torch.cat((label_tokens, eos), dim=1)
+    teacher = model.get_input_embeddings()(targets[:, :-1])
+    inputs = torch.cat((prompt_embeds, teacher), dim=1)
+    logits = model(inputs_embeds=inputs, use_cache=False).logits
     start = prompt_embeds.shape[1] - 1
     predicted = logits[:, start : start + targets.shape[1]].float()
     return nn.functional.cross_entropy(predicted.flatten(0, 1), targets.flatten())
@@ -751,6 +791,7 @@ def main() -> None:
         )
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     rng = random.Random(args.seed)
+    interface_rendered = _interface_render(tokenizer) if args.interface_weight else None
     started = time.perf_counter()
     optimizer.zero_grad(set_to_none=True)
     for step in range(1, args.steps + 1):
@@ -778,10 +819,35 @@ def main() -> None:
             nn.functional.relu(args.counterfactual_margin + true_loss - negative_loss)
             for negative_loss in counterfactual_losses.values()
         ) / len(counterfactual_losses)
+        if interface_rendered is not None:
+            interface_kind = COUNTERFACTUAL_KINDS[rng.randrange(len(COUNTERFACTUAL_KINDS))]
+            interface_true = _interface_loss(
+                model,
+                tokenizer,
+                encoder,
+                interface_rendered,
+                true_evidence,
+                table,
+                "VALID",
+            )
+            interface_negative = _interface_loss(
+                model,
+                tokenizer,
+                encoder,
+                interface_rendered,
+                _counterfactual_evidence(example, interface_kind),
+                table,
+                "INVALID",
+            )
+            interface_loss = (interface_true + interface_negative) / 2
+        else:
+            interface_kind = None
+            interface_loss = torch.zeros((), device=model.device)
         loss = (
             true_loss
             + args.contrastive_weight * ranking_loss
             + args.counterfactual_weight * counterfactual_ranking
+            + args.interface_weight * interface_loss
         )
         (loss / args.gradient_accumulation).backward()
         if step % args.gradient_accumulation == 0:
@@ -802,6 +868,8 @@ def main() -> None:
                             for kind, value in counterfactual_losses.items()
                         },
                         "counterfactual_ranking_loss": round(counterfactual_ranking.item(), 5),
+                        "interface_kind": interface_kind,
+                        "interface_loss": round(interface_loss.item(), 5),
                         "gpu_allocated_gib": round(torch.cuda.memory_allocated() / 2**30, 2),
                         "gpu_peak_gib": round(torch.cuda.max_memory_allocated() / 2**30, 2),
                     }
@@ -873,6 +941,7 @@ def main() -> None:
         "contrastive_margin": args.contrastive_margin,
         "counterfactual_weight": args.counterfactual_weight,
         "counterfactual_margin": args.counterfactual_margin,
+        "interface_weight": args.interface_weight,
         "role_factorized_slots": args.role_factorized_slots,
         "trainable_parameters": trainable_parameter_count(encoder),
         "training_seconds": time.perf_counter() - started,
