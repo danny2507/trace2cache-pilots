@@ -24,6 +24,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import read_jsonl
+from trace2cache.training_sampling import sample_paired_family
 from trace2cache.receiver_training import vector_loss, oracle_identity_loss
 from trace2cache.receiver_training import paired_patch_loss, splice_prompt
 
@@ -40,6 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--codebook-checkpoint", default="checkpoints/repair_latent/expanded_codebook_seed313.pt")
     parser.add_argument("--feature-method", choices=("mean0", "context2"), default="context2")
     parser.add_argument("--objective", choices=("vector", "vector_identity", "decoder"), default="vector")
+    parser.add_argument("--sampling", choices=("iid_views", "paired_family"), default="iid_views", help="paired_family makes vector and decoder forks replay identical matched pairs")
     parser.add_argument("--identity-weight", type=float, default=0.1)
     parser.add_argument("--identity-temperature", type=float, default=0.1)
     parser.add_argument("--feature-cache", default=".local/cache/paired_runtime_v2/features")
@@ -48,6 +50,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--gradient-accumulation", type=int, default=8, help="matched pairs per decoder update; processed in one same-family batch")
     parser.add_argument("--learning-rate", type=float, default=1e-3)
+    parser.add_argument("--decoder-margin", type=float, default=0.1)
+    parser.add_argument("--decoder-vector-weight", type=float, default=0.1)
     parser.add_argument("--init-checkpoint", help="v2 encoder checkpoint used to fork a post-warmup objective")
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
@@ -135,8 +139,13 @@ def main() -> None:
         payload = torch.load(args.init_checkpoint, map_location=receiver.device, weights_only=False)
         missing, unexpected = encoder.load_state_dict(payload["encoder"], strict=False)
         if missing or unexpected: raise RuntimeError(f"encoder warm-start mismatch: missing={missing}, unexpected={unexpected}")
+    if args.objective == "decoder" and args.sampling != "paired_family":
+        raise SystemExit("decoder objective requires --sampling paired_family")
+    if args.sampling == "paired_family" and args.batch_size != 2 * args.gradient_accumulation:
+        raise SystemExit("paired_family requires batch-size == 2 * gradient-accumulation")
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     order_rng = random.Random(args.seed + 17); history = []; started = time.perf_counter()
+    sampling_hasher = hashlib.sha256()
     rendered_prompts = []
     targets = []
     if args.objective == "decoder":
@@ -148,9 +157,17 @@ def main() -> None:
     for update in range(1, args.steps + 1):
         optimizer.zero_grad(set_to_none=True)
         if args.objective in ("vector", "vector_identity"):
-            selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
-            batch = collate_views([views[index] for index in selected], feature_map, receiver.device)
-            target = oracle[labels[selected].to(receiver.device)]
+            if args.sampling == "paired_family":
+                chosen = sample_paired_family(records, order_rng, args.gradient_accumulation)
+                selected_views = [view for record in chosen for view in (record.evidence_a, record.evidence_b)]
+                selected_labels = torch.tensor([label for record in chosen for label in (record.label_a, record.label_b)], dtype=torch.long)
+                sampling_hasher.update(f"{update}:".encode())
+                sampling_hasher.update(",".join(record.pair_uid for record in chosen).encode()); sampling_hasher.update(b"\n")
+            else:
+                selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
+                selected_views = [views[index] for index in selected]; selected_labels = labels[selected]
+            batch = collate_views(selected_views, feature_map, receiver.device)
+            target = oracle[selected_labels.to(receiver.device)]
             latent = encoder(**batch)
             loss = vector_loss(latent, target)
             diagnostics = {"vector": float(loss.detach())}
@@ -165,9 +182,9 @@ def main() -> None:
             # A and B remain separate, and each has positive + paired-negative candidates.
             component_sums = {"nll": 0.0, "rank": 0.0, "vector": 0.0, "margin": 0.0}
             total_loss = 0.0
-            family = order_rng.choice(tuple(sorted({record.family_id for record in records})))
-            candidates = [record for record in records if record.family_id == family]
-            chosen = [candidates[order_rng.randrange(len(candidates))] for _ in range(args.gradient_accumulation)]
+            chosen = sample_paired_family(records, order_rng, args.gradient_accumulation)
+            sampling_hasher.update(f"{update}:".encode())
+            sampling_hasher.update(",".join(record.pair_uid for record in chosen).encode()); sampling_hasher.update(b"\n")
             for side in ("a", "b"):
                 side_views = [getattr(record, f"evidence_{side}") for record in chosen]
                 label = getattr(chosen[0], f"label_{side}"); other_label = getattr(chosen[0], f"label_{'b' if side == 'a' else 'a'}")
@@ -178,7 +195,7 @@ def main() -> None:
                 positive = targets[label].expand(len(chosen), -1)
                 negative = targets[other_label].expand(len(chosen), -1)
                 code = oracle[label].unsqueeze(0).expand(len(chosen), -1, -1)
-                components = paired_patch_loss(receiver, prompt, positive, negative, code, latent)
+                components = paired_patch_loss(receiver, prompt, positive, negative, code, latent, margin=args.decoder_margin, vector_weight=args.decoder_vector_weight)
                 (components["loss"] / 2).backward()
                 total_loss += float(components["loss"].detach()) / 2
                 for name in component_sums: component_sums[name] += float(components[name].detach()) / 2
@@ -198,9 +215,10 @@ def main() -> None:
     data_hashes = {"train": hashlib.sha256(Path(args.dataset).read_bytes()).hexdigest()}
     if args.validation_dataset:
         data_hashes["validation"] = hashlib.sha256(Path(args.validation_dataset).read_bytes()).hexdigest()
-    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "dataset_sha256": data_hashes, "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
+    sampling_digest = sampling_hasher.hexdigest() if args.sampling == "paired_family" else None
+    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
     checkpoint = Path(args.checkpoint); checkpoint.parent.mkdir(parents=True, exist_ok=True); temporary = checkpoint.with_suffix(".tmp"); torch.save(payload, temporary); temporary.replace(checkpoint)
-    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "dataset_sha256": data_hashes, "views": len(views), "validation_views": len(validation_views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
+    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "views": len(views), "validation_views": len(validation_views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
     output = Path(args.output); output.parent.mkdir(parents=True, exist_ok=True); output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps({"final": final, "output": str(output)}, sort_keys=True))
 
