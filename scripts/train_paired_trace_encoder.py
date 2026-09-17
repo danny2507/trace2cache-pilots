@@ -24,6 +24,7 @@ from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import read_jsonl
 from trace2cache.receiver_training import vector_loss
+from trace2cache.receiver_training import paired_patch_loss, splice_prompt
 
 sys.path.insert(0, str(Path(__file__).parent))
 from run_pilot1 import resolve_local_model
@@ -36,10 +37,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset", default=".local/datasets/paired_runtime_v2_smoke/train.jsonl")
     parser.add_argument("--codebook-checkpoint", default="checkpoints/repair_latent/expanded_codebook_seed313.pt")
     parser.add_argument("--feature-method", choices=("mean0", "context2"), default="context2")
+    parser.add_argument("--objective", choices=("vector", "decoder"), default="vector")
     parser.add_argument("--feature-cache", default=".local/cache/paired_runtime_v2/features")
     parser.add_argument("--feature-batch-size", type=int, default=16)
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--gradient-accumulation", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
@@ -104,16 +107,44 @@ def main() -> None:
     encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=args.hidden_width, max_events=args.max_events, max_tests=args.max_tests).to("cuda")
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     order_rng = random.Random(args.seed + 17); history = []; started = time.perf_counter()
+    rendered_prompts = []
+    targets = []
+    if args.objective == "decoder":
+        from run_repair_codebook import MARKER, render, target_ids
+        for item in get_ambiguous_cases():
+            rendered_prompts.append(render(tokenizer, item.case, MARKER))
+            targets.append(target_ids(tokenizer, item.correct_source, receiver.device))
     encoder.train()
     for update in range(1, args.steps + 1):
-        selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
-        batch = collate_views([views[index] for index in selected], feature_map, receiver.device)
-        target = oracle[labels[selected].to(receiver.device)]
-        latent = encoder(**batch); loss = vector_loss(latent, target)
-        optimizer.zero_grad(set_to_none=True); loss.backward(); grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        if args.objective == "vector":
+            selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
+            batch = collate_views([views[index] for index in selected], feature_map, receiver.device)
+            target = oracle[labels[selected].to(receiver.device)]
+            loss = vector_loss(encoder(**batch), target)
+            loss.backward()
+            diagnostics = {"vector": float(loss.detach())}
+        else:
+            # A/B are recomputed separately: no graph survives a backward call, and each
+            # update consumes exactly ``gradient_accumulation`` matched pairs.
+            component_sums = {"nll": 0.0, "rank": 0.0, "vector": 0.0, "margin": 0.0}
+            total_loss = 0.0
+            for _ in range(args.gradient_accumulation):
+                record = records[order_rng.randrange(len(records))]
+                for view, label, other_label in ((record.evidence_a, record.label_a, record.label_b), (record.evidence_b, record.label_b, record.label_a)):
+                    batch = collate_views([view], feature_map, receiver.device)
+                    latent = encoder(**batch)
+                    prompt = splice_prompt(receiver, tokenizer, rendered_prompts[label], latent)
+                    components = paired_patch_loss(receiver, prompt, targets[label], targets[other_label], oracle[label].unsqueeze(0), latent)
+                    (components["loss"] / (2 * args.gradient_accumulation)).backward()
+                    total_loss += float(components["loss"].detach()) / (2 * args.gradient_accumulation)
+                    for name in component_sums: component_sums[name] += float(components[name].detach()) / (2 * args.gradient_accumulation)
+            loss = torch.tensor(total_loss, device=receiver.device)
+            diagnostics = component_sums
+        grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
         if update == 1 or update % 50 == 0 or update == args.steps:
             encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size); encoder.train()
-            history.append({"update": update, "loss": float(loss.detach()), "grad_norm": float(grad_norm), **metrics})
+            history.append({"update": update, "loss": float(loss.detach()), "grad_norm": float(grad_norm), **diagnostics, **metrics})
             print(json.dumps(history[-1], sort_keys=True), flush=True)
     encoder.eval(); final = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size)
     payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}

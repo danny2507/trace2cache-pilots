@@ -1,0 +1,80 @@
+{
+  "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+  "feature_seconds": 15.923824477940798,
+  "final": {
+    "mean_cosine": 0.7083351016044617,
+    "nearest_code_accuracy": 0.6875
+  },
+  "history": [
+    {
+      "grad_norm": 0.13098429143428802,
+      "loss": 0.06783000379800797,
+      "mean_cosine": 0.021302979439496994,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "update": 1
+    },
+    {
+      "grad_norm": 0.07542736083269119,
+      "loss": 0.07135016471147537,
+      "mean_cosine": 0.32963526248931885,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "update": 50
+    },
+    {
+      "grad_norm": 0.04638417065143585,
+      "loss": 0.06497961282730103,
+      "mean_cosine": 0.3794267177581787,
+      "nearest_code_accuracy": 0.125,
+      "update": 100
+    },
+    {
+      "grad_norm": 0.04957902804017067,
+      "loss": 0.06134706363081932,
+      "mean_cosine": 0.41967082023620605,
+      "nearest_code_accuracy": 0.1666666716337204,
+      "update": 150
+    },
+    {
+      "grad_norm": 0.05095426365733147,
+      "loss": 0.05735930800437927,
+      "mean_cosine": 0.4734902083873749,
+      "nearest_code_accuracy": 0.3333333432674408,
+      "update": 200
+    },
+    {
+      "grad_norm": 0.041244328022003174,
+      "loss": 0.043955594301223755,
+      "mean_cosine": 0.5536693334579468,
+      "nearest_code_accuracy": 0.4375,
+      "update": 250
+    },
+    {
+      "grad_norm": 0.128266379237175,
+      "loss": 0.04665831848978996,
+      "mean_cosine": 0.5872493982315063,
+      "nearest_code_accuracy": 0.5,
+      "update": 300
+    },
+    {
+      "grad_norm": 0.029848506674170494,
+      "loss": 0.03617033362388611,
+      "mean_cosine": 0.6420975923538208,
+      "nearest_code_accuracy": 0.5625,
+      "update": 350
+    },
+    {
+      "grad_norm": 0.04066043347120285,
+      "loss": 0.027902554720640182,
+      "mean_cosine": 0.7083351016044617,
+      "nearest_code_accuracy": 0.6875,
+      "update": 400
+    }
+  ],
+  "peak_allocated_gib": 3.562,
+  "peak_reserved_gib": 3.59,
+  "timestamp": "2026-09-17T04:25:00.860002+00:00",
+  "train_seconds": 23.793314464390278,
+  "trainable_parameters": 4078848,
+  "unique_payloads": 421,
+  "views": 48
+}
