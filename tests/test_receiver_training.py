@@ -4,7 +4,7 @@ import unittest
 import torch
 from torch import nn
 
-from trace2cache.receiver_training import patch_nll, patch_score, patch_token_logprobs, paired_patch_loss, vector_loss, oracle_identity_loss
+from trace2cache.receiver_training import patch_nll, patch_score, patch_token_logprobs, paired_patch_loss, paired_counterfactual_patch_loss, vector_loss, oracle_identity_loss
 
 
 class ToyReceiver(nn.Module):
@@ -44,3 +44,22 @@ class ReceiverTrainingTest(unittest.TestCase):
 
     def test_vector_loss_rejects_mismatched_shapes(self) -> None:
         with self.assertRaises(ValueError): vector_loss(torch.zeros(1, 2, 3), torch.zeros(1, 3, 2))
+
+    def test_counterfactual_loss_reaches_both_latents_through_frozen_receiver(self) -> None:
+        model = ToyReceiver()
+        for parameter in model.parameters(): parameter.requires_grad_(False)
+        latent_a = torch.randn(1, 2, 5, requires_grad=True)
+        latent_b = torch.randn(1, 2, 5, requires_grad=True)
+        prefix_a, prefix_b = torch.randn(1, 1, 5), torch.randn(1, 1, 5)
+        def prompt(prefix, latent): return torch.cat((prefix, latent), dim=1)
+        target_a, target_b = torch.tensor([[1, 2, 3]]), torch.tensor([[3, 2, 1]])
+        result = paired_counterfactual_patch_loss(
+            model, prompt(prefix_a, latent_a), prompt(prefix_b, latent_b),
+            prompt(prefix_a, latent_b), prompt(prefix_b, latent_a), target_a, target_b,
+            latent_a.detach(), latent_b.detach(), latent_a, latent_b,
+        )
+        result["loss"].backward()
+        self.assertTrue(torch.isfinite(result["counterfactual"]))
+        self.assertGreater(latent_a.grad.abs().sum().item(), 0)
+        self.assertGreater(latent_b.grad.abs().sum().item(), 0)
+        self.assertTrue(all(parameter.grad is None for parameter in model.parameters()))

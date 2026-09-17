@@ -101,3 +101,52 @@ def paired_patch_loss(
     vector = vector_loss(latent, oracle_code)
     total = nll + rank + vector_weight * vector
     return {"loss": total, "nll": nll, "rank": rank, "vector": vector, "positive_score": positive_score.mean(), "negative_score": negative_score.mean(), "margin": (positive_score - negative_score).mean()}
+
+
+def paired_counterfactual_patch_loss(
+    model: object,
+    prompt_a: torch.Tensor,
+    prompt_b: torch.Tensor,
+    prompt_a_with_b_latent: torch.Tensor,
+    prompt_b_with_a_latent: torch.Tensor,
+    target_a: torch.Tensor,
+    target_b: torch.Tensor,
+    oracle_a: torch.Tensor,
+    oracle_b: torch.Tensor,
+    latent_a: torch.Tensor,
+    latent_b: torch.Tensor,
+    *,
+    margin: float = 0.1,
+    vector_weight: float = 0.1,
+    counterfactual_weight: float = 1.0,
+) -> dict[str, torch.Tensor]:
+    """Decoder loss with an explicit same-target, cross-latent intervention.
+
+    A/B share visible buggy code and inputs.  Beyond ordinary candidate ranking, this
+    requires target A to score higher with A's evidence than with B's evidence under the
+    *same A prompt* (and symmetrically for B).  It therefore cannot be minimized merely by
+    learning a generic prompt that likes both candidates.
+    """
+    score_aa = patch_score(patch_token_logprobs(model, prompt_a, target_a))
+    score_ab = patch_score(patch_token_logprobs(model, prompt_a, target_b))
+    score_bb = patch_score(patch_token_logprobs(model, prompt_b, target_b))
+    score_ba = patch_score(patch_token_logprobs(model, prompt_b, target_a))
+    # Same prompt and target, only evidence-derived latent state differs.
+    score_a_wrong_latent = patch_score(patch_token_logprobs(model, prompt_a_with_b_latent, target_a))
+    score_b_wrong_latent = patch_score(patch_token_logprobs(model, prompt_b_with_a_latent, target_b))
+    nll = (-score_aa.mean() - score_bb.mean()) / 2
+    rank = (
+        F.softplus(margin - score_aa + score_ab).mean()
+        + F.softplus(margin - score_bb + score_ba).mean()
+    ) / 2
+    counterfactual = (
+        F.softplus(margin - score_aa + score_a_wrong_latent).mean()
+        + F.softplus(margin - score_bb + score_b_wrong_latent).mean()
+    ) / 2
+    vector = (vector_loss(latent_a, oracle_a) + vector_loss(latent_b, oracle_b)) / 2
+    total = nll + rank + counterfactual_weight * counterfactual + vector_weight * vector
+    return {
+        "loss": total, "nll": nll, "rank": rank, "counterfactual": counterfactual,
+        "vector": vector, "margin": ((score_aa - score_ab).mean() + (score_bb - score_ba).mean()) / 2,
+        "counterfactual_margin": ((score_aa - score_a_wrong_latent).mean() + (score_bb - score_b_wrong_latent).mean()) / 2,
+    }

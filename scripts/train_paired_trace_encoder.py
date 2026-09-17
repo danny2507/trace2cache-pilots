@@ -26,7 +26,7 @@ from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_vi
 from trace2cache.paired_evidence import read_jsonl
 from trace2cache.training_sampling import sample_paired_family
 from trace2cache.receiver_training import vector_loss, oracle_identity_loss
-from trace2cache.receiver_training import paired_patch_loss, splice_prompt
+from trace2cache.receiver_training import paired_patch_loss, paired_counterfactual_patch_loss, splice_prompt
 
 sys.path.insert(0, str(Path(__file__).parent))
 from run_pilot1 import resolve_local_model
@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--validation-dataset", help="optional disjoint development evidence; never included in optimizer batches")
     parser.add_argument("--codebook-checkpoint", default="checkpoints/repair_latent/expanded_codebook_seed313.pt")
     parser.add_argument("--feature-method", choices=("mean0", "context2"), default="context2")
-    parser.add_argument("--objective", choices=("vector", "vector_identity", "decoder"), default="vector")
+    parser.add_argument("--objective", choices=("vector", "vector_identity", "decoder", "decoder_counterfactual"), default="vector")
     parser.add_argument("--sampling", choices=("iid_views", "paired_family"), default="iid_views", help="paired_family makes vector and decoder forks replay identical matched pairs")
     parser.add_argument("--identity-weight", type=float, default=0.1)
     parser.add_argument("--identity-temperature", type=float, default=0.1)
@@ -52,6 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--decoder-margin", type=float, default=0.1)
     parser.add_argument("--decoder-vector-weight", type=float, default=0.1)
+    parser.add_argument("--counterfactual-weight", type=float, default=1.0)
     parser.add_argument("--init-checkpoint", help="v2 encoder checkpoint used to fork a post-warmup objective")
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
@@ -142,8 +143,8 @@ def main() -> None:
         missing, unexpected = encoder.load_state_dict(payload["encoder"], strict=False)
         expected_missing = ["typed_projection.0.weight", "typed_projection.0.bias", "typed_projection.1.weight"] if args.typed_values else []
         if sorted(missing) != sorted(expected_missing) or unexpected: raise RuntimeError(f"encoder warm-start mismatch: missing={missing}, unexpected={unexpected}")
-    if args.objective == "decoder" and args.sampling != "paired_family":
-        raise SystemExit("decoder objective requires --sampling paired_family")
+    if args.objective in ("decoder", "decoder_counterfactual") and args.sampling != "paired_family":
+        raise SystemExit("decoder objectives require --sampling paired_family")
     if args.sampling == "paired_family" and args.batch_size != 2 * args.gradient_accumulation:
         raise SystemExit("paired_family requires batch-size == 2 * gradient-accumulation")
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
@@ -151,7 +152,7 @@ def main() -> None:
     sampling_hasher = hashlib.sha256()
     rendered_prompts = []
     targets = []
-    if args.objective == "decoder":
+    if args.objective in ("decoder", "decoder_counterfactual"):
         from run_repair_codebook import MARKER, render, target_ids
         for item in get_ambiguous_cases():
             rendered_prompts.append(render(tokenizer, item.case, MARKER))
@@ -179,7 +180,7 @@ def main() -> None:
                 loss = loss + args.identity_weight * identity
                 diagnostics["identity"] = float(identity.detach())
             loss.backward()
-        else:
+        elif args.objective == "decoder":
             # Samples from one family share a visible prompt, so batching preserves the
             # per-pair mean objective while avoiding 16 serial frozen-receiver forwards.
             # A and B remain separate, and each has positive + paired-negative candidates.
@@ -204,6 +205,36 @@ def main() -> None:
                 for name in component_sums: component_sums[name] += float(components[name].detach()) / 2
             loss = torch.tensor(total_loss, device=receiver.device)
             diagnostics = component_sums
+        else:
+            # This is a direct evidence-source control.  Candidate ranking alone compares
+            # targets under one latent; the two extra scores hold prompt+target fixed while
+            # swapping only the latent produced by the matched other view.
+            chosen = sample_paired_family(records, order_rng, args.gradient_accumulation)
+            sampling_hasher.update(f"{update}:".encode())
+            sampling_hasher.update(",".join(record.pair_uid for record in chosen).encode()); sampling_hasher.update(b"\n")
+            label_a = chosen[0].label_a; label_b = chosen[0].label_b
+            if any(record.label_a != label_a or record.label_b != label_b for record in chosen):
+                raise RuntimeError("family label mismatch")
+            batch_a = collate_views([record.evidence_a for record in chosen], feature_map, receiver.device, typed_values=args.typed_values)
+            batch_b = collate_views([record.evidence_b for record in chosen], feature_map, receiver.device, typed_values=args.typed_values)
+            latent_a, latent_b = encoder(**batch_a), encoder(**batch_b)
+            prompt_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_a)
+            prompt_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_b)
+            prompt_a_with_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_b)
+            prompt_b_with_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_a)
+            target_a = targets[label_a].expand(len(chosen), -1)
+            target_b = targets[label_b].expand(len(chosen), -1)
+            code_a = oracle[label_a].unsqueeze(0).expand(len(chosen), -1, -1)
+            code_b = oracle[label_b].unsqueeze(0).expand(len(chosen), -1, -1)
+            components = paired_counterfactual_patch_loss(
+                receiver, prompt_a, prompt_b, prompt_a_with_b, prompt_b_with_a,
+                target_a, target_b, code_a, code_b, latent_a, latent_b,
+                margin=args.decoder_margin, vector_weight=args.decoder_vector_weight,
+                counterfactual_weight=args.counterfactual_weight,
+            )
+            components["loss"].backward()
+            loss = components["loss"].detach()
+            diagnostics = {name: float(value.detach()) for name, value in components.items() if name != "loss"}
         grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
         if update == 1 or update % 50 == 0 or update == args.steps:
             encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values)
