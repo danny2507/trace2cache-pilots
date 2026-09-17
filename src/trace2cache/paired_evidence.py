@@ -314,7 +314,8 @@ def write_jsonl(records: Iterable[PairedEvidenceRecord], path: Path) -> None:
         for record in records: handle.write(json.dumps(serialize_record(record), sort_keys=True) + "\n")
 
 
-def read_jsonl(path: Path) -> list[PairedEvidenceRecord]:
+def read_jsonl(path: Path | str) -> list[PairedEvidenceRecord]:
+    path = Path(path)
     with path.open(encoding="utf-8") as handle:
         return [deserialize_record(json.loads(line)) for line in handle if line.strip()]
 
