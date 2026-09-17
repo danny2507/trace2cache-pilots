@@ -23,7 +23,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import read_jsonl
-from trace2cache.receiver_training import vector_loss
+from trace2cache.receiver_training import vector_loss, oracle_identity_loss
 from trace2cache.receiver_training import paired_patch_loss, splice_prompt
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -37,7 +37,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset", default=".local/datasets/paired_runtime_v2_smoke/train.jsonl")
     parser.add_argument("--codebook-checkpoint", default="checkpoints/repair_latent/expanded_codebook_seed313.pt")
     parser.add_argument("--feature-method", choices=("mean0", "context2"), default="context2")
-    parser.add_argument("--objective", choices=("vector", "decoder"), default="vector")
+    parser.add_argument("--objective", choices=("vector", "vector_identity", "decoder"), default="vector")
+    parser.add_argument("--identity-weight", type=float, default=0.1)
+    parser.add_argument("--identity-temperature", type=float, default=0.1)
     parser.add_argument("--feature-cache", default=".local/cache/paired_runtime_v2/features")
     parser.add_argument("--feature-batch-size", type=int, default=16)
     parser.add_argument("--steps", type=int, default=400)
@@ -122,13 +124,18 @@ def main() -> None:
     encoder.train()
     for update in range(1, args.steps + 1):
         optimizer.zero_grad(set_to_none=True)
-        if args.objective == "vector":
+        if args.objective in ("vector", "vector_identity"):
             selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
             batch = collate_views([views[index] for index in selected], feature_map, receiver.device)
             target = oracle[labels[selected].to(receiver.device)]
-            loss = vector_loss(encoder(**batch), target)
-            loss.backward()
+            latent = encoder(**batch)
+            loss = vector_loss(latent, target)
             diagnostics = {"vector": float(loss.detach())}
+            if args.objective == "vector_identity":
+                identity = oracle_identity_loss(latent, oracle, labels[selected].to(receiver.device), temperature=args.identity_temperature)
+                loss = loss + args.identity_weight * identity
+                diagnostics["identity"] = float(identity.detach())
+            loss.backward()
         else:
             # Samples from one family share a visible prompt, so batching preserves the
             # per-pair mean objective while avoiding 16 serial frozen-receiver forwards.
@@ -162,7 +169,7 @@ def main() -> None:
     encoder.eval(); final = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size)
     payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
     checkpoint = Path(args.checkpoint); checkpoint.parent.mkdir(parents=True, exist_ok=True); temporary = checkpoint.with_suffix(".tmp"); torch.save(payload, temporary); temporary.replace(checkpoint)
-    result = {"timestamp": payload["timestamp"], "dataset": args.dataset, "views": len(views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
+    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "views": len(views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
     output = Path(args.output); output.parent.mkdir(parents=True, exist_ok=True); output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps({"final": final, "output": str(output)}, sort_keys=True))
 

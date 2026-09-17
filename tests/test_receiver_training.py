@@ -4,7 +4,7 @@ import unittest
 import torch
 from torch import nn
 
-from trace2cache.receiver_training import patch_nll, patch_score, patch_token_logprobs, paired_patch_loss, vector_loss
+from trace2cache.receiver_training import patch_nll, patch_score, patch_token_logprobs, paired_patch_loss, vector_loss, oracle_identity_loss
 
 
 class ToyReceiver(nn.Module):
@@ -16,6 +16,15 @@ class ToyReceiver(nn.Module):
 
 
 class ReceiverTrainingTest(unittest.TestCase):
+    def test_identity_prefers_matching_code_and_freezes_dictionary(self) -> None:
+        codes = torch.eye(3).reshape(3, 1, 3).requires_grad_(True)
+        latent = codes[:2].detach().clone().requires_grad_(True)
+        right = oracle_identity_loss(latent, codes, torch.tensor([0, 1]))
+        wrong = oracle_identity_loss(latent, codes, torch.tensor([1, 0]))
+        self.assertLess(right.item(), wrong.item())
+        wrong.backward()
+        self.assertGreater(latent.grad.abs().sum().item(), 0)
+        self.assertIsNone(codes.grad)
     def test_token_logprobs_and_masked_scores(self) -> None:
         model = ToyReceiver(); prompt = torch.randn(2, 3, 5, requires_grad=True); target = torch.tensor([[1, 2, 3], [3, 2, 1]])
         logprobs = patch_token_logprobs(model, prompt, target)

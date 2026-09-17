@@ -67,6 +67,19 @@ def vector_loss(latent: torch.Tensor, oracle_code: torch.Tensor, *, cosine_weigh
     return mse + cosine_weight * (1 - cosine)
 
 
+def oracle_identity_loss(latent: torch.Tensor, oracle_codes: torch.Tensor, labels: torch.Tensor, *, temperature: float = 0.1) -> torch.Tensor:
+    """Known-vocabulary diagnostic: contrast all oracle codes using evidence-derived states.
+
+    Labels are supervision only. This does not add a label lookup at inference and does not
+    provide a transferable code dictionary for unseen MBPP programs.
+    """
+    if temperature <= 0:
+        raise ValueError("temperature must be positive")
+    prediction = F.normalize(latent.flatten(1).float(), dim=-1)
+    dictionary = F.normalize(oracle_codes.detach().flatten(1).float(), dim=-1)
+    return F.cross_entropy(prediction @ dictionary.T / temperature, labels)
+
+
 def paired_patch_loss(
     model: object,
     prompt_embeds: torch.Tensor,
