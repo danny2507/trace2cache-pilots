@@ -38,6 +38,7 @@ def parse_args():
     parser.add_argument("--conditions", nargs="+", choices=CONDITIONS, default=["true_latent", "paired_swap"])
     parser.add_argument("--heldout-wording", action="store_true")
     parser.add_argument("--max-new-tokens", type=int, default=192)
+    parser.add_argument("--cache-fixed-codes", action="store_true", help="reuse decoding only for exactly equal prompt embeddings and fixed oracle/projected codes; never continuous latents")
     parser.add_argument("--output-dir", required=True)
     return parser.parse_args()
 
@@ -120,6 +121,7 @@ def main():
         if any(row["checkpoint_sha256"] != checkpoint_hash or row["dataset_sha256"] != dataset_hash or row["heldout_wording"] != args.heldout_wording or row["max_new_tokens"] != args.max_new_tokens for row in rows):
             raise ValueError("resume rows belong to another checkpoint/data/generation config")
     done = {(row["pair_uid"], row["side"], row["condition"]) for row in rows}
+    fixed_code_cache = {}
     with torch.inference_mode():
         for record in records:
             for side in ("a", "b"):
@@ -133,16 +135,28 @@ def main():
                     latent = encoder(**collate_views([view], feature_map, receiver.device))
                     similarity = torch.nn.functional.cosine_similarity(latent.flatten(1), oracle.flatten(1), dim=-1)
                     nearest_label = int(similarity.argmax())
-                    if condition in ("nearest_oracle_latent", "paired_swap_nearest"): latent = oracle[nearest_label].unsqueeze(0)
-                    if condition == "oracle_latent": latent = oracle[label].unsqueeze(0)
+                    fixed_label = None
+                    if condition in ("nearest_oracle_latent", "paired_swap_nearest"):
+                        latent = oracle[nearest_label].unsqueeze(0); fixed_label = nearest_label
+                    if condition == "oracle_latent":
+                        latent = oracle[label].unsqueeze(0); fixed_label = label
                     if condition == "no_evidence": latent = None
                     rendered = render(tokenizer, items[label].case, "unavailable" if latent is None else MARKER, heldout=args.heldout_wording)
                     inputs = splice_prompt(receiver, tokenizer, rendered, latent)
-                    generated = greedy_generate(receiver, inputs, tokenizer.eos_token_id, args.max_new_tokens)
+                    cache_key = (rendered, fixed_label) if args.cache_fixed_codes and fixed_label is not None else None
+                    cached = fixed_code_cache.get(cache_key) if cache_key is not None else None
+                    if cached is None:
+                        generated = greedy_generate(receiver, inputs, tokenizer.eos_token_id, args.max_new_tokens)
+                        if cache_key is not None:
+                            fixed_code_cache[cache_key] = (inputs.detach().cpu().clone(), generated)
+                    else:
+                        cached_inputs, generated = cached
+                        if not torch.equal(inputs.detach().cpu(), cached_inputs):
+                            raise RuntimeError("fixed-code decoding cache inputs differ; refusing approximate reuse")
                     response = tokenizer.decode(generated, skip_special_tokens=True)
                     patch, intended = validate(response, items[label].case)
                     _, opposite = validate(response, items[opposite_label].case)
-                    row = {"checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
+                    row = {"checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "generation_cache_hit": cached is not None, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
                     with row_path.open("a") as handle: handle.write(json.dumps(row, sort_keys=True) + "\n")
                     rows.append(row)
                     print(json.dumps({"family": record.family_id, "side": side, "condition": condition, "correct": intended["passed"], "opposite": opposite["passed"]}), flush=True)
