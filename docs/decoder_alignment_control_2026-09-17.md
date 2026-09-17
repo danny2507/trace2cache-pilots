@@ -84,3 +84,29 @@ It does not establish the proposed model-native runtime interface as better than
 causal trace use, role-slot semantics, or generalization to unseen programs. `arrange`,
 `median`, `rotate`, `unique` and one filter direction remain weak, motivating Phase F1
 typed ordered items rather than more unstructured decoder epochs.
+
+## Typed-value continuation (negative representation control)
+
+The Phase-F1 implementation expands the existing safe tagged JSON evidence into ordered
+virtual value nodes.  It preserves list/tuple item order and uses generic type features:
+type, signed-int bits and magnitude, bool, bounded string sketch, container size, depth,
+and child index.  It neither evaluates a `repr` nor receives any family-specific diagnosis
+or patch label.  New nodes retain the parent event role/test metadata.  The value projection
+is zero-initialized, so at update zero the typed encoder is exactly the committed pre-typed
+encoder; gradients alone can enable the new channel.
+
+It uses the **same** 200-update decoder objective and matched sampling digest as the two
+forks above.  Its final development code identity is lower (74.58%, versus 80.42% for the
+decoder baseline).  On the selected 24-view development panel it has 18/24 true repairs,
+7/12 complete pairs and 4/24 paired-swap intended repairs: a 58.33-point true-minus-swap
+gap, slightly below the baseline's 62.50 points.  Thus raw generic typed features do not
+improve the selected decoder mechanism.
+
+As an out-of-selection check, one first pair per family was evaluated on `test_short`:
+disjoint runtime-input bundles but the same 12 toy program families.  The baseline obtains
+11/24 true, 6/24 swap-intended, 3/12 complete pairs (20.83-point gap).  Typed obtains
+13/24 true, 8/24 swap-intended, 3/12 complete pairs (also 20.83 points).  Its two extra
+true repairs are exactly offset by two extra swap-following repairs.  This is not evidence
+of better role-aware behavioral binding, so do not scale this representation alone to
+additional epochs or the full held-out split.  The next method should make the required
+behavioral contrast explicit in the objective/architecture, not merely append value bits.
