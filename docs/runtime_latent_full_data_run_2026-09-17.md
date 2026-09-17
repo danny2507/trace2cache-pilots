@@ -65,7 +65,8 @@ Run from the project root using `.venv/bin/python`, with
 .venv/bin/python scripts/analyze_paired_transfer.py \
   --evaluation-dir artifacts/paired_runtime_v2/full_data_vector2000_dev_repair \
   --train-dataset .local/datasets/paired_runtime_v2/train.jsonl \
-  --development-dataset .local/datasets/paired_runtime_v2/dev.jsonl
+  --development-dataset .local/datasets/paired_runtime_v2/dev.jsonl \
+  --reference-dir artifacts/paired_runtime_v2/rescue_vector2000_dev_repair
 ```
 
 Code/protocol must be committed before starting training. Results will be appended
@@ -80,3 +81,5 @@ pairs whose **every** individual test input is unseen in training. Save both the
 development result and this stricter subset. The subset is defined from input overlap,
 not repair outcomes. Use a 2,000-resample family-cluster bootstrap with seed 401; twelve
 program groups imply substantial uncertainty and limited external validity.
+Also compare the new run against the earlier 48-view encoder on exactly its saved
+12-pair development panel, not its 24-view counts against the larger 240-view result.
