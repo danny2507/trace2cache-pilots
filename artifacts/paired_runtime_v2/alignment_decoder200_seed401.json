@@ -1,0 +1,128 @@
+{
+  "args": {
+    "batch_size": 16,
+    "checkpoint": "checkpoints/paired_runtime_v2/alignment_decoder200_seed401.pt",
+    "codebook_checkpoint": "checkpoints/repair_latent/expanded_codebook_seed313.pt",
+    "dataset": ".local/datasets/paired_runtime_v2/train.jsonl",
+    "decoder_margin": 0.1,
+    "decoder_vector_weight": 0.1,
+    "feature_batch_size": 16,
+    "feature_cache": ".local/cache/paired_runtime_v2/features",
+    "feature_method": "context2",
+    "gradient_accumulation": 8,
+    "hidden_width": 256,
+    "identity_temperature": 0.1,
+    "identity_weight": 0.1,
+    "init_checkpoint": "checkpoints/paired_runtime_v2/full_data_vector2000_seed401.pt",
+    "learning_rate": 3e-05,
+    "max_events": 512,
+    "max_tests": 8,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "objective": "decoder",
+    "output": "artifacts/paired_runtime_v2/alignment_decoder200_seed401.json",
+    "sampling": "paired_family",
+    "seed": 401,
+    "steps": 200,
+    "validation_dataset": ".local/datasets/paired_runtime_v2/dev.jsonl"
+  },
+  "dataset": ".local/datasets/paired_runtime_v2/train.jsonl",
+  "dataset_sha256": {
+    "train": "750037c5df89f2acea767dfe1fdddeb0d575d86ca17566a676d650505f748e8d",
+    "validation": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51"
+  },
+  "feature_seconds": 0.777222529053688,
+  "final": {
+    "mean_cosine": 0.8244253993034363,
+    "nearest_code_accuracy": 0.8131510615348816,
+    "validation": {
+      "mean_cosine": 0.8178679347038269,
+      "nearest_code_accuracy": 0.8041667342185974
+    }
+  },
+  "history": [
+    {
+      "grad_norm": 90.24333953857422,
+      "loss": 1.405655860900879,
+      "margin": 0.06396009027957916,
+      "mean_cosine": 0.8587741851806641,
+      "nearest_code_accuracy": 0.7623698115348816,
+      "nll": 0.6802520621567965,
+      "rank": 0.7252716422080994,
+      "update": 1,
+      "validation": {
+        "mean_cosine": 0.8549903035163879,
+        "nearest_code_accuracy": 0.7625000476837158
+      },
+      "vector": 0.0013212799385655671
+    },
+    {
+      "grad_norm": 4.828976631164551,
+      "loss": 0.7832763195037842,
+      "margin": 0.004636949393898249,
+      "mean_cosine": 0.8586717844009399,
+      "nearest_code_accuracy": 0.8190104365348816,
+      "nll": 0.03837900422513485,
+      "rank": 0.7420649528503418,
+      "update": 50,
+      "validation": {
+        "mean_cosine": 0.8537346720695496,
+        "nearest_code_accuracy": 0.8125000596046448
+      },
+      "vector": 0.02832390647381544
+    },
+    {
+      "grad_norm": 2.5655581951141357,
+      "loss": 0.6631168723106384,
+      "margin": 0.24914046376943588,
+      "mean_cosine": 0.8476955890655518,
+      "nearest_code_accuracy": 0.82421875,
+      "nll": 0.03932431526482105,
+      "rank": 0.6227535009384155,
+      "update": 100,
+      "validation": {
+        "mean_cosine": 0.8415049314498901,
+        "nearest_code_accuracy": 0.8291667103767395
+      },
+      "vector": 0.010390483308583498
+    },
+    {
+      "grad_norm": 3.5660932064056396,
+      "loss": 0.34444087743759155,
+      "margin": 1.0051447451114655,
+      "mean_cosine": 0.8342010378837585,
+      "nearest_code_accuracy": 0.794921875,
+      "nll": 0.0033839804236777127,
+      "rank": 0.3405216932296753,
+      "update": 150,
+      "validation": {
+        "mean_cosine": 0.8291161060333252,
+        "nearest_code_accuracy": 0.7875000238418579
+      },
+      "vector": 0.005352221895009279
+    },
+    {
+      "grad_norm": 9.753046989440918,
+      "loss": 0.817549467086792,
+      "margin": 0.00036397576332092285,
+      "mean_cosine": 0.8244253993034363,
+      "nearest_code_accuracy": 0.8131510615348816,
+      "nll": 0.06963418424129486,
+      "rank": 0.7444539368152618,
+      "update": 200,
+      "validation": {
+        "mean_cosine": 0.8178679347038269,
+        "nearest_code_accuracy": 0.8041667342185974
+      },
+      "vector": 0.034613726660609245
+    }
+  ],
+  "peak_allocated_gib": 11.305,
+  "peak_reserved_gib": 12.113,
+  "sampling_trace_sha256": "393d9fcca6831ddb88ecf53006fed2acf323a2d84ae5866806925a4a21b4d9e9",
+  "timestamp": "2026-09-17T09:57:10.128994+00:00",
+  "train_seconds": 169.56439466029406,
+  "trainable_parameters": 4078848,
+  "unique_payloads": 10588,
+  "validation_views": 240,
+  "views": 1536
+}
