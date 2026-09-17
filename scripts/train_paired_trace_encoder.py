@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import random
@@ -78,7 +79,23 @@ def all_views(records: list[object]) -> tuple[list[object], torch.Tensor]:
 
 def build_feature_map(extractor: FrozenNativeFeatureExtractor, views: list[object], method: str, batch_size: int) -> dict[str, torch.Tensor]:
     contents = list(dict.fromkeys(event.content for view in views for event in view.events))
-    vectors = extractor.extract_contents(contents, method, batch_size=batch_size)
+    # The workspace is on network storage. One validated pack avoids hundreds of tiny
+    # per-payload reads on every resumed training/evaluation job. Individual cache keys
+    # still encode all extractor settings and exact payloads.
+    keys = [extractor.cache_key(content, method).digest() for content in contents]
+    digest = hashlib.sha256(json.dumps(keys).encode()).hexdigest()
+    packed_path = extractor.cache_dir / "packs" / f"{digest}.pt"
+    if packed_path.exists():
+        packed = torch.load(packed_path, map_location="cpu", weights_only=True)
+        if packed["keys"] != keys: raise RuntimeError("packed feature keys mismatch")
+        vectors = packed["vectors"].to(extractor.device)
+        if vectors.shape != (len(contents), extractor.width) or not torch.isfinite(vectors).all(): raise RuntimeError("invalid packed features")
+    else:
+        vectors = extractor.extract_contents(contents, method, batch_size=batch_size)
+        packed_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = packed_path.with_suffix(".tmp")
+        torch.save({"keys": keys, "vectors": vectors.detach().cpu()}, temporary)
+        temporary.replace(packed_path)
     return {content: vector.detach() for content, vector in zip(contents, vectors)}
 
 

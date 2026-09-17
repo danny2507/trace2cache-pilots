@@ -1,0 +1,36 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/paired_runtime_v2/rescue_vector1200_seed401.pt",
+    "conditions": [
+      "true_latent",
+      "paired_swap"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/rescue_vector1200_train_repair",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "333a92de75c88850a70848059bcb67d0ccfc5aa699a27a9f879cfee0c4cb401a",
+  "dataset_sha256": "8e05eb06fa7fa56445bfbefd418f98a0fccbbb2ffddbbc022a0c7b42141e649a",
+  "peak_allocated_gib": 3.453847885131836,
+  "summary": {
+    "paired_swap": {
+      "both_correct": 0,
+      "cap_hits": 1,
+      "correct": 2,
+      "opposite_correct": 18,
+      "pairs": 12,
+      "views": 24
+    },
+    "true_latent": {
+      "both_correct": 7,
+      "cap_hits": 1,
+      "correct": 18,
+      "opposite_correct": 2,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": true
+}
