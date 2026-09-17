@@ -1,0 +1,49 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/paired_runtime_v2/rescue_vector2000_seed401.pt",
+    "conditions": [
+      "nearest_oracle_latent"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/rescue_vector2000_dev_repair",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "60f64bd2d2b16785c16c07c86fc6234540c00cd07743da14cdb91d15e6cb3f89",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 7.37607479095459e-07,
+    "rmse": 4.245023177418261e-08,
+    "views": 24
+  },
+  "peak_allocated_gib": 3.453756332397461,
+  "summary": {
+    "nearest_oracle_latent": {
+      "both_correct": 4,
+      "cap_hits": 2,
+      "correct": 14,
+      "opposite_correct": 4,
+      "pairs": 12,
+      "views": 24
+    },
+    "paired_swap": {
+      "both_correct": 0,
+      "cap_hits": 1,
+      "correct": 3,
+      "opposite_correct": 11,
+      "pairs": 12,
+      "views": 24
+    },
+    "true_latent": {
+      "both_correct": 2,
+      "cap_hits": 1,
+      "correct": 11,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": false
+}

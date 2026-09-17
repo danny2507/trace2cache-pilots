@@ -1,0 +1,42 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/paired_runtime_v2/rescue_vector2000_seed401.pt",
+    "conditions": [
+      "oracle_latent",
+      "nearest_oracle_latent"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/rescue_vector2000_oracle_diagnostic",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "60f64bd2d2b16785c16c07c86fc6234540c00cd07743da14cdb91d15e6cb3f89",
+  "dataset_sha256": "8e05eb06fa7fa56445bfbefd418f98a0fccbbb2ffddbbc022a0c7b42141e649a",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 2.4586915969848633e-07,
+    "rmse": 2.898717887944713e-08,
+    "views": 24
+  },
+  "peak_allocated_gib": 3.4538021087646484,
+  "summary": {
+    "nearest_oracle_latent": {
+      "both_correct": 10,
+      "cap_hits": 1,
+      "correct": 22,
+      "opposite_correct": 0,
+      "pairs": 12,
+      "views": 24
+    },
+    "oracle_latent": {
+      "both_correct": 10,
+      "cap_hits": 1,
+      "correct": 22,
+      "opposite_correct": 0,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": true
+}

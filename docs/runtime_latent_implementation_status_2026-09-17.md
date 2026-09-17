@@ -4,6 +4,10 @@ Date: 2026-09-17. This is a factual handover for the implementation described in
 [the v2 plan](implementation_plan_runtime_latent_2026-09-17.md), not a claim of repair
 generalization.
 
+Update: the later [rescue experiments](runtime_latent_rescue_2026-09-17.md) overcome the
+400-update code-identification failure with a longer, decaying-LR vector schedule. Read
+that report before following this note's old no-go/typed-branch recommendation.
+
 ## Completed phases
 
 Phase A is implemented and audited.

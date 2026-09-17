@@ -74,6 +74,17 @@ def summarize(rows):
     return summaries
 
 
+@torch.inference_mode()
+def audit_encoder_padding(encoder, views, feature_map, oracle):
+    """Check that repair-time singleton encoding matches the padded training evaluation."""
+    singleton = torch.cat([encoder(**collate_views([view], feature_map, oracle.device)) for view in views])
+    grouped = torch.cat([encoder(**collate_views(views[start:start + 16], feature_map, oracle.device)) for start in range(0, len(views), 16)])
+    difference = singleton.float() - grouped.float()
+    singleton_codes = torch.nn.functional.cosine_similarity(singleton.flatten(1).unsqueeze(1), oracle.flatten(1).unsqueeze(0), dim=-1).argmax(1)
+    grouped_codes = torch.nn.functional.cosine_similarity(grouped.flatten(1).unsqueeze(1), oracle.flatten(1).unsqueeze(0), dim=-1).argmax(1)
+    return {"max_abs": float(difference.abs().max()), "rmse": float(difference.square().mean().sqrt()), "code_disagreements": int((singleton_codes != grouped_codes).sum()), "views": len(views)}
+
+
 def main():
     args = parse_args()
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported(): raise SystemExit("CUDA BF16 required")
@@ -96,6 +107,8 @@ def main():
     views = [controlled_view(view, condition) for record in records for view in (record.evidence_a, record.evidence_b) for condition in args.conditions]
     extractor = FrozenNativeFeatureExtractor(receiver, tokenizer, model_id=config["model"], cache_dir=config["feature_cache"])
     feature_map = build_feature_map(extractor, views, config["feature_method"], config["feature_batch_size"])
+    padding_audit = audit_encoder_padding(encoder, [view for record in records for view in (record.evidence_a, record.evidence_b)], feature_map, oracle)
+    print(json.dumps({"encoder_padding_audit": padding_audit}), flush=True)
     items = get_ambiguous_cases()
     checkpoint_hash = hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()
     dataset_hash = hashlib.sha256(Path(args.dataset).read_bytes()).hexdigest()
@@ -133,7 +146,7 @@ def main():
                     with row_path.open("a") as handle: handle.write(json.dumps(row, sort_keys=True) + "\n")
                     rows.append(row)
                     print(json.dumps({"family": record.family_id, "side": side, "condition": condition, "correct": intended["passed"], "opposite": opposite["passed"]}), flush=True)
-    result = {"args": vars(args), "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "summary": summarize(rows), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
+    result = {"args": vars(args), "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "encoder_padding_audit": padding_audit, "summary": summarize(rows), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
     (output_dir / "summary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps(result["summary"], sort_keys=True), flush=True)
 
