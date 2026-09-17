@@ -1,0 +1,45 @@
+{
+  "args": {
+    "cache_fixed_codes": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/binding_decoder200_seed401.pt",
+    "conditions": [
+      "true_latent",
+      "paired_swap"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/binding_decoder200_dev_repair",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "99623fa502f23fabd811bc8c317a33f5ee626d0ab713594f09059b6a0a63c10c",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 3.2782554626464844e-07,
+    "rmse": 2.529554521402133e-08,
+    "views": 24
+  },
+  "fixed_code_cache_entries_this_run": 0,
+  "generation_cache_hits": 0,
+  "peak_allocated_gib": 3.4547791481018066,
+  "summary": {
+    "paired_swap": {
+      "both_correct": 1,
+      "cap_hits": 0,
+      "correct": 3,
+      "opposite_correct": 15,
+      "pairs": 12,
+      "views": 24
+    },
+    "true_latent": {
+      "both_correct": 6,
+      "cap_hits": 0,
+      "correct": 15,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": false
+}
