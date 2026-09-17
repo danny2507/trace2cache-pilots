@@ -1,0 +1,45 @@
+{
+  "args": {
+    "cache_fixed_codes": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/counterfactual_decoder200_seed401.pt",
+    "conditions": [
+      "true_latent",
+      "paired_swap"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/counterfactual_decoder200_dev_repair",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "4d7b9c8ff56fc763b35e84142be403fbb8210c6b3b90fcd20665bf296d8f182f",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 1.6391277313232422e-07,
+    "rmse": 2.358693151904845e-08,
+    "views": 24
+  },
+  "fixed_code_cache_entries_this_run": 0,
+  "generation_cache_hits": 0,
+  "peak_allocated_gib": 3.453801155090332,
+  "summary": {
+    "paired_swap": {
+      "both_correct": 0,
+      "cap_hits": 0,
+      "correct": 3,
+      "opposite_correct": 14,
+      "pairs": 12,
+      "views": 24
+    },
+    "true_latent": {
+      "both_correct": 4,
+      "cap_hits": 0,
+      "correct": 14,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": false
+}
