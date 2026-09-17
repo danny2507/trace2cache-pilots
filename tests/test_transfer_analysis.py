@@ -1,7 +1,7 @@
 import unittest
 from types import SimpleNamespace
 
-from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids, failure_categories
+from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids, failure_categories, analyze_fidelity
 
 
 class TransferAnalysisTest(unittest.TestCase):
@@ -41,6 +41,19 @@ class TransferAnalysisTest(unittest.TestCase):
                 {"intended": {"passed": False, "tests": [{"passed": False}]}},
                 {"intended": {"passed": False, "error": "ValueError: no parseable function named f"}}]
         self.assertEqual(failure_categories(rows), {"sandbox_policy_rejected": 1, "executed_test_failure": 1, "parse_rejected": 1})
+
+    def test_projection_can_gain_and_lose_repairs(self):
+        primary = [dict(row, label=0) for row in self.rows() if row["condition"] == "true_latent"]
+        primary[0]["intended"] = {"passed": False}
+        projected = [dict(row, condition="nearest_oracle_latent", intended={"passed": True}) for row in primary]
+        projected[1]["intended"] = {"passed": False}
+        oracle = [dict(row, condition="oracle_latent", intended={"passed": True}) for row in primary]
+        result = analyze_fidelity(primary, projected + oracle, resamples=20)
+        self.assertEqual(result["projection_gains"], 1)
+        self.assertEqual(result["projection_losses"], 1)
+        self.assertEqual(result["projection_minus_continuous"], 0.0)
+        with self.assertRaises(ValueError):
+            analyze_fidelity(primary, projected[:-1] + oracle, resamples=20)
 
     def test_exact_bundle_disjointness_does_not_imply_individual_input_disjointness(self):
         def record(uid, values):

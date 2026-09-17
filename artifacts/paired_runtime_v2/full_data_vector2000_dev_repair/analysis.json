@@ -1,0 +1,959 @@
+{
+  "all_numerical_gates_pass": false,
+  "bootstrap_resamples": 2000,
+  "bootstrap_seed": 401,
+  "checkpoint_sha256": "6ccd1151230ddc3ade6439d939e32aa81170f81e47461b5c8bdb065428897126",
+  "cluster_bootstrap_95pct": {
+    "correct_nearest_but_failed_repair": [
+      0.15833333333333333,
+      0.37083333333333335
+    ],
+    "swap_intended_repair": [
+      0.05,
+      0.25
+    ],
+    "swap_opposite_repair": [
+      0.3541666666666667,
+      0.7208333333333333
+    ],
+    "true_minus_swap": [
+      0.1625,
+      0.6291666666666667
+    ],
+    "true_nearest_code_accuracy": [
+      0.6291666666666667,
+      0.8916666666666667
+    ],
+    "true_pair_success": [
+      0.14166666666666666,
+      0.5666666666666667
+    ],
+    "true_repair": [
+      0.3541666666666667,
+      0.7208333333333333
+    ]
+  },
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "failure_categories": {
+    "paired_swap": {
+      "executed_test_failure": 161,
+      "parse_rejected": 22,
+      "passed": 34,
+      "sandbox_policy_rejected": 23
+    },
+    "true_latent": {
+      "executed_test_failure": 66,
+      "parse_rejected": 22,
+      "passed": 129,
+      "sandbox_policy_rejected": 23
+    }
+  },
+  "fidelity_diagnostic": {
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 401,
+    "cluster_bootstrap_95pct_delta": [
+      0.07083333333333333,
+      0.25
+    ],
+    "continuous_correct": 129,
+    "fixed_code_cache_entries": 29,
+    "generation_cache_hits": 451,
+    "oracle_correct": 220,
+    "per_family": {
+      "aggregate": {
+        "continuous_correct": 19,
+        "oracle_correct": 20,
+        "projected_correct": 18,
+        "views": 20
+      },
+      "arrange": {
+        "continuous_correct": 8,
+        "oracle_correct": 20,
+        "projected_correct": 12,
+        "views": 20
+      },
+      "choose": {
+        "continuous_correct": 20,
+        "oracle_correct": 20,
+        "projected_correct": 20,
+        "views": 20
+      },
+      "extreme": {
+        "continuous_correct": 13,
+        "oracle_correct": 20,
+        "projected_correct": 19,
+        "views": 20
+      },
+      "filter": {
+        "continuous_correct": 8,
+        "oracle_correct": 20,
+        "projected_correct": 15,
+        "views": 20
+      },
+      "locate": {
+        "continuous_correct": 10,
+        "oracle_correct": 10,
+        "projected_correct": 10,
+        "views": 20
+      },
+      "measure": {
+        "continuous_correct": 7,
+        "oracle_correct": 10,
+        "projected_correct": 9,
+        "views": 20
+      },
+      "median": {
+        "continuous_correct": 8,
+        "oracle_correct": 20,
+        "projected_correct": 11,
+        "views": 20
+      },
+      "rotate": {
+        "continuous_correct": 1,
+        "oracle_correct": 20,
+        "projected_correct": 5,
+        "views": 20
+      },
+      "transform": {
+        "continuous_correct": 18,
+        "oracle_correct": 20,
+        "projected_correct": 18,
+        "views": 20
+      },
+      "truth": {
+        "continuous_correct": 17,
+        "oracle_correct": 20,
+        "projected_correct": 20,
+        "views": 20
+      },
+      "unique": {
+        "continuous_correct": 0,
+        "oracle_correct": 20,
+        "projected_correct": 10,
+        "views": 20
+      }
+    },
+    "projected_correct": 167,
+    "projection_gains": 48,
+    "projection_losses": 10,
+    "projection_minus_continuous": 0.15833333333333333,
+    "scope": "Closed 24-code diagnostic; projection is not a method for unseen-program repair.",
+    "summary": {
+      "nearest_oracle_latent": {
+        "both_correct": 55,
+        "cap_hits": 10,
+        "correct": 167,
+        "opposite_correct": 37,
+        "pairs": 120,
+        "views": 240
+      },
+      "oracle_latent": {
+        "both_correct": 100,
+        "cap_hits": 10,
+        "correct": 220,
+        "opposite_correct": 0,
+        "pairs": 120,
+        "views": 240
+      }
+    },
+    "views": 240
+  },
+  "fully_novel_inputs_subset": {
+    "all_numerical_gates_pass": false,
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 401,
+    "cluster_bootstrap_95pct": {
+      "correct_nearest_but_failed_repair": [
+        0.15151515151515152,
+        0.35784313725490197
+      ],
+      "swap_intended_repair": [
+        0.05392156862745098,
+        0.26732673267326734
+      ],
+      "swap_opposite_repair": [
+        0.3865979381443299,
+        0.7358490566037735
+      ],
+      "true_minus_swap": [
+        0.15196078431372548,
+        0.6565656565656566
+      ],
+      "true_nearest_code_accuracy": [
+        0.6458333333333334,
+        0.8910891089108911
+      ],
+      "true_pair_success": [
+        0.14678899082568808,
+        0.6036036036036037
+      ],
+      "true_repair": [
+        0.3865979381443299,
+        0.7358490566037735
+      ]
+    },
+    "failure_categories": {
+      "paired_swap": {
+        "executed_test_failure": 138,
+        "parse_rejected": 18,
+        "passed": 31,
+        "sandbox_policy_rejected": 11
+      },
+      "true_latent": {
+        "executed_test_failure": 58,
+        "parse_rejected": 18,
+        "passed": 111,
+        "sandbox_policy_rejected": 11
+      }
+    },
+    "metrics": {
+      "correct_nearest_but_failed_repair": 0.25757575757575757,
+      "swap_intended_repair": 0.15656565656565657,
+      "swap_opposite_repair": 0.5606060606060606,
+      "true_minus_swap": 0.40404040404040403,
+      "true_nearest_code_accuracy": 0.7727272727272727,
+      "true_pair_success": 0.36363636363636365,
+      "true_repair": 0.5606060606060606
+    },
+    "numerical_gates": {
+      "pair_success_at_least_60pct": false,
+      "swap_opposite_at_least_60pct": false,
+      "true_minus_swap_at_least_30pp": true,
+      "true_repair_at_least_75pct": false
+    },
+    "pairs": 99,
+    "per_family": {
+      "aggregate": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 9,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 0.9444444444444444,
+        "true_minus_swap": 0.9444444444444444,
+        "true_nearest_code_accuracy": 0.8888888888888888,
+        "true_pair_success": 0.8888888888888888,
+        "true_repair": 0.9444444444444444,
+        "views": 18
+      },
+      "arrange": {
+        "correct_nearest_but_failed_repair": 0.5,
+        "pairs": 8,
+        "swap_intended_repair": 0.625,
+        "swap_opposite_repair": 0.375,
+        "true_minus_swap": -0.25,
+        "true_nearest_code_accuracy": 0.5625,
+        "true_pair_success": 0.0,
+        "true_repair": 0.375,
+        "views": 16
+      },
+      "choose": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 10,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 1.0,
+        "true_minus_swap": 1.0,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 1.0,
+        "true_repair": 1.0,
+        "views": 20
+      },
+      "extreme": {
+        "correct_nearest_but_failed_repair": 0.375,
+        "pairs": 8,
+        "swap_intended_repair": 0.25,
+        "swap_opposite_repair": 0.5625,
+        "true_minus_swap": 0.3125,
+        "true_nearest_code_accuracy": 0.9375,
+        "true_pair_success": 0.25,
+        "true_repair": 0.5625,
+        "views": 16
+      },
+      "filter": {
+        "correct_nearest_but_failed_repair": 0.35,
+        "pairs": 10,
+        "swap_intended_repair": 0.4,
+        "swap_opposite_repair": 0.4,
+        "true_minus_swap": 0.0,
+        "true_nearest_code_accuracy": 0.75,
+        "true_pair_success": 0.1,
+        "true_repair": 0.4,
+        "views": 20
+      },
+      "locate": {
+        "correct_nearest_but_failed_repair": 0.5,
+        "pairs": 6,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 0.5,
+        "true_minus_swap": 0.5,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 0.0,
+        "true_repair": 0.5,
+        "views": 12
+      },
+      "measure": {
+        "correct_nearest_but_failed_repair": 0.4,
+        "pairs": 10,
+        "swap_intended_repair": 0.05,
+        "swap_opposite_repair": 0.35,
+        "true_minus_swap": 0.3,
+        "true_nearest_code_accuracy": 0.75,
+        "true_pair_success": 0.0,
+        "true_repair": 0.35,
+        "views": 20
+      },
+      "median": {
+        "correct_nearest_but_failed_repair": 0.25,
+        "pairs": 10,
+        "swap_intended_repair": 0.1,
+        "swap_opposite_repair": 0.4,
+        "true_minus_swap": 0.3,
+        "true_nearest_code_accuracy": 0.55,
+        "true_pair_success": 0.2,
+        "true_repair": 0.4,
+        "views": 20
+      },
+      "rotate": {
+        "correct_nearest_but_failed_repair": 0.3125,
+        "pairs": 8,
+        "swap_intended_repair": 0.3125,
+        "swap_opposite_repair": 0.0625,
+        "true_minus_swap": -0.25,
+        "true_nearest_code_accuracy": 0.3125,
+        "true_pair_success": 0.0,
+        "true_repair": 0.0625,
+        "views": 16
+      },
+      "transform": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 8,
+        "swap_intended_repair": 0.0625,
+        "swap_opposite_repair": 0.9375,
+        "true_minus_swap": 0.875,
+        "true_nearest_code_accuracy": 0.9375,
+        "true_pair_success": 0.875,
+        "true_repair": 0.9375,
+        "views": 16
+      },
+      "truth": {
+        "correct_nearest_but_failed_repair": 0.125,
+        "pairs": 8,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 0.875,
+        "true_minus_swap": 0.875,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 0.75,
+        "true_repair": 0.875,
+        "views": 16
+      },
+      "unique": {
+        "correct_nearest_but_failed_repair": 0.5,
+        "pairs": 4,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 0.0,
+        "true_minus_swap": 0.0,
+        "true_nearest_code_accuracy": 0.5,
+        "true_pair_success": 0.0,
+        "true_repair": 0.0,
+        "views": 8
+      }
+    },
+    "program_clusters": 12,
+    "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization."
+  },
+  "input_overlap": {
+    "development_pairs": 120,
+    "development_pairs_with_no_individual_test_overlap": 99,
+    "development_test_occurrences": 376,
+    "development_test_occurrences_seen_in_train": 23,
+    "development_unique_individual_tests": 375,
+    "exact_bundle_hash_overlap": 0,
+    "individual_test_overlap": 23,
+    "train_pairs": 768,
+    "train_unique_individual_tests": 2209
+  },
+  "matched_reference_panel": {
+    "current": {
+      "all_numerical_gates_pass": false,
+      "bootstrap_resamples": 2000,
+      "bootstrap_seed": 401,
+      "cluster_bootstrap_95pct": {
+        "correct_nearest_but_failed_repair": [
+          0.125,
+          0.4583333333333333
+        ],
+        "swap_intended_repair": [
+          0.0,
+          0.20833333333333334
+        ],
+        "swap_opposite_repair": [
+          0.2916666666666667,
+          0.75
+        ],
+        "true_minus_swap": [
+          0.125,
+          0.7083333333333334
+        ],
+        "true_nearest_code_accuracy": [
+          0.5,
+          0.9166666666666666
+        ],
+        "true_pair_success": [
+          0.08333333333333333,
+          0.5833333333333334
+        ],
+        "true_repair": [
+          0.2916666666666667,
+          0.75
+        ]
+      },
+      "failure_categories": {
+        "paired_swap": {
+          "executed_test_failure": 16,
+          "parse_rejected": 3,
+          "passed": 2,
+          "sandbox_policy_rejected": 3
+        },
+        "true_latent": {
+          "executed_test_failure": 6,
+          "parse_rejected": 3,
+          "passed": 12,
+          "sandbox_policy_rejected": 3
+        }
+      },
+      "metrics": {
+        "correct_nearest_but_failed_repair": 0.2916666666666667,
+        "swap_intended_repair": 0.08333333333333333,
+        "swap_opposite_repair": 0.5,
+        "true_minus_swap": 0.4166666666666667,
+        "true_nearest_code_accuracy": 0.7083333333333334,
+        "true_pair_success": 0.3333333333333333,
+        "true_repair": 0.5
+      },
+      "numerical_gates": {
+        "pair_success_at_least_60pct": false,
+        "swap_opposite_at_least_60pct": false,
+        "true_minus_swap_at_least_30pp": true,
+        "true_repair_at_least_75pct": false
+      },
+      "pairs": 12,
+      "per_family": {
+        "aggregate": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "arrange": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.5,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "choose": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "extreme": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "filter": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.5,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": -0.5,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        },
+        "locate": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "measure": {
+          "correct_nearest_but_failed_repair": 1.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        },
+        "median": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 0.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "rotate": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        },
+        "transform": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "truth": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "unique": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        }
+      },
+      "program_clusters": 12,
+      "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization."
+    },
+    "metric_differences": {
+      "correct_nearest_but_failed_repair": 0.041666666666666685,
+      "swap_intended_repair": -0.04166666666666667,
+      "swap_opposite_repair": 0.041666666666666685,
+      "true_minus_swap": 0.08333333333333337,
+      "true_nearest_code_accuracy": 0.04166666666666674,
+      "true_pair_success": 0.16666666666666666,
+      "true_repair": 0.041666666666666685
+    },
+    "note": "Different training-set sizes at equal updates; one seed, not matched-baseline replication.",
+    "reference": {
+      "all_numerical_gates_pass": false,
+      "bootstrap_resamples": 2000,
+      "bootstrap_seed": 401,
+      "cluster_bootstrap_95pct": {
+        "correct_nearest_but_failed_repair": [
+          0.125,
+          0.375
+        ],
+        "swap_intended_repair": [
+          0.0,
+          0.25
+        ],
+        "swap_opposite_repair": [
+          0.2916666666666667,
+          0.625
+        ],
+        "true_minus_swap": [
+          0.08333333333333333,
+          0.5416666666666666
+        ],
+        "true_nearest_code_accuracy": [
+          0.5,
+          0.8333333333333334
+        ],
+        "true_pair_success": [
+          0.0,
+          0.4166666666666667
+        ],
+        "true_repair": [
+          0.2916666666666667,
+          0.625
+        ]
+      },
+      "failure_categories": {
+        "paired_swap": {
+          "executed_test_failure": 15,
+          "parse_rejected": 2,
+          "passed": 3,
+          "sandbox_policy_rejected": 4
+        },
+        "true_latent": {
+          "executed_test_failure": 7,
+          "parse_rejected": 2,
+          "passed": 11,
+          "sandbox_policy_rejected": 4
+        }
+      },
+      "metrics": {
+        "correct_nearest_but_failed_repair": 0.25,
+        "swap_intended_repair": 0.125,
+        "swap_opposite_repair": 0.4583333333333333,
+        "true_minus_swap": 0.3333333333333333,
+        "true_nearest_code_accuracy": 0.6666666666666666,
+        "true_pair_success": 0.16666666666666666,
+        "true_repair": 0.4583333333333333
+      },
+      "numerical_gates": {
+        "pair_success_at_least_60pct": false,
+        "swap_opposite_at_least_60pct": false,
+        "true_minus_swap_at_least_30pp": true,
+        "true_repair_at_least_75pct": false
+      },
+      "pairs": 12,
+      "per_family": {
+        "aggregate": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.5,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "arrange": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "choose": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "extreme": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.5,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "filter": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.5,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": -0.5,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        },
+        "locate": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        },
+        "measure": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "median": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 0.5,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "rotate": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "transform": {
+          "correct_nearest_but_failed_repair": 0.5,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.5,
+          "true_minus_swap": 0.5,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.5,
+          "views": 2
+        },
+        "truth": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 1.0,
+          "true_minus_swap": 1.0,
+          "true_nearest_code_accuracy": 1.0,
+          "true_pair_success": 1.0,
+          "true_repair": 1.0,
+          "views": 2
+        },
+        "unique": {
+          "correct_nearest_but_failed_repair": 0.0,
+          "pairs": 1,
+          "swap_intended_repair": 0.0,
+          "swap_opposite_repair": 0.0,
+          "true_minus_swap": 0.0,
+          "true_nearest_code_accuracy": 0.0,
+          "true_pair_success": 0.0,
+          "true_repair": 0.0,
+          "views": 2
+        }
+      },
+      "program_clusters": 12,
+      "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization."
+    },
+    "reference_checkpoint_sha256": "60f64bd2d2b16785c16c07c86fc6234540c00cd07743da14cdb91d15e6cb3f89"
+  },
+  "metrics": {
+    "correct_nearest_but_failed_repair": 0.26666666666666666,
+    "swap_intended_repair": 0.14166666666666666,
+    "swap_opposite_repair": 0.5375,
+    "true_minus_swap": 0.3958333333333333,
+    "true_nearest_code_accuracy": 0.7625,
+    "true_pair_success": 0.3416666666666667,
+    "true_repair": 0.5375
+  },
+  "numerical_gates": {
+    "pair_success_at_least_60pct": false,
+    "swap_opposite_at_least_60pct": false,
+    "true_minus_swap_at_least_30pp": true,
+    "true_repair_at_least_75pct": false
+  },
+  "pairs": 120,
+  "per_family": {
+    "aggregate": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 0.95,
+      "true_minus_swap": 0.95,
+      "true_nearest_code_accuracy": 0.9,
+      "true_pair_success": 0.9,
+      "true_repair": 0.95,
+      "views": 20
+    },
+    "arrange": {
+      "correct_nearest_but_failed_repair": 0.5,
+      "pairs": 10,
+      "swap_intended_repair": 0.6,
+      "swap_opposite_repair": 0.4,
+      "true_minus_swap": -0.2,
+      "true_nearest_code_accuracy": 0.6,
+      "true_pair_success": 0.0,
+      "true_repair": 0.4,
+      "views": 20
+    },
+    "choose": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 1.0,
+      "true_minus_swap": 1.0,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 1.0,
+      "true_repair": 1.0,
+      "views": 20
+    },
+    "extreme": {
+      "correct_nearest_but_failed_repair": 0.3,
+      "pairs": 10,
+      "swap_intended_repair": 0.2,
+      "swap_opposite_repair": 0.65,
+      "true_minus_swap": 0.45,
+      "true_nearest_code_accuracy": 0.95,
+      "true_pair_success": 0.4,
+      "true_repair": 0.65,
+      "views": 20
+    },
+    "filter": {
+      "correct_nearest_but_failed_repair": 0.35,
+      "pairs": 10,
+      "swap_intended_repair": 0.4,
+      "swap_opposite_repair": 0.4,
+      "true_minus_swap": 0.0,
+      "true_nearest_code_accuracy": 0.75,
+      "true_pair_success": 0.1,
+      "true_repair": 0.4,
+      "views": 20
+    },
+    "locate": {
+      "correct_nearest_but_failed_repair": 0.5,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 0.5,
+      "true_minus_swap": 0.5,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 0.0,
+      "true_repair": 0.5,
+      "views": 20
+    },
+    "measure": {
+      "correct_nearest_but_failed_repair": 0.4,
+      "pairs": 10,
+      "swap_intended_repair": 0.05,
+      "swap_opposite_repair": 0.35,
+      "true_minus_swap": 0.3,
+      "true_nearest_code_accuracy": 0.75,
+      "true_pair_success": 0.0,
+      "true_repair": 0.35,
+      "views": 20
+    },
+    "median": {
+      "correct_nearest_but_failed_repair": 0.25,
+      "pairs": 10,
+      "swap_intended_repair": 0.1,
+      "swap_opposite_repair": 0.4,
+      "true_minus_swap": 0.3,
+      "true_nearest_code_accuracy": 0.55,
+      "true_pair_success": 0.2,
+      "true_repair": 0.4,
+      "views": 20
+    },
+    "rotate": {
+      "correct_nearest_but_failed_repair": 0.25,
+      "pairs": 10,
+      "swap_intended_repair": 0.25,
+      "swap_opposite_repair": 0.05,
+      "true_minus_swap": -0.2,
+      "true_nearest_code_accuracy": 0.25,
+      "true_pair_success": 0.0,
+      "true_repair": 0.05,
+      "views": 20
+    },
+    "transform": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.1,
+      "swap_opposite_repair": 0.9,
+      "true_minus_swap": 0.8,
+      "true_nearest_code_accuracy": 0.9,
+      "true_pair_success": 0.8,
+      "true_repair": 0.9,
+      "views": 20
+    },
+    "truth": {
+      "correct_nearest_but_failed_repair": 0.15,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 0.85,
+      "true_minus_swap": 0.85,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 0.7,
+      "true_repair": 0.85,
+      "views": 20
+    },
+    "unique": {
+      "correct_nearest_but_failed_repair": 0.5,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 0.0,
+      "true_minus_swap": 0.0,
+      "true_nearest_code_accuracy": 0.5,
+      "true_pair_success": 0.0,
+      "true_repair": 0.0,
+      "views": 20
+    }
+  },
+  "program_clusters": 12,
+  "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization.",
+  "summary": {
+    "paired_swap": {
+      "both_correct": 3,
+      "cap_hits": 10,
+      "correct": 34,
+      "opposite_correct": 129,
+      "pairs": 120,
+      "views": 240
+    },
+    "true_latent": {
+      "both_correct": 41,
+      "cap_hits": 10,
+      "correct": 129,
+      "opposite_correct": 34,
+      "pairs": 120,
+      "views": 240
+    }
+  },
+  "train_dataset_sha256": "750037c5df89f2acea767dfe1fdddeb0d575d86ca17566a676d650505f748e8d"
+}

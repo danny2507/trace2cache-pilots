@@ -1,0 +1,42 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/paired_runtime_v2/full_data_vector2000_seed401.pt",
+    "conditions": [
+      "true_latent",
+      "paired_swap"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/full_data_vector2000_dev_repair",
+    "pairs_per_family": 10
+  },
+  "checkpoint_sha256": "6ccd1151230ddc3ade6439d939e32aa81170f81e47461b5c8bdb065428897126",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 3.6135315895080566e-07,
+    "rmse": 2.4939202702967123e-08,
+    "views": 240
+  },
+  "peak_allocated_gib": 4.167229652404785,
+  "summary": {
+    "paired_swap": {
+      "both_correct": 3,
+      "cap_hits": 10,
+      "correct": 34,
+      "opposite_correct": 129,
+      "pairs": 120,
+      "views": 240
+    },
+    "true_latent": {
+      "both_correct": 41,
+      "cap_hits": 10,
+      "correct": 129,
+      "opposite_correct": 34,
+      "pairs": 120,
+      "views": 240
+    }
+  },
+  "training_panel": false
+}

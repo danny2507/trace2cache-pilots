@@ -115,3 +115,43 @@ def fully_novel_pair_uids(train, development):
     return {record.pair_uid for record in development
             if all((record.buggy_source, json.dumps(meta["args"], sort_keys=True)) not in seen
                    for meta in record.tests_metadata)}
+
+
+def analyze_fidelity(primary_rows, diagnostic_rows, *, seed=401, resamples=2000):
+    if resamples < 1:
+        raise ValueError("resamples must be positive")
+    def keyed(rows, condition):
+        selected = [row for row in rows if row["condition"] == condition]
+        mapping = {(row["pair_uid"], row["side"]): row for row in selected}
+        if len(mapping) != len(selected):
+            raise ValueError("duplicate fidelity row")
+        return mapping
+    true = keyed(primary_rows, "true_latent")
+    projected = keyed(diagnostic_rows, "nearest_oracle_latent")
+    oracle = keyed(diagnostic_rows, "oracle_latent")
+    if not true or set(true) != set(projected) or set(true) != set(oracle):
+        raise ValueError("fidelity panels differ")
+    families = {}
+    for key, row in true.items():
+        if any(other[key]["label"] != row["label"] or other[key]["family"] != row["family"] for other in (projected, oracle)):
+            raise ValueError("fidelity target metadata differs")
+        families.setdefault(row["family"], []).append(key)
+    groups = [families[family] for family in sorted(families)]
+    def delta(selected_groups):
+        keys = [key for group in selected_groups for key in group]
+        return sum(int(projected[key]["intended"]["passed"]) - int(true[key]["intended"]["passed"]) for key in keys) / len(keys)
+    rng = random.Random(seed)
+    samples = sorted(delta([rng.choice(groups) for _ in groups]) for _ in range(resamples))
+    gains = sum(not true[key]["intended"]["passed"] and projected[key]["intended"]["passed"] for key in true)
+    losses = sum(true[key]["intended"]["passed"] and not projected[key]["intended"]["passed"] for key in true)
+    return {"views": len(true), "continuous_correct": sum(row["intended"]["passed"] for row in true.values()),
+            "projected_correct": sum(row["intended"]["passed"] for row in projected.values()),
+            "oracle_correct": sum(row["intended"]["passed"] for row in oracle.values()),
+            "projection_gains": gains, "projection_losses": losses, "projection_minus_continuous": delta(groups),
+            "cluster_bootstrap_95pct_delta": [samples[int(.025 * (resamples - 1))], samples[int(.975 * (resamples - 1))]],
+            "bootstrap_seed": seed, "bootstrap_resamples": resamples,
+            "per_family": {family: {"views": len(keys),
+                "continuous_correct": sum(true[key]["intended"]["passed"] for key in keys),
+                "projected_correct": sum(projected[key]["intended"]["passed"] for key in keys),
+                "oracle_correct": sum(oracle[key]["intended"]["passed"] for key in keys)} for family, keys in sorted(families.items())},
+            "scope": "Closed 24-code diagnostic; projection is not a method for unseen-program repair."}

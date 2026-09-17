@@ -6,13 +6,14 @@ import json
 from pathlib import Path
 
 from trace2cache.paired_evidence import read_jsonl
-from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids
+from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids, analyze_fidelity
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--evaluation-dir", required=True)
 parser.add_argument("--train-dataset", required=True)
 parser.add_argument("--development-dataset", required=True)
 parser.add_argument("--reference-dir", help="optional earlier encoder evaluated on a subset of the same dev panel")
+parser.add_argument("--projection-dir", help="optional fixed-oracle diagnostic on the same full panel/checkpoint")
 parser.add_argument("--seed", type=int, default=401)
 args = parser.parse_args()
 directory = Path(args.evaluation_dir)
@@ -52,5 +53,21 @@ if args.reference_dir:
         "reference": old, "current": new,
         "metric_differences": {key: new["metrics"][key] - value for key, value in old["metrics"].items()},
         "note": "Different training-set sizes at equal updates; one seed, not matched-baseline replication."}
+if args.projection_dir:
+    projection_directory = Path(args.projection_dir)
+    projection_summary = json.loads((projection_directory / "summary.json").read_text())
+    for field in ("checkpoint_sha256", "dataset_sha256"):
+        if projection_summary[field] != summary[field]:
+            raise ValueError("projection diagnostic checkpoint/data differs")
+    for field in ("heldout_wording", "max_new_tokens"):
+        if projection_summary["args"][field] != summary["args"][field]:
+            raise ValueError("projection generation config differs")
+    projection_rows = [json.loads(line) for line in (projection_directory / "rows.jsonl").read_text().splitlines() if line]
+    if any(row["checkpoint_sha256"] != summary["checkpoint_sha256"] or row["dataset_sha256"] != summary["dataset_sha256"] for row in projection_rows):
+        raise ValueError("projection row hashes disagree")
+    result["fidelity_diagnostic"] = analyze_fidelity(rows, projection_rows, seed=args.seed)
+    result["fidelity_diagnostic"]["summary"] = projection_summary["summary"]
+    result["fidelity_diagnostic"]["generation_cache_hits"] = projection_summary["generation_cache_hits"]
+    result["fidelity_diagnostic"]["fixed_code_cache_entries"] = projection_summary["fixed_code_cache_entries_this_run"]
 (directory / "analysis.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
 print(json.dumps(result, indent=2, sort_keys=True))

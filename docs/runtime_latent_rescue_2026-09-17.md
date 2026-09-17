@@ -1,5 +1,10 @@
 # Runtime latent rescue experiments, 2026-09-17
 
+Follow-up: [the full-data run](runtime_latent_full_data_run_2026-09-17.md) trains on
+1,536 views and executes the full 240-view development panel. Continuous repair reaches
+53.75%, fixed-code projection 69.58%; the mechanism gate is still unmet. Read its
+handover for the next reader-alignment and typed-binding steps.
+
 This report supersedes the premature D0 no-go interpretation in
 `runtime_latent_implementation_status_2026-09-17.md`. The earlier 400-update budget missed
 an encoder that was still improving. Nearest-code accuracy after decoder training also

@@ -7,6 +7,9 @@ generalization.
 Update: the later [rescue experiments](runtime_latent_rescue_2026-09-17.md) overcome the
 400-update code-identification failure with a longer, decaying-LR vector schedule. Read
 that report before following this note's old no-go/typed-branch recommendation.
+Latest: [full-data transfer and fidelity diagnostics](runtime_latent_full_data_run_2026-09-17.md)
+use the audited 1,536-view train set. New-bundle evidence control is present, but repair
+and complete-pair gates remain unmet; the full implementation plan is not complete.
 
 ## Completed phases
 
