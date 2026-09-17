@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "data_seed": 401,
+  "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+  "receiver": "Qwen/Qwen2.5-1.5B-Instruct",
+  "codebook_checkpoint": "checkpoints/repair_latent/expanded_codebook_seed313.pt",
+  "feature_method": "context2",
+  "objective": "vector",
+  "steps": 400,
+  "batch_size": 16,
+  "learning_rate": 0.001,
+  "latent_slots": 8,
+  "hidden_width": 256,
+  "max_events": 512,
+  "max_tests": 8
+}
