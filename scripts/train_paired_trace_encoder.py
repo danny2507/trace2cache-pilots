@@ -53,6 +53,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--decoder-margin", type=float, default=0.1)
     parser.add_argument("--decoder-vector-weight", type=float, default=0.1)
     parser.add_argument("--counterfactual-weight", type=float, default=1.0)
+    parser.add_argument("--decoder-microbatch-pairs", type=int, default=0, help="split only decoder backward graphs; 0 keeps all matched pairs together")
     parser.add_argument("--init-checkpoint", help="v2 encoder checkpoint used to fork a post-warmup objective")
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
@@ -147,6 +148,8 @@ def main() -> None:
         raise SystemExit("decoder objectives require --sampling paired_family")
     if args.sampling == "paired_family" and args.batch_size != 2 * args.gradient_accumulation:
         raise SystemExit("paired_family requires batch-size == 2 * gradient-accumulation")
+    if args.decoder_microbatch_pairs < 0 or args.decoder_microbatch_pairs > args.gradient_accumulation:
+        raise SystemExit("decoder-microbatch-pairs must be in [0, gradient-accumulation]")
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     order_rng = random.Random(args.seed + 17); history = []; started = time.perf_counter()
     sampling_hasher = hashlib.sha256()
@@ -215,26 +218,35 @@ def main() -> None:
             label_a = chosen[0].label_a; label_b = chosen[0].label_b
             if any(record.label_a != label_a or record.label_b != label_b for record in chosen):
                 raise RuntimeError("family label mismatch")
-            batch_a = collate_views([record.evidence_a for record in chosen], feature_map, receiver.device, typed_values=args.typed_values)
-            batch_b = collate_views([record.evidence_b for record in chosen], feature_map, receiver.device, typed_values=args.typed_values)
-            latent_a, latent_b = encoder(**batch_a), encoder(**batch_b)
-            prompt_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_a)
-            prompt_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_b)
-            prompt_a_with_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_b)
-            prompt_b_with_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_a)
-            target_a = targets[label_a].expand(len(chosen), -1)
-            target_b = targets[label_b].expand(len(chosen), -1)
-            code_a = oracle[label_a].unsqueeze(0).expand(len(chosen), -1, -1)
-            code_b = oracle[label_b].unsqueeze(0).expand(len(chosen), -1, -1)
-            components = paired_counterfactual_patch_loss(
-                receiver, prompt_a, prompt_b, prompt_a_with_b, prompt_b_with_a,
-                target_a, target_b, code_a, code_b, latent_a, latent_b,
-                margin=args.decoder_margin, vector_weight=args.decoder_vector_weight,
-                counterfactual_weight=args.counterfactual_weight,
-            )
-            components["loss"].backward()
-            loss = components["loss"].detach()
-            diagnostics = {name: float(value.detach()) for name, value in components.items() if name != "loss"}
+            microbatch_pairs = args.decoder_microbatch_pairs or len(chosen)
+            component_sums: dict[str, float] = {}
+            total_loss = 0.0
+            for start in range(0, len(chosen), microbatch_pairs):
+                micro = chosen[start:start + microbatch_pairs]
+                weight = len(micro) / len(chosen)
+                batch_a = collate_views([record.evidence_a for record in micro], feature_map, receiver.device, typed_values=args.typed_values)
+                batch_b = collate_views([record.evidence_b for record in micro], feature_map, receiver.device, typed_values=args.typed_values)
+                latent_a, latent_b = encoder(**batch_a), encoder(**batch_b)
+                prompt_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_a)
+                prompt_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_b)
+                prompt_a_with_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_b)
+                prompt_b_with_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_a)
+                target_a = targets[label_a].expand(len(micro), -1)
+                target_b = targets[label_b].expand(len(micro), -1)
+                code_a = oracle[label_a].unsqueeze(0).expand(len(micro), -1, -1)
+                code_b = oracle[label_b].unsqueeze(0).expand(len(micro), -1, -1)
+                components = paired_counterfactual_patch_loss(
+                    receiver, prompt_a, prompt_b, prompt_a_with_b, prompt_b_with_a,
+                    target_a, target_b, code_a, code_b, latent_a, latent_b,
+                    margin=args.decoder_margin, vector_weight=args.decoder_vector_weight,
+                    counterfactual_weight=args.counterfactual_weight,
+                )
+                (components["loss"] * weight).backward()
+                total_loss += float(components["loss"].detach()) * weight
+                for name, value in components.items():
+                    if name != "loss": component_sums[name] = component_sums.get(name, 0.0) + float(value.detach()) * weight
+            loss = torch.tensor(total_loss, device=receiver.device)
+            diagnostics = component_sums
         grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
         if update == 1 or update % 50 == 0 or update == args.steps:
             encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values)
