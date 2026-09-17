@@ -1,0 +1,50 @@
+{
+  "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+  "feature_seconds": 0.6353738605976105,
+  "final": {
+    "mean_cosine": 0.020388364791870117,
+    "nearest_code_accuracy": 0.0416666679084301
+  },
+  "history": [
+    {
+      "grad_norm": 19.590564727783203,
+      "loss": 0.9328497648239136,
+      "margin": 0.0,
+      "mean_cosine": 0.03525145724415779,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "nll": 0.18055012822151184,
+      "rank": 0.7455241978168488,
+      "update": 1,
+      "vector": 0.06775469332933426
+    },
+    {
+      "grad_norm": 0.3166925013065338,
+      "loss": 0.9592059850692749,
+      "margin": -0.0002449527382850647,
+      "mean_cosine": 0.005190810188651085,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "nll": 0.15011703595519066,
+      "rank": 0.7457043528556824,
+      "update": 50,
+      "vector": 0.6338457465171814
+    },
+    {
+      "grad_norm": 0.36971378326416016,
+      "loss": 1.0560104846954346,
+      "margin": 0.001658361405134201,
+      "mean_cosine": 0.020388364791870117,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "nll": 0.2860272526741028,
+      "rank": 0.7444262206554413,
+      "update": 100,
+      "vector": 0.25557033717632294
+    }
+  ],
+  "peak_allocated_gib": 11.249,
+  "peak_reserved_gib": 12.008,
+  "timestamp": "2026-09-17T04:33:10.022123+00:00",
+  "train_seconds": 76.33698322996497,
+  "trainable_parameters": 4078848,
+  "unique_payloads": 421,
+  "views": 48
+}
