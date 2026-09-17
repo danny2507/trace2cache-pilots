@@ -669,7 +669,7 @@ We expanded the benchmark from four to twelve behavior pairs (24 repairs): order
 selection, Boolean aggregation, duplicate selection, lower/upper median, rotation direction,
 numeric transform, and filtering join the original locate, aggregate, extreme, and measure pairs.
 Within each pair, buggy code and the public test remain identical, while hidden tests require
-opposite repairs. The 98,304-parameter oracle behavior codebook was trained for 1,200 steps with
+opposite repairs. The 294,912-parameter oracle behavior codebook was trained for 1,200 steps with
 the receiver frozen.
 
 | Condition | Train instruction | Held-out instruction wording |
