@@ -36,6 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default="Qwen/Qwen2.5-1.5B-Instruct")
     parser.add_argument("--dataset", default=".local/datasets/paired_runtime_v2_smoke/train.jsonl")
+    parser.add_argument("--validation-dataset", help="optional disjoint development evidence; never included in optimizer batches")
     parser.add_argument("--codebook-checkpoint", default="checkpoints/repair_latent/expanded_codebook_seed313.pt")
     parser.add_argument("--feature-method", choices=("mean0", "context2"), default="context2")
     parser.add_argument("--objective", choices=("vector", "vector_identity", "decoder"), default="vector")
@@ -115,6 +116,10 @@ def main() -> None:
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported(): raise SystemExit("CUDA BF16 is required")
     torch.manual_seed(args.seed); random.seed(args.seed); torch.cuda.reset_peak_memory_stats()
     records = read_jsonl(args.dataset); views, labels = all_views(records)
+    validation_records = read_jsonl(args.validation_dataset) if args.validation_dataset else []
+    if validation_records and {record.input_hash for record in records} & {record.input_hash for record in validation_records}:
+        raise RuntimeError("training and validation input bundles overlap")
+    validation_views, validation_labels = all_views(validation_records)
     if max(len(view.events) for view in views) > args.max_events: raise RuntimeError("dataset exceeds max-events")
     model_path = resolve_local_model(args.model)
     tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
@@ -124,6 +129,7 @@ def main() -> None:
     oracle = load_oracle_codes(receiver, tokenizer, args.codebook_checkpoint)
     extractor = FrozenNativeFeatureExtractor(receiver, tokenizer, model_id=args.model, cache_dir=args.feature_cache)
     started_features = time.perf_counter(); feature_map = build_feature_map(extractor, views, args.feature_method, args.feature_batch_size); feature_seconds = time.perf_counter() - started_features
+    validation_feature_map = build_feature_map(extractor, validation_views, args.feature_method, args.feature_batch_size) if validation_views else {}
     encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=args.hidden_width, max_events=args.max_events, max_tests=args.max_tests).to("cuda")
     if args.init_checkpoint:
         payload = torch.load(args.init_checkpoint, map_location=receiver.device, weights_only=False)
@@ -180,13 +186,21 @@ def main() -> None:
             diagnostics = component_sums
         grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
         if update == 1 or update % 50 == 0 or update == args.steps:
-            encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size); encoder.train()
+            encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size)
+            if validation_views:
+                metrics["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size)
+            encoder.train()
             history.append({"update": update, "loss": float(loss.detach()), "grad_norm": float(grad_norm), **diagnostics, **metrics})
             print(json.dumps(history[-1], sort_keys=True), flush=True)
     encoder.eval(); final = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size)
-    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
+    if validation_views:
+        final["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size)
+    data_hashes = {"train": hashlib.sha256(Path(args.dataset).read_bytes()).hexdigest()}
+    if args.validation_dataset:
+        data_hashes["validation"] = hashlib.sha256(Path(args.validation_dataset).read_bytes()).hexdigest()
+    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "dataset_sha256": data_hashes, "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
     checkpoint = Path(args.checkpoint); checkpoint.parent.mkdir(parents=True, exist_ok=True); temporary = checkpoint.with_suffix(".tmp"); torch.save(payload, temporary); temporary.replace(checkpoint)
-    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "views": len(views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
+    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "dataset_sha256": data_hashes, "views": len(views), "validation_views": len(validation_views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
     output = Path(args.output); output.parent.mkdir(parents=True, exist_ok=True); output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps({"final": final, "output": str(output)}, sort_keys=True))
 
