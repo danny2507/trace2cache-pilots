@@ -1,0 +1,89 @@
+{
+  "dataset": ".local/datasets/paired_runtime_v2_smoke/train.jsonl",
+  "feature_seconds": 2.6213260367512703,
+  "final": {
+    "mean_cosine": 0.5524975061416626,
+    "nearest_code_accuracy": 0.3125
+  },
+  "history": [
+    {
+      "grad_norm": 0.13126032054424286,
+      "loss": 0.06783000379800797,
+      "mean_cosine": 0.021190565079450607,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "update": 1,
+      "vector": 0.06783000379800797
+    },
+    {
+      "grad_norm": 0.07355150580406189,
+      "loss": 0.0691213309764862,
+      "mean_cosine": 0.3509330749511719,
+      "nearest_code_accuracy": 0.0416666679084301,
+      "update": 50,
+      "vector": 0.0691213309764862
+    },
+    {
+      "grad_norm": 0.07289756089448929,
+      "loss": 0.06363947689533234,
+      "mean_cosine": 0.38283878564834595,
+      "nearest_code_accuracy": 0.0833333358168602,
+      "update": 100,
+      "vector": 0.06363947689533234
+    },
+    {
+      "grad_norm": 0.046905193477869034,
+      "loss": 0.06591502577066422,
+      "mean_cosine": 0.4008934497833252,
+      "nearest_code_accuracy": 0.1041666716337204,
+      "update": 150,
+      "vector": 0.06591502577066422
+    },
+    {
+      "grad_norm": 0.04465261846780777,
+      "loss": 0.06240877881646156,
+      "mean_cosine": 0.4319429397583008,
+      "nearest_code_accuracy": 0.1458333432674408,
+      "update": 200,
+      "vector": 0.06240877881646156
+    },
+    {
+      "grad_norm": 0.0407526008784771,
+      "loss": 0.05794011801481247,
+      "mean_cosine": 0.46965110301971436,
+      "nearest_code_accuracy": 0.2083333432674408,
+      "update": 250,
+      "vector": 0.05794011801481247
+    },
+    {
+      "grad_norm": 0.03753397986292839,
+      "loss": 0.057793162763118744,
+      "mean_cosine": 0.49930357933044434,
+      "nearest_code_accuracy": 0.2291666716337204,
+      "update": 300,
+      "vector": 0.057793162763118744
+    },
+    {
+      "grad_norm": 0.04701082035899162,
+      "loss": 0.04748547822237015,
+      "mean_cosine": 0.5185317993164062,
+      "nearest_code_accuracy": 0.25,
+      "update": 350,
+      "vector": 0.04748547822237015
+    },
+    {
+      "grad_norm": 0.03525031358003616,
+      "loss": 0.04678849130868912,
+      "mean_cosine": 0.5524975061416626,
+      "nearest_code_accuracy": 0.3125,
+      "update": 400,
+      "vector": 0.04678849130868912
+    }
+  ],
+  "peak_allocated_gib": 3.561,
+  "peak_reserved_gib": 3.604,
+  "timestamp": "2026-09-17T04:30:40.350962+00:00",
+  "train_seconds": 29.075328450649977,
+  "trainable_parameters": 4078848,
+  "unique_payloads": 421,
+  "views": 48
+}
