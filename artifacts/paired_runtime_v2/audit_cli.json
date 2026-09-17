@@ -1,0 +1,46 @@
+{
+  "cross_split_overlaps": {
+    "dev:test_bundle_long": 0,
+    "dev:test_bundle_long_value_new": 0,
+    "dev:test_short": 0,
+    "dev:test_value_new": 0,
+    "dev:train": 0,
+    "test_bundle_long:test_bundle_long_value_new": 0,
+    "test_bundle_long:test_short": 0,
+    "test_bundle_long:test_value_new": 0,
+    "test_bundle_long:train": 0,
+    "test_bundle_long_value_new:test_short": 0,
+    "test_bundle_long_value_new:test_value_new": 0,
+    "test_bundle_long_value_new:train": 0,
+    "test_short:test_value_new": 0,
+    "test_short:train": 0,
+    "test_value_new:train": 0
+  },
+  "errors": [],
+  "families": {
+    "aggregate": 114,
+    "arrange": 114,
+    "choose": 114,
+    "extreme": 114,
+    "filter": 114,
+    "locate": 114,
+    "measure": 114,
+    "median": 114,
+    "rotate": 114,
+    "transform": 114,
+    "truth": 114,
+    "unique": 114
+  },
+  "input_hashes": 1368,
+  "passed": true,
+  "records": 1368,
+  "schema_version": 2,
+  "splits": {
+    "dev": 120,
+    "test_bundle_long": 120,
+    "test_bundle_long_value_new": 120,
+    "test_short": 120,
+    "test_value_new": 120,
+    "train": 768
+  }
+}

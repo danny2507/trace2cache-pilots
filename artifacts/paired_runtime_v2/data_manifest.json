@@ -1,0 +1,182 @@
+{
+  "audit": "artifacts/paired_runtime_v2/data_audit.json",
+  "passed": true,
+  "schema_version": 2,
+  "seed": 401,
+  "splits": {
+    "dev": {
+      "distribution": {
+        "bundle_test_count": [
+          2,
+          4
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "train"
+      },
+      "records": 120,
+      "rejected": {
+        "aggregate": 1,
+        "arrange": 0,
+        "choose": 0,
+        "extreme": 0,
+        "filter": 0,
+        "locate": 0,
+        "measure": 11,
+        "median": 0,
+        "rotate": 0,
+        "transform": 0,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51"
+    },
+    "test_bundle_long": {
+      "distribution": {
+        "bundle_test_count": [
+          5,
+          8
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "train"
+      },
+      "records": 120,
+      "rejected": {
+        "aggregate": 1,
+        "arrange": 0,
+        "choose": 0,
+        "extreme": 1,
+        "filter": 2,
+        "locate": 0,
+        "measure": 21,
+        "median": 0,
+        "rotate": 1,
+        "transform": 3,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "303d0d5c6db542a99124fe036625524c854686810e4e74a714c1e89640412043"
+    },
+    "test_bundle_long_value_new": {
+      "distribution": {
+        "bundle_test_count": [
+          5,
+          8
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "new"
+      },
+      "records": 120,
+      "rejected": {
+        "aggregate": 0,
+        "arrange": 0,
+        "choose": 0,
+        "extreme": 0,
+        "filter": 5,
+        "locate": 0,
+        "measure": 56,
+        "median": 0,
+        "rotate": 0,
+        "transform": 0,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "abdf444d1e06bcbe6c2fe38f2ebff825c865b376d81e20e0836207bbdba6a360"
+    },
+    "test_short": {
+      "distribution": {
+        "bundle_test_count": [
+          2,
+          4
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "train"
+      },
+      "records": 120,
+      "rejected": {
+        "aggregate": 2,
+        "arrange": 0,
+        "choose": 0,
+        "extreme": 0,
+        "filter": 1,
+        "locate": 0,
+        "measure": 6,
+        "median": 0,
+        "rotate": 0,
+        "transform": 1,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "c5c2f68cae406959af83017c7e6c7154aba2e75437b490eeb0e8c2032354b05f"
+    },
+    "test_value_new": {
+      "distribution": {
+        "bundle_test_count": [
+          2,
+          4
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "new"
+      },
+      "records": 120,
+      "rejected": {
+        "aggregate": 0,
+        "arrange": 0,
+        "choose": 0,
+        "extreme": 0,
+        "filter": 0,
+        "locate": 0,
+        "measure": 12,
+        "median": 0,
+        "rotate": 0,
+        "transform": 0,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "b5109c0658e52b011472f57820f66d858b0cf6554c3e194e45c82f8e5d0abf13"
+    },
+    "train": {
+      "distribution": {
+        "bundle_test_count": [
+          2,
+          4
+        ],
+        "item_count": [
+          3,
+          5
+        ],
+        "value_domain": "train"
+      },
+      "records": 768,
+      "rejected": {
+        "aggregate": 8,
+        "arrange": 1,
+        "choose": 0,
+        "extreme": 1,
+        "filter": 13,
+        "locate": 0,
+        "measure": 80,
+        "median": 0,
+        "rotate": 1,
+        "transform": 5,
+        "truth": 0,
+        "unique": 0
+      },
+      "sha256": "750037c5df89f2acea767dfe1fdddeb0d575d86ca17566a676d650505f748e8d"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "cross_split_input_hashes": 1368,
+  "errors": [],
+  "families": {
+    "aggregate": 114,
+    "arrange": 114,
+    "choose": 114,
+    "extreme": 114,
+    "filter": 114,
+    "locate": 114,
+    "measure": 114,
+    "median": 114,
+    "rotate": 114,
+    "transform": 114,
+    "truth": 114,
+    "unique": 114
+  },
+  "input_hashes": 1368,
+  "passed": true,
+  "records": 1368,
+  "schema_version": 2
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 2,
+  "data_seed": 401,
+  "train_pairs_per_family": 2,
+  "eval_pairs_per_family": 2,
+  "receiver": "Qwen/Qwen2.5-1.5B-Instruct",
+  "feature_method": "mean0",
+  "objective": "vector",
+  "latent_slots": 8,
+  "max_events": 512,
+  "max_tests": 8,
+  "max_content_tokens": 128
+}
