@@ -61,7 +61,22 @@ Run from the project root using `.venv/bin/python`, with
   --dataset .local/datasets/paired_runtime_v2/dev.jsonl \
   --pairs-per-family 10 --conditions true_latent paired_swap \
   --output-dir artifacts/paired_runtime_v2/full_data_vector2000_dev_repair
+
+.venv/bin/python scripts/analyze_paired_transfer.py \
+  --evaluation-dir artifacts/paired_runtime_v2/full_data_vector2000_dev_repair \
+  --train-dataset .local/datasets/paired_runtime_v2/train.jsonl \
+  --development-dataset .local/datasets/paired_runtime_v2/dev.jsonl
 ```
 
 Code/protocol must be committed before starting training. Results will be appended
 after execution; no improvement is assumed in advance.
+
+## Additional overlap audit before repair evaluation
+
+The train/development bundle-hash overlap is zero. However, individual tests need not be
+disjoint when generated from this small value domain: 23 of 376 development test
+occurrences appear in training (23 unique repeated inputs). There are 99 development
+pairs whose **every** individual test input is unseen in training. Save both the full
+development result and this stricter subset. The subset is defined from input overlap,
+not repair outcomes. Use a 2,000-resample family-cluster bootstrap with seed 401; twelve
+program groups imply substantial uncertainty and limited external validity.
