@@ -83,3 +83,26 @@ not repair outcomes. Use a 2,000-resample family-cluster bootstrap with seed 401
 program groups imply substantial uncertainty and limited external validity.
 Also compare the new run against the earlier 48-view encoder on exactly its saved
 12-pair development panel, not its 24-view counts against the larger 240-view result.
+
+## Measured training result
+
+All three stages completed on the A100. The receiver is frozen and only the existing
+4,078,848-parameter encoder is trained. The development identity score is not executed
+repair accuracy.
+
+| Total updates | Train nearest-code identity | Development nearest-code identity | Development cosine |
+|---|---:|---:|---:|
+| 400 | 586/1,536 (38.15%) | 94/240 (39.17%) | 0.5713 |
+| 1,200 | 1,075/1,536 (69.99%) | 168/240 (70.00%) | 0.8143 |
+| 2,000 | 1,170/1,536 (76.17%) | 183/240 (76.25%) | 0.8549 |
+
+Stage training-loop times, including periodic train/development identity evaluation,
+were 69.9, 128.4 and 130.6 seconds. Training feature preparation took 48.5 seconds on
+the first stage and 1.5 / 0.9 seconds on later cache-pack loads. These feature times
+exclude separate development feature preparation and receiver loading; they are not
+end-to-end wall times. Peak allocated GPU memory was 8.72 GiB. Tests: 41 passed.
+
+Development code identity briefly reached 193/240 at total update 1,850 but the
+prespecified final checkpoint is used for repair. No best-checkpoint/test selection
+is performed. Small train/development identity gaps are encouraging for known-program
+evidence transfer, but cannot establish correct continuous-latent decoding.
