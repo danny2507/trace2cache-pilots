@@ -12,9 +12,14 @@ def _metrics(groups):
     swap = sum(row["intended"]["passed"] for pair in pairs for row in pair["paired_swap"])
     opposite = sum(row["opposite"]["passed"] for pair in pairs for row in pair["paired_swap"])
     both = sum(all(row["intended"]["passed"] for row in pair["true_latent"]) for pair in pairs)
-    return {"true_repair": true / denominator, "swap_intended_repair": swap / denominator,
+    result = {"true_repair": true / denominator, "swap_intended_repair": swap / denominator,
             "true_minus_swap": (true - swap) / denominator,
             "swap_opposite_repair": opposite / denominator, "true_pair_success": both / len(pairs)}
+    true_rows = [row for pair in pairs for row in pair["true_latent"]]
+    if all("nearest_label" in row and "label" in row for row in true_rows):
+        result["true_nearest_code_accuracy"] = sum(row["nearest_label"] == row["label"] for row in true_rows) / denominator
+        result["correct_nearest_but_failed_repair"] = sum(row["nearest_label"] == row["label"] and not row["intended"]["passed"] for row in true_rows) / denominator
+    return result
 
 
 def analyze_interventions(rows, *, seed=401, resamples=2000):
