@@ -1,7 +1,7 @@
 import unittest
 from types import SimpleNamespace
 
-from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids
+from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids, failure_categories
 
 
 class TransferAnalysisTest(unittest.TestCase):
@@ -35,6 +35,12 @@ class TransferAnalysisTest(unittest.TestCase):
         self.assertEqual(metrics["true_nearest_code_accuracy"], 1.0)
         self.assertEqual(metrics["true_repair"], 0.75)
         self.assertEqual(metrics["correct_nearest_but_failed_repair"], 0.25)
+
+    def test_sandbox_rejection_is_separate_from_failed_execution(self):
+        rows = [{"intended": {"passed": False, "error": "ValueError: call is not allowlisted: set"}},
+                {"intended": {"passed": False, "tests": [{"passed": False}]}},
+                {"intended": {"passed": False, "error": "ValueError: no parseable function named f"}}]
+        self.assertEqual(failure_categories(rows), {"sandbox_policy_rejected": 1, "executed_test_failure": 1, "parse_rejected": 1})
 
     def test_exact_bundle_disjointness_does_not_imply_individual_input_disjointness(self):
         def record(uid, values):

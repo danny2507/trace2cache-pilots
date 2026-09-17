@@ -3,6 +3,28 @@ from __future__ import annotations
 
 import json
 import random
+from collections import Counter
+
+
+def failure_categories(rows):
+    counts = Counter()
+    for row in rows:
+        if row["intended"]["passed"]:
+            counts["passed"] += 1
+            continue
+        error = row["intended"].get("error", "")
+        if "no parseable function" in error:
+            category = "parse_rejected"
+        elif any(text in error for text in ("forbidden syntax", "attribute access is forbidden", "only direct calls", "call is not allowlisted", "patch must contain exactly")):
+            category = "sandbox_policy_rejected"
+        elif "TimeoutExpired" in error:
+            category = "execution_timeout"
+        elif error:
+            category = "other_error"
+        else:
+            category = "executed_test_failure"
+        counts[category] += 1
+    return dict(sorted(counts.items()))
 
 
 def _metrics(groups):
@@ -63,6 +85,8 @@ def analyze_interventions(rows, *, seed=401, resamples=2000):
              "swap_opposite_at_least_60pct": point["swap_opposite_repair"] >= 0.60}
     return {"program_clusters": len(groups), "pairs": sum(len(group) for group in groups),
             "metrics": point, "per_family": per_family, "cluster_bootstrap_95pct": intervals,
+            "failure_categories": {condition: failure_categories([row for row in rows if row["condition"] == condition])
+                                   for condition in ("true_latent", "paired_swap")},
             "bootstrap_seed": seed, "bootstrap_resamples": resamples, "numerical_gates": gates,
             "all_numerical_gates_pass": all(gates.values()),
             "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization."}
