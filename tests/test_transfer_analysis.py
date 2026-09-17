@@ -1,6 +1,7 @@
 import unittest
+from types import SimpleNamespace
 
-from trace2cache.transfer_analysis import analyze_interventions
+from trace2cache.transfer_analysis import analyze_interventions, audit_input_overlap, fully_novel_pair_uids
 
 
 class TransferAnalysisTest(unittest.TestCase):
@@ -24,3 +25,15 @@ class TransferAnalysisTest(unittest.TestCase):
             analyze_interventions(self.rows()[:-1])
         with self.assertRaises(ValueError):
             analyze_interventions(self.rows() + self.rows()[:1])
+
+    def test_exact_bundle_disjointness_does_not_imply_individual_input_disjointness(self):
+        def record(uid, values):
+            return SimpleNamespace(pair_uid=uid, input_hash=uid, buggy_source="program",
+                                   tests_metadata=[{"args": [value]} for value in values])
+        train = [record("train", [1, 2])]
+        dev = [record("dev1", [2, 3]), record("dev2", [4, 5])]
+        audit = audit_input_overlap(train, dev)
+        self.assertEqual(audit["exact_bundle_hash_overlap"], 0)
+        self.assertEqual(audit["individual_test_overlap"], 1)
+        self.assertEqual(audit["development_pairs_with_no_individual_test_overlap"], 1)
+        self.assertEqual(fully_novel_pair_uids(train, dev), {"dev2"})

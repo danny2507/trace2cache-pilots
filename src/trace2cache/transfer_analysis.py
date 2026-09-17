@@ -71,8 +71,18 @@ def audit_input_overlap(train, development):
     repeated = train_tests & dev_tests
     dev_occurrences = [(record.buggy_source, json.dumps(meta["args"], sort_keys=True))
                        for record in development for meta in record.tests_metadata]
+    fully_novel = fully_novel_pair_uids(train, development)
     return {"train_pairs": len(train), "development_pairs": len(development),
             "exact_bundle_hash_overlap": len({row.input_hash for row in train} & {row.input_hash for row in development}),
             "train_unique_individual_tests": len(train_tests), "development_unique_individual_tests": len(dev_tests),
             "individual_test_overlap": len(repeated), "development_test_occurrences": len(dev_occurrences),
-            "development_test_occurrences_seen_in_train": sum(test in train_tests for test in dev_occurrences)}
+            "development_test_occurrences_seen_in_train": sum(test in train_tests for test in dev_occurrences),
+            "development_pairs_with_no_individual_test_overlap": len(fully_novel)}
+
+
+def fully_novel_pair_uids(train, development):
+    seen = {(record.buggy_source, json.dumps(meta["args"], sort_keys=True))
+            for record in train for meta in record.tests_metadata}
+    return {record.pair_uid for record in development
+            if all((record.buggy_source, json.dumps(meta["args"], sort_keys=True)) not in seen
+                   for meta in record.tests_metadata)}
