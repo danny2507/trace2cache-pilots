@@ -159,11 +159,13 @@ class FrozenNativeFeatureExtractor:
         return difference
 
 
-def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device, *, typed_values: bool = False) -> dict[str, torch.Tensor]:
+def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device, *, typed_values: bool = False, binding_relations: bool = False) -> dict[str, torch.Tensor]:
     """Pad EvidenceViews, optionally expanding safe tagged values into ordered nodes."""
     from .typed_values import FEATURE_DIM, parse_typed_nodes, typed_feature
     views = list(views)
     if not views: raise ValueError("cannot collate no views")
+    if typed_values and binding_relations:
+        raise ValueError("typed expansion and binding relations are separate representation ablations")
     expanded = []
     for view in views:
         entries = []
@@ -178,11 +180,21 @@ def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor],
     tests = torch.zeros(len(views), width, dtype=torch.long, device=device)
     mask = torch.zeros(len(views), width, dtype=torch.bool, device=device)
     typed = torch.zeros(len(views), width, FEATURE_DIM, dtype=torch.float32, device=device) if typed_values else None
+    relations = torch.zeros(len(views), width, width, dtype=torch.long, device=device) if binding_relations else None
     for batch_index, entries in enumerate(expanded):
         for event_index, (event, node) in enumerate(entries):
             contents[batch_index, event_index] = feature_map[event.content].to(device)
             roles[batch_index, event_index] = event.role_id; tests[batch_index, event_index] = event.test_id; mask[batch_index, event_index] = True
             if node is not None: typed[batch_index, event_index] = torch.tensor(typed_feature(node), device=device)
+        if relations is not None:
+            from .binding_encoder import SELF, relation_edges
+            valid = len(entries)
+            diagonal = torch.arange(valid, device=device)
+            relations[batch_index, diagonal, diagonal] = SELF
+            # Binding mode has no virtual nodes, so view event indices are tensor indices.
+            for source, target, relation in relation_edges(views[batch_index].events):
+                relations[batch_index, target, source] = relation
     result = {"content_vectors": contents, "role_ids": roles, "test_ids": tests, "event_mask": mask}
     if typed is not None: result["typed_features"] = typed
+    if relations is not None: result["relation_ids"] = relations
     return result

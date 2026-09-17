@@ -198,6 +198,7 @@ class RoleAwareEventEncoder(nn.Module):
         num_heads: int = 4,
         slot_roles: tuple[tuple[int, ...], ...] | None = None,
         typed_feature_dim: int = 0,
+        relation_types: int = 0,
     ) -> None:
         super().__init__()
         if output_anchor.ndim != 2 or output_anchor.shape[1] != model_width:
@@ -205,6 +206,7 @@ class RoleAwareEventEncoder(nn.Module):
         self.register_buffer("output_anchor", output_anchor.float().clone())
         self.content_projection = nn.Linear(model_width, hidden_width)
         self.typed_feature_dim = typed_feature_dim
+        self.relation_types = relation_types
         self.typed_projection = (
             nn.Sequential(nn.LayerNorm(typed_feature_dim), nn.Linear(typed_feature_dim, hidden_width, bias=False))
             if typed_feature_dim else None
@@ -213,6 +215,7 @@ class RoleAwareEventEncoder(nn.Module):
         # linear map preserves that control while still receiving gradients on update one.
         if self.typed_projection is not None:
             nn.init.zeros_(self.typed_projection[1].weight)
+        self.relation_layer = RelationMessageLayer(hidden_width, relation_types) if relation_types else None
         self.role_embedding = nn.Embedding(num_roles, hidden_width)
         self.register_buffer(
             "event_positions", self._sinusoidal(max_events, hidden_width), persistent=False
@@ -281,6 +284,7 @@ class RoleAwareEventEncoder(nn.Module):
         test_ids: torch.Tensor,
         event_mask: torch.Tensor,
         typed_features: torch.Tensor | None = None,
+        relation_ids: torch.Tensor | None = None,
     ) -> torch.Tensor:
         batch_size, event_count, _ = content_vectors.shape
         if event_count > self.event_positions.shape[0]:
@@ -299,6 +303,10 @@ class RoleAwareEventEncoder(nn.Module):
             if typed_features is None or typed_features.shape[:2] != event_mask.shape or typed_features.shape[-1] != self.typed_feature_dim:
                 raise ValueError("typed features must match the configured event batch")
             events = events + self.typed_projection(typed_features.float())
+        if self.relation_layer is not None:
+            if relation_ids is None or relation_ids.shape != (batch_size, event_count, event_count):
+                raise ValueError("relation ids must have shape [batch, events, events]")
+            events = self.relation_layer(events, relation_ids, event_mask)
         padding_mask = ~event_mask.bool()
         events = self.event_encoder(events, src_key_padding_mask=padding_mask)
         queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
@@ -314,6 +322,31 @@ class RoleAwareEventEncoder(nn.Module):
             queries, events, events, attn_mask=attention_mask, need_weights=False
         )
         return self.output_anchor.unsqueeze(0) + self.output(latents)
+
+
+class RelationMessageLayer(nn.Module):
+    """One relation-masked attention message pass, zero-residual initialized for control."""
+
+    def __init__(self, width: int, relation_types: int) -> None:
+        super().__init__()
+        if relation_types < 2: raise ValueError("need NONE plus at least SELF relation")
+        self.relation_types = relation_types
+        self.query, self.key, self.value = nn.Linear(width, width, bias=False), nn.Linear(width, width, bias=False), nn.Linear(width, width, bias=False)
+        self.relation_bias = nn.Embedding(relation_types, 1)
+        self.output = nn.Linear(width, width)
+        nn.init.zeros_(self.output.weight); nn.init.zeros_(self.output.bias)
+
+    def forward(self, events: torch.Tensor, relation_ids: torch.Tensor, event_mask: torch.Tensor) -> torch.Tensor:
+        if relation_ids.min().item() < 0 or relation_ids.max().item() >= self.relation_types:
+            raise ValueError("relation id outside configured vocabulary")
+        scores = self.query(events) @ self.key(events).transpose(-1, -2) / math.sqrt(events.shape[-1])
+        scores = scores + self.relation_bias(relation_ids).squeeze(-1)
+        allowed = relation_ids.ne(0) & event_mask[:, :, None] & event_mask[:, None, :]
+        scores = scores.masked_fill(~allowed, torch.finfo(scores.dtype).min)
+        weights = torch.softmax(scores, dim=-1)
+        weights = torch.where(event_mask[:, :, None], weights, torch.zeros_like(weights))
+        message = weights @ self.value(events)
+        return events + self.output(message)
 
 
 def trainable_parameter_count(module: nn.Module) -> int:

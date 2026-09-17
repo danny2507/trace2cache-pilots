@@ -76,10 +76,10 @@ def summarize(rows):
 
 
 @torch.inference_mode()
-def audit_encoder_padding(encoder, views, feature_map, oracle, *, typed_values: bool):
+def audit_encoder_padding(encoder, views, feature_map, oracle, *, typed_values: bool, binding_relations: bool):
     """Check that repair-time singleton encoding matches the padded training evaluation."""
-    singleton = torch.cat([encoder(**collate_views([view], feature_map, oracle.device, typed_values=typed_values)) for view in views])
-    grouped = torch.cat([encoder(**collate_views(views[start:start + 16], feature_map, oracle.device, typed_values=typed_values)) for start in range(0, len(views), 16)])
+    singleton = torch.cat([encoder(**collate_views([view], feature_map, oracle.device, typed_values=typed_values, binding_relations=binding_relations)) for view in views])
+    grouped = torch.cat([encoder(**collate_views(views[start:start + 16], feature_map, oracle.device, typed_values=typed_values, binding_relations=binding_relations)) for start in range(0, len(views), 16)])
     difference = singleton.float() - grouped.float()
     singleton_codes = torch.nn.functional.cosine_similarity(singleton.flatten(1).unsqueeze(1), oracle.flatten(1).unsqueeze(0), dim=-1).argmax(1)
     grouped_codes = torch.nn.functional.cosine_similarity(grouped.flatten(1).unsqueeze(1), oracle.flatten(1).unsqueeze(0), dim=-1).argmax(1)
@@ -99,8 +99,10 @@ def main():
     receiver.requires_grad_(False)
     oracle = load_oracle_codes(receiver, tokenizer, config["codebook_checkpoint"])
     from trace2cache.typed_values import FEATURE_DIM
+    from trace2cache.binding_encoder import NUM_RELATIONS
     typed_values = bool(config.get("typed_values", False))
-    encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=config["hidden_width"], max_events=config["max_events"], max_tests=config["max_tests"], typed_feature_dim=FEATURE_DIM if typed_values else 0).to("cuda").eval()
+    binding_relations = bool(config.get("binding_relations", False))
+    encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=config["hidden_width"], max_events=config["max_events"], max_tests=config["max_tests"], typed_feature_dim=FEATURE_DIM if typed_values else 0, relation_types=NUM_RELATIONS if binding_relations else 0).to("cuda").eval()
     encoder.load_state_dict(payload["encoder"], strict=True)
     counts = {}; records = []
     for record in read_jsonl(args.dataset):
@@ -110,7 +112,7 @@ def main():
     views = [controlled_view(view, condition) for record in records for view in (record.evidence_a, record.evidence_b) for condition in args.conditions]
     extractor = FrozenNativeFeatureExtractor(receiver, tokenizer, model_id=config["model"], cache_dir=config["feature_cache"])
     feature_map = build_feature_map(extractor, views, config["feature_method"], config["feature_batch_size"])
-    padding_audit = audit_encoder_padding(encoder, [view for record in records for view in (record.evidence_a, record.evidence_b)], feature_map, oracle, typed_values=typed_values)
+    padding_audit = audit_encoder_padding(encoder, [view for record in records for view in (record.evidence_a, record.evidence_b)], feature_map, oracle, typed_values=typed_values, binding_relations=binding_relations)
     print(json.dumps({"encoder_padding_audit": padding_audit}), flush=True)
     items = get_ambiguous_cases()
     checkpoint_hash = hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()
@@ -134,7 +136,7 @@ def main():
                     began = time.perf_counter()
                     source_view = getattr(record, f"evidence_{other if condition in ('paired_swap', 'paired_swap_nearest') else side}")
                     view = controlled_view(source_view, condition)
-                    latent = encoder(**collate_views([view], feature_map, receiver.device, typed_values=typed_values))
+                    latent = encoder(**collate_views([view], feature_map, receiver.device, typed_values=typed_values, binding_relations=binding_relations))
                     similarity = torch.nn.functional.cosine_similarity(latent.flatten(1), oracle.flatten(1), dim=-1)
                     nearest_label = int(similarity.argmax())
                     fixed_label = None
