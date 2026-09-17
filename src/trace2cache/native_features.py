@@ -159,17 +159,30 @@ class FrozenNativeFeatureExtractor:
         return difference
 
 
-def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device) -> dict[str, torch.Tensor]:
-    """Pad EvidenceView objects while retaining content features and structural metadata."""
+def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device, *, typed_values: bool = False) -> dict[str, torch.Tensor]:
+    """Pad EvidenceViews, optionally expanding safe tagged values into ordered nodes."""
+    from .typed_values import FEATURE_DIM, parse_typed_nodes, typed_feature
     views = list(views)
     if not views: raise ValueError("cannot collate no views")
-    width = max(len(view.events) for view in views); hidden = next(iter(feature_map.values())).shape[-1]
+    expanded = []
+    for view in views:
+        entries = []
+        for event in view.events:
+            entries.append((event, None))
+            if typed_values:
+                entries.extend((event, node) for node in parse_typed_nodes(event.content))
+        expanded.append(entries)
+    width = max(len(entries) for entries in expanded); hidden = next(iter(feature_map.values())).shape[-1]
     contents = torch.zeros(len(views), width, hidden, dtype=torch.bfloat16, device=device)
     roles = torch.zeros(len(views), width, dtype=torch.long, device=device)
     tests = torch.zeros(len(views), width, dtype=torch.long, device=device)
     mask = torch.zeros(len(views), width, dtype=torch.bool, device=device)
-    for batch_index, view in enumerate(views):
-        for event_index, event in enumerate(view.events):
+    typed = torch.zeros(len(views), width, FEATURE_DIM, dtype=torch.float32, device=device) if typed_values else None
+    for batch_index, entries in enumerate(expanded):
+        for event_index, (event, node) in enumerate(entries):
             contents[batch_index, event_index] = feature_map[event.content].to(device)
             roles[batch_index, event_index] = event.role_id; tests[batch_index, event_index] = event.test_id; mask[batch_index, event_index] = True
-    return {"content_vectors": contents, "role_ids": roles, "test_ids": tests, "event_mask": mask}
+            if node is not None: typed[batch_index, event_index] = torch.tensor(typed_feature(node), device=device)
+    result = {"content_vectors": contents, "role_ids": roles, "test_ids": tests, "event_mask": mask}
+    if typed is not None: result["typed_features"] = typed
+    return result

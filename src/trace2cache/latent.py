@@ -197,12 +197,18 @@ class RoleAwareEventEncoder(nn.Module):
         num_layers: int = 2,
         num_heads: int = 4,
         slot_roles: tuple[tuple[int, ...], ...] | None = None,
+        typed_feature_dim: int = 0,
     ) -> None:
         super().__init__()
         if output_anchor.ndim != 2 or output_anchor.shape[1] != model_width:
             raise ValueError("output_anchor must have shape [slots, model_width]")
         self.register_buffer("output_anchor", output_anchor.float().clone())
         self.content_projection = nn.Linear(model_width, hidden_width)
+        self.typed_feature_dim = typed_feature_dim
+        self.typed_projection = (
+            nn.Sequential(nn.LayerNorm(typed_feature_dim), nn.Linear(typed_feature_dim, hidden_width, bias=False))
+            if typed_feature_dim else None
+        )
         self.role_embedding = nn.Embedding(num_roles, hidden_width)
         self.register_buffer(
             "event_positions", self._sinusoidal(max_events, hidden_width), persistent=False
@@ -270,6 +276,7 @@ class RoleAwareEventEncoder(nn.Module):
         role_ids: torch.Tensor,
         test_ids: torch.Tensor,
         event_mask: torch.Tensor,
+        typed_features: torch.Tensor | None = None,
     ) -> torch.Tensor:
         batch_size, event_count, _ = content_vectors.shape
         if event_count > self.event_positions.shape[0]:
@@ -284,6 +291,10 @@ class RoleAwareEventEncoder(nn.Module):
             + positions
             + tests
         )
+        if self.typed_projection is not None:
+            if typed_features is None or typed_features.shape[:2] != event_mask.shape or typed_features.shape[-1] != self.typed_feature_dim:
+                raise ValueError("typed features must match the configured event batch")
+            events = events + self.typed_projection(typed_features.float())
         padding_mask = ~event_mask.bool()
         events = self.event_encoder(events, src_key_padding_mask=padding_mask)
         queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
