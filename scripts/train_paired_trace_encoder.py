@@ -42,7 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--feature-batch-size", type=int, default=16)
     parser.add_argument("--steps", type=int, default=400)
     parser.add_argument("--batch-size", type=int, default=16)
-    parser.add_argument("--gradient-accumulation", type=int, default=8)
+    parser.add_argument("--gradient-accumulation", type=int, default=8, help="matched pairs per decoder update; processed in one same-family batch")
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
@@ -125,20 +125,28 @@ def main() -> None:
             loss.backward()
             diagnostics = {"vector": float(loss.detach())}
         else:
-            # A/B are recomputed separately: no graph survives a backward call, and each
-            # update consumes exactly ``gradient_accumulation`` matched pairs.
+            # Samples from one family share a visible prompt, so batching preserves the
+            # per-pair mean objective while avoiding 16 serial frozen-receiver forwards.
+            # A and B remain separate, and each has positive + paired-negative candidates.
             component_sums = {"nll": 0.0, "rank": 0.0, "vector": 0.0, "margin": 0.0}
             total_loss = 0.0
-            for _ in range(args.gradient_accumulation):
-                record = records[order_rng.randrange(len(records))]
-                for view, label, other_label in ((record.evidence_a, record.label_a, record.label_b), (record.evidence_b, record.label_b, record.label_a)):
-                    batch = collate_views([view], feature_map, receiver.device)
-                    latent = encoder(**batch)
-                    prompt = splice_prompt(receiver, tokenizer, rendered_prompts[label], latent)
-                    components = paired_patch_loss(receiver, prompt, targets[label], targets[other_label], oracle[label].unsqueeze(0), latent)
-                    (components["loss"] / (2 * args.gradient_accumulation)).backward()
-                    total_loss += float(components["loss"].detach()) / (2 * args.gradient_accumulation)
-                    for name in component_sums: component_sums[name] += float(components[name].detach()) / (2 * args.gradient_accumulation)
+            family = order_rng.choice(tuple(sorted({record.family_id for record in records})))
+            candidates = [record for record in records if record.family_id == family]
+            chosen = [candidates[order_rng.randrange(len(candidates))] for _ in range(args.gradient_accumulation)]
+            for side in ("a", "b"):
+                side_views = [getattr(record, f"evidence_{side}") for record in chosen]
+                label = getattr(chosen[0], f"label_{side}"); other_label = getattr(chosen[0], f"label_{'b' if side == 'a' else 'a'}")
+                if any(getattr(record, f"label_{side}") != label for record in chosen): raise RuntimeError("family label mismatch")
+                batch = collate_views(side_views, feature_map, receiver.device)
+                latent = encoder(**batch)
+                prompt = splice_prompt(receiver, tokenizer, rendered_prompts[label], latent)
+                positive = targets[label].expand(len(chosen), -1)
+                negative = targets[other_label].expand(len(chosen), -1)
+                code = oracle[label].unsqueeze(0).expand(len(chosen), -1, -1)
+                components = paired_patch_loss(receiver, prompt, positive, negative, code, latent)
+                (components["loss"] / 2).backward()
+                total_loss += float(components["loss"].detach()) / 2
+                for name in component_sums: component_sums[name] += float(components[name].detach()) / 2
             loss = torch.tensor(total_loss, device=receiver.device)
             diagnostics = component_sums
         grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
