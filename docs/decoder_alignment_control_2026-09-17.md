@@ -52,3 +52,35 @@ pairs over the matched vector fork, without a large collapse in nearest-code ide
 If it mainly improves syntax but not swapped behavioral control, report reader alignment
 as the gain and continue with typed item/value binding. If both are weak, do not add
 uncontrolled epochs: implement Phase F1 probes and representation first.
+
+## Measured result
+
+The vector and decoder forks have the same sampled-pair trace SHA-256:
+`393d9fcca6831ddb88ecf53006fed2acf323a2d84ae5866806925a4a21b4d9e9`.
+Thus the objective comparison is not explained by a different family/pair stream.
+
+| Fork, 200 updates | Dev code identity | Fixed 24-view true repair | Complete pairs | True-minus-swap |
+|---|---:|---:|---:|---:|
+| Vector control | 81.25% | 9/24 | 3/12 | 16.67 points |
+| Decoder NLL + rank + vector | 80.42% | 18/24 | 7/12 | 62.50 points |
+
+The decoder fork is selected by this prespecified fixed panel and then evaluated on the
+complete 120-pair development set. It obtains 170/240 true repairs (70.83%), 60/120
+complete pairs (50.00%), 46/240 swap-intended repairs (19.17%), and 172/240 swapped
+opposite repairs (71.67%). The family-cluster bootstrap intervals are: true repair
+[57.50%, 84.58%], complete pair [28.33%, 74.17%], true-minus-swap [27.92, 75.83]
+points, and swap opposite [59.17%, 85.00%]. Two true runs time out; no true run hits
+the 192-token cap. The predeclared repair and complete-pair gates remain unmet.
+
+On the strict 99-pair subset with no individual test input in training: true repair is
+139/198 (70.20%), swap intended repair 36/198 (18.18%), complete pairs 49/99 (49.49%),
+and true-minus-swap 52.02 points. This is evidence of new-bundle use in the same known
+toy programs, not task-disjoint repair. The dev panel was used for selecting decoder,
+so do not use it as an unbiased final method comparison.
+
+The gain supports the reader-alignment hypothesis: direct decoder loss repairs many
+syntax/receiver-fidelity failures while preserving a behavioral swap intervention.
+It does not establish the proposed model-native runtime interface as better than text,
+causal trace use, role-slot semantics, or generalization to unseen programs. `arrange`,
+`median`, `rotate`, `unique` and one filter direction remain weak, motivating Phase F1
+typed ordered items rather than more unstructured decoder epochs.

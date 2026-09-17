@@ -1,0 +1,432 @@
+{
+  "all_numerical_gates_pass": false,
+  "bootstrap_resamples": 2000,
+  "bootstrap_seed": 401,
+  "checkpoint_sha256": "e3ce7eac4f1aede3192a380f9ec0f4636a8f167978089ba61fda46dc41861972",
+  "cluster_bootstrap_95pct": {
+    "correct_nearest_but_failed_repair": [
+      0.04583333333333333,
+      0.2375
+    ],
+    "swap_intended_repair": [
+      0.075,
+      0.3125
+    ],
+    "swap_opposite_repair": [
+      0.5916666666666667,
+      0.85
+    ],
+    "true_minus_swap": [
+      0.2791666666666667,
+      0.7583333333333333
+    ],
+    "true_nearest_code_accuracy": [
+      0.6875,
+      0.9166666666666666
+    ],
+    "true_pair_success": [
+      0.2833333333333333,
+      0.7416666666666667
+    ],
+    "true_repair": [
+      0.575,
+      0.8458333333333333
+    ]
+  },
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "failure_categories": {
+    "paired_swap": {
+      "executed_test_failure": 185,
+      "passed": 46,
+      "sandbox_policy_rejected": 9
+    },
+    "true_latent": {
+      "executed_test_failure": 59,
+      "execution_timeout": 2,
+      "passed": 170,
+      "sandbox_policy_rejected": 9
+    }
+  },
+  "fully_novel_inputs_subset": {
+    "all_numerical_gates_pass": false,
+    "bootstrap_resamples": 2000,
+    "bootstrap_seed": 401,
+    "cluster_bootstrap_95pct": {
+      "correct_nearest_but_failed_repair": [
+        0.04891304347826087,
+        0.25
+      ],
+      "swap_intended_repair": [
+        0.06989247311827956,
+        0.2978723404255319
+      ],
+      "swap_opposite_repair": [
+        0.5789473684210527,
+        0.8465346534653465
+      ],
+      "true_minus_swap": [
+        0.2971698113207547,
+        0.76
+      ],
+      "true_nearest_code_accuracy": [
+        0.6904761904761905,
+        0.9141414141414141
+      ],
+      "true_pair_success": [
+        0.2857142857142857,
+        0.7391304347826086
+      ],
+      "true_repair": [
+        0.5721649484536082,
+        0.8431372549019608
+      ]
+    },
+    "failure_categories": {
+      "paired_swap": {
+        "executed_test_failure": 153,
+        "passed": 36,
+        "sandbox_policy_rejected": 9
+      },
+      "true_latent": {
+        "executed_test_failure": 49,
+        "execution_timeout": 1,
+        "passed": 139,
+        "sandbox_policy_rejected": 9
+      }
+    },
+    "metrics": {
+      "correct_nearest_but_failed_repair": 0.14646464646464646,
+      "swap_intended_repair": 0.18181818181818182,
+      "swap_opposite_repair": 0.7070707070707071,
+      "true_minus_swap": 0.5202020202020202,
+      "true_nearest_code_accuracy": 0.8080808080808081,
+      "true_pair_success": 0.494949494949495,
+      "true_repair": 0.702020202020202
+    },
+    "numerical_gates": {
+      "pair_success_at_least_60pct": false,
+      "swap_opposite_at_least_60pct": true,
+      "true_minus_swap_at_least_30pp": true,
+      "true_repair_at_least_75pct": false
+    },
+    "pairs": 99,
+    "per_family": {
+      "aggregate": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 9,
+        "swap_intended_repair": 0.05555555555555555,
+        "swap_opposite_repair": 0.8888888888888888,
+        "true_minus_swap": 0.8333333333333334,
+        "true_nearest_code_accuracy": 0.8888888888888888,
+        "true_pair_success": 0.7777777777777778,
+        "true_repair": 0.8888888888888888,
+        "views": 18
+      },
+      "arrange": {
+        "correct_nearest_but_failed_repair": 0.375,
+        "pairs": 8,
+        "swap_intended_repair": 0.5,
+        "swap_opposite_repair": 0.5,
+        "true_minus_swap": 0.0,
+        "true_nearest_code_accuracy": 0.875,
+        "true_pair_success": 0.0,
+        "true_repair": 0.5,
+        "views": 16
+      },
+      "choose": {
+        "correct_nearest_but_failed_repair": 0.35,
+        "pairs": 10,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 0.65,
+        "true_minus_swap": 0.65,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 0.4,
+        "true_repair": 0.65,
+        "views": 20
+      },
+      "extreme": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 8,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 1.0,
+        "true_minus_swap": 1.0,
+        "true_nearest_code_accuracy": 0.9375,
+        "true_pair_success": 1.0,
+        "true_repair": 1.0,
+        "views": 16
+      },
+      "filter": {
+        "correct_nearest_but_failed_repair": 0.25,
+        "pairs": 10,
+        "swap_intended_repair": 0.5,
+        "swap_opposite_repair": 0.5,
+        "true_minus_swap": 0.0,
+        "true_nearest_code_accuracy": 0.75,
+        "true_pair_success": 0.0,
+        "true_repair": 0.5,
+        "views": 20
+      },
+      "locate": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 6,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 1.0,
+        "true_minus_swap": 1.0,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 1.0,
+        "true_repair": 1.0,
+        "views": 12
+      },
+      "measure": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 10,
+        "swap_intended_repair": 0.2,
+        "swap_opposite_repair": 0.8,
+        "true_minus_swap": 0.6,
+        "true_nearest_code_accuracy": 0.8,
+        "true_pair_success": 0.6,
+        "true_repair": 0.8,
+        "views": 20
+      },
+      "median": {
+        "correct_nearest_but_failed_repair": 0.05,
+        "pairs": 10,
+        "swap_intended_repair": 0.1,
+        "swap_opposite_repair": 0.4,
+        "true_minus_swap": 0.3,
+        "true_nearest_code_accuracy": 0.45,
+        "true_pair_success": 0.2,
+        "true_repair": 0.4,
+        "views": 20
+      },
+      "rotate": {
+        "correct_nearest_but_failed_repair": 0.5,
+        "pairs": 8,
+        "swap_intended_repair": 0.375,
+        "swap_opposite_repair": 0.375,
+        "true_minus_swap": 0.0,
+        "true_nearest_code_accuracy": 0.5,
+        "true_pair_success": 0.0,
+        "true_repair": 0.375,
+        "views": 16
+      },
+      "transform": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 8,
+        "swap_intended_repair": 0.0625,
+        "swap_opposite_repair": 0.9375,
+        "true_minus_swap": 0.875,
+        "true_nearest_code_accuracy": 0.9375,
+        "true_pair_success": 0.875,
+        "true_repair": 0.9375,
+        "views": 16
+      },
+      "truth": {
+        "correct_nearest_but_failed_repair": 0.0,
+        "pairs": 8,
+        "swap_intended_repair": 0.0,
+        "swap_opposite_repair": 1.0,
+        "true_minus_swap": 1.0,
+        "true_nearest_code_accuracy": 1.0,
+        "true_pair_success": 1.0,
+        "true_repair": 1.0,
+        "views": 16
+      },
+      "unique": {
+        "correct_nearest_but_failed_repair": 0.25,
+        "pairs": 4,
+        "swap_intended_repair": 0.5,
+        "swap_opposite_repair": 0.5,
+        "true_minus_swap": -0.125,
+        "true_nearest_code_accuracy": 0.5,
+        "true_pair_success": 0.25,
+        "true_repair": 0.375,
+        "views": 8
+      }
+    },
+    "program_clusters": 12,
+    "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization."
+  },
+  "input_overlap": {
+    "development_pairs": 120,
+    "development_pairs_with_no_individual_test_overlap": 99,
+    "development_test_occurrences": 376,
+    "development_test_occurrences_seen_in_train": 23,
+    "development_unique_individual_tests": 375,
+    "exact_bundle_hash_overlap": 0,
+    "individual_test_overlap": 23,
+    "train_pairs": 768,
+    "train_unique_individual_tests": 2209
+  },
+  "metrics": {
+    "correct_nearest_but_failed_repair": 0.1375,
+    "swap_intended_repair": 0.19166666666666668,
+    "swap_opposite_repair": 0.7166666666666667,
+    "true_minus_swap": 0.5166666666666667,
+    "true_nearest_code_accuracy": 0.8041666666666667,
+    "true_pair_success": 0.5,
+    "true_repair": 0.7083333333333334
+  },
+  "numerical_gates": {
+    "pair_success_at_least_60pct": false,
+    "swap_opposite_at_least_60pct": true,
+    "true_minus_swap_at_least_30pp": true,
+    "true_repair_at_least_75pct": false
+  },
+  "pairs": 120,
+  "per_family": {
+    "aggregate": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.05,
+      "swap_opposite_repair": 0.9,
+      "true_minus_swap": 0.85,
+      "true_nearest_code_accuracy": 0.9,
+      "true_pair_success": 0.8,
+      "true_repair": 0.9,
+      "views": 20
+    },
+    "arrange": {
+      "correct_nearest_but_failed_repair": 0.35,
+      "pairs": 10,
+      "swap_intended_repair": 0.45,
+      "swap_opposite_repair": 0.55,
+      "true_minus_swap": 0.1,
+      "true_nearest_code_accuracy": 0.9,
+      "true_pair_success": 0.1,
+      "true_repair": 0.55,
+      "views": 20
+    },
+    "choose": {
+      "correct_nearest_but_failed_repair": 0.35,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 0.65,
+      "true_minus_swap": 0.65,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 0.4,
+      "true_repair": 0.65,
+      "views": 20
+    },
+    "extreme": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 1.0,
+      "true_minus_swap": 1.0,
+      "true_nearest_code_accuracy": 0.95,
+      "true_pair_success": 1.0,
+      "true_repair": 1.0,
+      "views": 20
+    },
+    "filter": {
+      "correct_nearest_but_failed_repair": 0.25,
+      "pairs": 10,
+      "swap_intended_repair": 0.5,
+      "swap_opposite_repair": 0.5,
+      "true_minus_swap": 0.0,
+      "true_nearest_code_accuracy": 0.75,
+      "true_pair_success": 0.0,
+      "true_repair": 0.5,
+      "views": 20
+    },
+    "locate": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 1.0,
+      "true_minus_swap": 1.0,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 1.0,
+      "true_repair": 1.0,
+      "views": 20
+    },
+    "measure": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.2,
+      "swap_opposite_repair": 0.8,
+      "true_minus_swap": 0.6,
+      "true_nearest_code_accuracy": 0.8,
+      "true_pair_success": 0.6,
+      "true_repair": 0.8,
+      "views": 20
+    },
+    "median": {
+      "correct_nearest_but_failed_repair": 0.05,
+      "pairs": 10,
+      "swap_intended_repair": 0.1,
+      "swap_opposite_repair": 0.4,
+      "true_minus_swap": 0.3,
+      "true_nearest_code_accuracy": 0.45,
+      "true_pair_success": 0.2,
+      "true_repair": 0.4,
+      "views": 20
+    },
+    "rotate": {
+      "correct_nearest_but_failed_repair": 0.5,
+      "pairs": 10,
+      "swap_intended_repair": 0.4,
+      "swap_opposite_repair": 0.4,
+      "true_minus_swap": 0.0,
+      "true_nearest_code_accuracy": 0.5,
+      "true_pair_success": 0.0,
+      "true_repair": 0.4,
+      "views": 20
+    },
+    "transform": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.1,
+      "swap_opposite_repair": 0.9,
+      "true_minus_swap": 0.8,
+      "true_nearest_code_accuracy": 0.9,
+      "true_pair_success": 0.8,
+      "true_repair": 0.9,
+      "views": 20
+    },
+    "truth": {
+      "correct_nearest_but_failed_repair": 0.0,
+      "pairs": 10,
+      "swap_intended_repair": 0.0,
+      "swap_opposite_repair": 1.0,
+      "true_minus_swap": 1.0,
+      "true_nearest_code_accuracy": 1.0,
+      "true_pair_success": 1.0,
+      "true_repair": 1.0,
+      "views": 20
+    },
+    "unique": {
+      "correct_nearest_but_failed_repair": 0.15,
+      "pairs": 10,
+      "swap_intended_repair": 0.5,
+      "swap_opposite_repair": 0.5,
+      "true_minus_swap": -0.1,
+      "true_nearest_code_accuracy": 0.5,
+      "true_pair_success": 0.1,
+      "true_repair": 0.4,
+      "views": 20
+    }
+  },
+  "program_clusters": 12,
+  "scope": "New input bundles for known toy programs; numerical gates alone do not establish baseline replication or unseen-program generalization.",
+  "summary": {
+    "paired_swap": {
+      "both_correct": 1,
+      "cap_hits": 0,
+      "correct": 46,
+      "opposite_correct": 172,
+      "pairs": 120,
+      "views": 240
+    },
+    "true_latent": {
+      "both_correct": 60,
+      "cap_hits": 0,
+      "correct": 170,
+      "opposite_correct": 46,
+      "pairs": 120,
+      "views": 240
+    }
+  },
+  "train_dataset_sha256": "750037c5df89f2acea767dfe1fdddeb0d575d86ca17566a676d650505f748e8d"
+}
