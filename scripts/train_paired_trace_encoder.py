@@ -44,6 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--gradient-accumulation", type=int, default=8, help="matched pairs per decoder update; processed in one same-family batch")
     parser.add_argument("--learning-rate", type=float, default=1e-3)
+    parser.add_argument("--init-checkpoint", help="v2 encoder checkpoint used to fork a post-warmup objective")
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
     parser.add_argument("--max-tests", type=int, default=8)
@@ -105,6 +106,10 @@ def main() -> None:
     extractor = FrozenNativeFeatureExtractor(receiver, tokenizer, model_id=args.model, cache_dir=args.feature_cache)
     started_features = time.perf_counter(); feature_map = build_feature_map(extractor, views, args.feature_method, args.feature_batch_size); feature_seconds = time.perf_counter() - started_features
     encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=args.hidden_width, max_events=args.max_events, max_tests=args.max_tests).to("cuda")
+    if args.init_checkpoint:
+        payload = torch.load(args.init_checkpoint, map_location=receiver.device, weights_only=False)
+        missing, unexpected = encoder.load_state_dict(payload["encoder"], strict=False)
+        if missing or unexpected: raise RuntimeError(f"encoder warm-start mismatch: missing={missing}, unexpected={unexpected}")
     optimizer = torch.optim.AdamW(encoder.parameters(), lr=args.learning_rate, weight_decay=0.01)
     order_rng = random.Random(args.seed + 17); history = []; started = time.perf_counter()
     rendered_prompts = []

@@ -6,12 +6,13 @@
   "codebook_checkpoint": "checkpoints/repair_latent/expanded_codebook_seed313.pt",
   "feature_method": "context2",
   "objective": "decoder",
-  "steps": 100,
+  "steps": 400,
   "gradient_accumulation": 8,
-  "learning_rate": 0.001,
+  "learning_rate": 0.0003,
+  "init_checkpoint": "checkpoints/paired_runtime_v2/overfit_context2_vector_seed401.pt",
   "latent_slots": 8,
   "hidden_width": 256,
   "max_events": 512,
   "max_tests": 8,
-  "note": "First decoder-facing budget. The 400-update gate is deferred until this run shows improving code identification or score margin."
+  "note": "Forks the 400-step vector warmup; this is the preregistered post-warmup decoder objective."
 }
