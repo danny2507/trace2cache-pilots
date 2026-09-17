@@ -42,6 +42,22 @@ class LatentTests(unittest.TestCase):
                 encoder(contents, changed_roles, tests, mask),
             )
         )
+
+    def test_typed_channel_is_a_zero_perturbation_at_warm_start(self):
+        encoder = RoleAwareEventEncoder(
+            model_width=16, output_anchor=torch.randn(3, 16), hidden_width=16,
+            num_roles=4, max_events=6, max_tests=3, num_layers=1, num_heads=4,
+            typed_feature_dim=7,
+        )
+        contents = torch.randn(1, 5, 16)
+        roles = torch.zeros(1, 5, dtype=torch.long)
+        tests = torch.zeros(1, 5, dtype=torch.long)
+        mask = torch.ones(1, 5, dtype=torch.bool)
+        baseline = encoder(contents, roles, tests, mask, torch.zeros(1, 5, 7))
+        typed = encoder(contents, roles, tests, mask, torch.randn(1, 5, 7))
+        self.assertEqual((baseline - typed).abs().max().item(), 0.0)
+        typed.sum().backward()
+        self.assertIsNotNone(encoder.typed_projection[1].weight.grad)
     def test_pair_encoder_is_parametric_and_native_anchored(self):
         embedding = nn.Embedding(60, 16)
         digit_ids = list(range(10, 20))

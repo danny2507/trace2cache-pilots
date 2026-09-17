@@ -209,6 +209,10 @@ class RoleAwareEventEncoder(nn.Module):
             nn.Sequential(nn.LayerNorm(typed_feature_dim), nn.Linear(typed_feature_dim, hidden_width, bias=False))
             if typed_feature_dim else None
         )
+        # A typed warm-start must initially be exactly the pre-typed encoder.  The zero
+        # linear map preserves that control while still receiving gradients on update one.
+        if self.typed_projection is not None:
+            nn.init.zeros_(self.typed_projection[1].weight)
         self.role_embedding = nn.Embedding(num_roles, hidden_width)
         self.register_buffer(
             "event_positions", self._sinusoidal(max_events, hidden_width), persistent=False
