@@ -106,3 +106,25 @@ Development code identity briefly reached 193/240 at total update 1,850 but the
 prespecified final checkpoint is used for repair. No best-checkpoint/test selection
 is performed. Small train/development identity gaps are encouraging for known-program
 evidence transfer, but cannot establish correct continuous-latent decoding.
+
+## Follow-up fidelity diagnostic
+
+After the primary true/swap repair run, evaluate `nearest_oracle_latent` and `oracle_latent`
+on the full saved development panel. This is a diagnostic, not a deployed method or an
+unseen-task result. The dictionary has only 24 known behaviors.
+
+```bash
+.venv/bin/python scripts/evaluate_paired_trace_encoder.py \
+  --checkpoint checkpoints/paired_runtime_v2/full_data_vector2000_seed401.pt \
+  --dataset .local/datasets/paired_runtime_v2/dev.jsonl \
+  --pairs-per-family 10 --conditions nearest_oracle_latent oracle_latent \
+  --cache-fixed-codes \
+  --output-dir artifacts/paired_runtime_v2/full_data_vector2000_dev_projection
+```
+
+The optional decoding cache is restricted to fixed oracle/projected codes and exact
+visible prompts. On every cache hit, the entire spliced receiver input tensor must be
+bitwise equal to its cached copy; otherwise evaluation aborts. Continuous true/swap
+states are never cached. Generated patches are still validated against each row's
+intended and opposite tests. Cache hits are saved in rows and summary. Toy-program
+duplicate decoding savings must not be advertised as a deployment latency improvement.

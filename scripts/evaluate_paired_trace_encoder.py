@@ -160,7 +160,7 @@ def main():
                     with row_path.open("a") as handle: handle.write(json.dumps(row, sort_keys=True) + "\n")
                     rows.append(row)
                     print(json.dumps({"family": record.family_id, "side": side, "condition": condition, "correct": intended["passed"], "opposite": opposite["passed"]}), flush=True)
-    result = {"args": vars(args), "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "encoder_padding_audit": padding_audit, "summary": summarize(rows), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
+    result = {"args": vars(args), "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "encoder_padding_audit": padding_audit, "summary": summarize(rows), "generation_cache_hits": sum(row.get("generation_cache_hit", False) for row in rows), "fixed_code_cache_entries_this_run": len(fixed_code_cache), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
     (output_dir / "summary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps(result["summary"], sort_keys=True), flush=True)
 
