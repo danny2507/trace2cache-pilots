@@ -26,6 +26,16 @@ class TransferAnalysisTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             analyze_interventions(self.rows() + self.rows()[:1])
 
+    def test_correct_code_identity_does_not_count_as_repair(self):
+        rows = self.rows()
+        for row in rows:
+            row["nearest_label"] = row["label"] = 0
+        rows[0]["intended"]["passed"] = False
+        metrics = analyze_interventions(rows, resamples=20)["metrics"]
+        self.assertEqual(metrics["true_nearest_code_accuracy"], 1.0)
+        self.assertEqual(metrics["true_repair"], 0.75)
+        self.assertEqual(metrics["correct_nearest_but_failed_repair"], 0.25)
+
     def test_exact_bundle_disjointness_does_not_imply_individual_input_disjointness(self):
         def record(uid, values):
             return SimpleNamespace(pair_uid=uid, input_hash=uid, buggy_source="program",
