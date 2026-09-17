@@ -663,6 +663,32 @@ successful repair codes, with held-out evidence bundles and expected-value/trace
 
 Artifact: `artifacts/repair_latent/repair_codebook_seed131.json`.
 
+### Expanded paired-ambiguity capacity gate (2026-09-17)
+
+We expanded the benchmark from four to twelve behavior pairs (24 repairs): ordering, length
+selection, Boolean aggregation, duplicate selection, lower/upper median, rotation direction,
+numeric transform, and filtering join the original locate, aggregate, extreme, and measure pairs.
+Within each pair, buggy code and the public test remain identical, while hidden tests require
+opposite repairs. The 98,304-parameter oracle behavior codebook was trained for 1,200 steps with
+the receiver frozen.
+
+| Condition | Train instruction | Held-out instruction wording |
+|---|---:|---:|
+| No behavioral evidence | 5/24 | 5/24 |
+| Diagnosis text / native anchor | 15/24 | 15/24 / 14/24 |
+| **Trained latent code** | **23/24** | **21/24** |
+| Paired opposite-behavior code | **0/24** | **1/24** |
+
+Thus the frozen 1.5B receiver can reliably use an eight-state latent message to select among
+opposite full-function repairs, and the behavior-to-patch association survives an instruction
+wording change. The one persistent difficult behavior is `locate_last`; held-out wording additionally
+misses `truth_any_positive` and `unique_last`. This is still an *oracle-code capacity gate*: it shows
+that a successful latent receiver exists, not that a trace encoder can infer those codes from runtime
+events. The next experiment distills a role-aware trace encoder into this stronger 24-way target and
+must recover a true-evidence versus paired-swap gap.
+
+Artifact: `artifacts/repair_latent/expanded_codebook_seed313.json`.
+
 ## 11. Role-aware runtime-to-repair distillation
 
 A 4.08M-parameter role-aware Transformer was trained to replace the oracle lookup. Its input is a
