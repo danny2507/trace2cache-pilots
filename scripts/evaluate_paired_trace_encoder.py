@@ -21,7 +21,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import EXPECTED, STATUS, EvidenceView, read_jsonl
-from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only
+from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only, structured_text
 from trace2cache.receiver_training import splice_prompt
 from trace2cache.sandbox import EVALUATOR_REVISION, evaluate_patch, extract_function
 from run_pilot1 import resolve_local_model
@@ -29,7 +29,7 @@ from run_repair_codebook import MARKER, render
 from run_repair_latent_pool import greedy_generate
 from train_paired_trace_encoder import build_feature_map, load_oracle_codes
 
-CONDITIONS = ("true_latent", "paired_swap", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
+CONDITIONS = ("true_latent", "paired_swap", "structured_text", "paired_swap_text", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
 
 
 def parse_args():
@@ -225,21 +225,26 @@ def main():
                 for condition in args.conditions:
                     if (record.pair_uid, side, condition) in done: continue
                     began = time.perf_counter()
-                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest") else side
+                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest", "paired_swap_text") else side
                     source_view = selected_evidence_view(
                         getattr(record, f"evidence_{evidence_side}"), evidence_view
                     )
                     view = controlled_view(source_view, condition)
-                    latent = encoder(**collate_views([view], feature_map, receiver.device, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode))
-                    similarity = torch.nn.functional.cosine_similarity(latent.flatten(1), oracle.flatten(1), dim=-1)
-                    nearest_label = int(similarity.argmax())
+                    if condition in ("structured_text", "paired_swap_text"):
+                        latent = None
+                        nearest_label = None
+                    else:
+                        latent = encoder(**collate_views([view], feature_map, receiver.device, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode))
+                        similarity = torch.nn.functional.cosine_similarity(latent.flatten(1), oracle.flatten(1), dim=-1)
+                        nearest_label = int(similarity.argmax())
                     fixed_label = None
                     if condition in ("nearest_oracle_latent", "paired_swap_nearest"):
                         latent = oracle[nearest_label].unsqueeze(0); fixed_label = nearest_label
                     if condition == "oracle_latent":
                         latent = oracle[label].unsqueeze(0); fixed_label = label
                     if condition == "no_evidence": latent = None
-                    rendered = render(tokenizer, items[label].case, "unavailable" if latent is None else MARKER, heldout=args.heldout_wording)
+                    evidence = structured_text(view) if condition in ("structured_text", "paired_swap_text") else "unavailable" if latent is None else MARKER
+                    rendered = render(tokenizer, items[label].case, evidence, heldout=args.heldout_wording)
                     inputs = splice_prompt(receiver, tokenizer, rendered, latent)
                     cache_key = (rendered, fixed_label) if args.cache_fixed_codes and fixed_label is not None else None
                     cached = fixed_code_cache.get(cache_key) if cache_key is not None else None
