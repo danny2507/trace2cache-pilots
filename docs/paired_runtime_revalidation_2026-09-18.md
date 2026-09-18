@@ -69,6 +69,40 @@ output at zero residual plus nonzero gradient into the typed projection.  `legac
 remains available only to reproduce pre-fix checkpoints and is explicitly selected for those
 checkpoint configurations.
 
-No typed, binding, or decoder model has been retrained after this repair.  The next GPU action is
-a small, predeclared plain-vs-parent-aggregate gradient/parity smoke followed by a matched rerun;
-it should not reuse old virtual-node results as an architecture conclusion.
+Before the following controlled run, no typed, binding, or decoder model was retrained after this
+repair.  The next GPU action was a small, predeclared plain-vs-parent-aggregate gradient/parity
+smoke followed by a matched rerun; it did not reuse old virtual-node results as an architecture
+conclusion.
+
+## Post-repair parent-aggregate typed smoke and matched rerun
+
+The planned gate was then run on the real frozen receiver and
+`full_data_vector2000_seed401.pt` warm-start.  Eight development views had identical base event
+inputs under plain and parent-aggregate collation, exactly zero latent difference at update zero,
+and a nonzero first-update typed-projection gradient (`2.61e-4` maximum absolute value).  The GPU
+parity artifact is `artifacts/paired_runtime_v2/typed_parent_aggregate_gpu_parity.json`.
+
+A single matched decoder fork then used the same 768 training pairs, 200 updates, seed 401,
+decoder NLL/ranking/vector objective, and sampling digest as the existing alignment comparison:
+
+`393d9fcca6831ddb88ecf53006fed2acf323a2d84ae5866806925a4a21b4d9e9`.
+
+Its predeclared first-development-pair-per-family evaluation used the immutable manifest generated
+by the repaired evaluator:
+
+| Branch | True intended repair | Paired-swap intended repair | Complete true pairs |
+| --- | ---: | ---: | ---: |
+| Plain decoder, revalidated | 18/24 | 3/24 | 7/12 |
+| Parent-aggregate typed decoder | 19/24 | 2/24 | 8/12 |
+
+The new run has no cap hits, two policy rejections in each condition, and no execution or
+infrastructure timeouts.  Its singleton-versus-batched encoder audit has zero nearest-code
+disagreements (`max_abs=1.97e-7`).  Result files are
+`artifacts/paired_runtime_v2/typed_parent_aggregate_decoder200_seed401.json` and
+`artifacts/paired_runtime_v2/typed_parent_aggregate_decoder200_dev_repair/`.
+
+This is a one-seed, 12-known-family diagnostic.  The +1 true repair / -1 swap repair difference
+is directional only and is not evidence that typed values generalize, improve unseen-program
+repair, isolate intermediate runtime trace utility, or beat matched text.  The next valid action
+is a predeclared task/source-disjoint evaluation with the Stage-C I/O and text medium controls,
+not additional selection on this development panel.
