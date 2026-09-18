@@ -121,3 +121,11 @@ repair on this narrow panel. This does **not** isolate a latent-medium advantage
 baseline trained/evaluated with matched evidence and a task/source-disjoint final split remain
 required. Artifacts: `artifacts/paired_runtime_v2/io_only_decoder200_seed401.json` and
 `artifacts/paired_runtime_v2/io_only_decoder200_dev_repair/`.
+
+The frozen structured-JSON prompt baseline, using the identical full-runtime events and greedy
+decoder but no latent states, obtains `2/24` true and `2/24` paired-swap repair (zero complete
+pairs). It is therefore not evidence-sensitive on this panel. This makes the current ordering
+full-runtime latent > I/O-only latent >> frozen structured text, but it is not a final claim that
+latent beats text: the text receiver was not separately SFT/alignment-trained, and all results are
+still one-seed known-family diagnostics. Artifact:
+`artifacts/paired_runtime_v2/structured_text_dev_repair/`.
