@@ -148,3 +148,21 @@ This is a frozen-receiver text control, not a claim about what text could achiev
 It removes the specific numeric-schema objection to the earlier baseline and justifies moving to
 the matched-from-scratch full-runtime versus I/O-only latent comparison.  Immutable generation
 artifact: `artifacts/paired_runtime_v2/named_text_compact_dev_repair_v2/`.
+
+## Stage-C2 matched from-scratch gate
+
+The first C2 run uses a plain, untrained role-aware encoder for both evidence views (seed 401),
+the same 768-pair decoder objective, 200 updates, sampler trace
+`393d9fcca6831ddb88ecf53006fed2acf323a2d84ae5866806925a4a21b4d9e9`, frozen receiver and codebook.
+Both initial encoder state hashes are exactly
+`001a5b74bac2f31f5ed4a88c2b9d5740a623daf33877f1c25b32c5c5c4d274c8`.
+
+This is a capacity/optimization gate failure, rather than a runtime-information comparison: both
+branches finish at 1/24 nearest repair-code accuracy on train and validation (full-runtime cosine
+0.145, I/O-only 0.173).  The earlier useful decoder used a full-runtime vector-aligned warm start;
+200 decoder-only updates cannot learn the receiver alignment from a random adapter.  Therefore no
+repair generation was run and no claim is made that I/O equals or exceeds full runtime.  Next: use
+a *representation-neutral* pretraining stage or a shared text/latent alignment objective before
+re-running this matched comparison.  Artifacts:
+`artifacts/paired_runtime_v2/stage_c_from_scratch_full_seed401.json` and
+`artifacts/paired_runtime_v2/stage_c_from_scratch_io_seed401.json`.
