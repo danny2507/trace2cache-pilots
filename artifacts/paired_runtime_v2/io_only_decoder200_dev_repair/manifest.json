@@ -1,0 +1,85 @@
+{
+  "checkpoint_config": {
+    "batch_size": 16,
+    "binding_relations": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/io_only_decoder200_seed401.pt",
+    "codebook_checkpoint": "checkpoints/repair_latent/expanded_codebook_seed313.pt",
+    "counterfactual_weight": 1.0,
+    "dataset": ".local/datasets/paired_runtime_v2/train.jsonl",
+    "decoder_margin": 0.1,
+    "decoder_microbatch_pairs": 0,
+    "decoder_vector_weight": 0.1,
+    "evidence_view": "io_only",
+    "feature_batch_size": 16,
+    "feature_cache": ".local/cache/paired_runtime_v2/features",
+    "feature_method": "context2",
+    "gradient_accumulation": 8,
+    "hidden_width": 256,
+    "identity_temperature": 0.1,
+    "identity_weight": 0.1,
+    "init_checkpoint": "checkpoints/paired_runtime_v2/full_data_vector2000_seed401.pt",
+    "learning_rate": 3e-05,
+    "max_events": 512,
+    "max_tests": 8,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "objective": "decoder",
+    "output": "artifacts/paired_runtime_v2/io_only_decoder200_seed401.json",
+    "sampling": "paired_family",
+    "seed": 401,
+    "steps": 200,
+    "typed_value_mode": "parent_aggregate",
+    "typed_values": false,
+    "validation_dataset": ".local/datasets/paired_runtime_v2/dev.jsonl"
+  },
+  "checkpoint_sha256": "72c7996992d0fd879dfc7697d51b9b34017491fb27033e4017d1b0b2f28723b5",
+  "code_revision": "55605a0cdaac19c830a0e3bc9ba0d83208e83479",
+  "codebook": {
+    "path": "/workspace/hf_cache/test/my-project/codelm_exp2/checkpoints/repair_latent/expanded_codebook_seed313.pt",
+    "sha256": "1b901b533cd6c29875bb9177bbe3880f109779a1cc0c7167381775b7cd8de6e7"
+  },
+  "conditions": [
+    "true_latent",
+    "paired_swap"
+  ],
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "evaluator_revision": "sandbox-v2-startup-and-candidate-budget",
+  "generation": {
+    "cache_fixed_codes": false,
+    "heldout_wording": false,
+    "max_new_tokens": 192
+  },
+  "model": {
+    "files": {
+      "config.json": "98d2ff8cc47488d08a2b0b3acf4eb99ef210779b42bd48605f6b8e36acdbf670",
+      "generation_config.json": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6",
+      "tokenizer.json": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539",
+      "tokenizer_config.json": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+    },
+    "path": "/workspace/hf_cache/hub/models--Qwen--Qwen2.5-1.5B-Instruct/snapshots/989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+  },
+  "panel_pair_uids": [
+    "dev-locate-0000-bf6faca70aa8",
+    "dev-aggregate-0000-3b5123ae3fe8",
+    "dev-extreme-0000-2ad42cbe4cc4",
+    "dev-measure-0000-ce69a3515f1a",
+    "dev-arrange-0000-0e586f7c5389",
+    "dev-choose-0000-55a3ac48f09d",
+    "dev-truth-0000-d914b2848442",
+    "dev-unique-0000-4d6f7d88cbd2",
+    "dev-median-0000-f9affa56047a",
+    "dev-rotate-0000-116a00349317",
+    "dev-transform-0000-e29ff4d77d24",
+    "dev-filter-0000-1dfc19a81272"
+  ],
+  "schema_version": 1,
+  "sha256": "52e6900bc9275c4b68244eec5ec855dbfcee8a28ce27399f90745ecad44c5343",
+  "test_suite_sha256": "96f2ca88d69ef87decc92934af86ff62856e34712d7b4e63de1097c07894823c",
+  "tokenizer": {
+    "special_token_ids": {
+      "bos": null,
+      "eos": 151645,
+      "pad": 151643
+    },
+    "vocab_size": 151643
+  }
+}

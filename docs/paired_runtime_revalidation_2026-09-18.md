@@ -106,3 +106,18 @@ is directional only and is not evidence that typed values generalize, improve un
 repair, isolate intermediate runtime trace utility, or beat matched text.  The next valid action
 is a predeclared task/source-disjoint evaluation with the Stage-C I/O and text medium controls,
 not additional selection on this development panel.
+
+## Stage-C I/O-only latent baseline
+
+An independently trained I/O-only encoder was run with the same warm start, 200 decoder updates,
+seed, pair sampler and sampling digest as the full-runtime parent-aggregate encoder. It receives
+only test identity, inputs, actual output, expected output and derived status; it never receives
+CALL/LINE/BRANCH/DEFINITION/RETURN events. Its fixed-panel executed result is `15/24` true,
+`2/24` paired-swap and `6/12` complete pairs, compared with full runtime's `19/24`, `2/24` and
+`8/12`. Both have two policy rejections per condition; no candidate/infrastructure timeout occurs.
+
+Thus intermediate runtime events supply a +4 true-repair directional signal at unchanged swap
+repair on this narrow panel. This does **not** isolate a latent-medium advantage: a structured-text
+baseline trained/evaluated with matched evidence and a task/source-disjoint final split remain
+required. Artifacts: `artifacts/paired_runtime_v2/io_only_decoder200_seed401.json` and
+`artifacts/paired_runtime_v2/io_only_decoder200_dev_repair/`.
