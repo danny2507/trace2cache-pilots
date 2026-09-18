@@ -1,0 +1,11 @@
+{
+  "base_inputs_equal": true,
+  "checkpoint": "checkpoints/paired_runtime_v2/full_data_vector2000_seed401.pt",
+  "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+  "gpu_peak_gib": 3.3902273178100586,
+  "latent_max_abs_difference": 0.0,
+  "typed_projection_gradient_max_abs": 0.0002611672389321029,
+  "typed_projection_max_abs": 0.0,
+  "typed_value_mode": "parent_aggregate",
+  "views": 8
+}
