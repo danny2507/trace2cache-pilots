@@ -57,6 +57,43 @@ def _source_paths(inputs: list[str]) -> list[Path]:
     return paths
 
 
+def _summary(output_root: Path, paths: list[Path]) -> dict:
+    runs = {}
+    for source_path in paths:
+        name = source_path.parent.name
+        old_rows = [json.loads(line) for line in source_path.read_text().splitlines() if line]
+        old_by_hash = {_canonical_hash(row): row for row in old_rows}
+        output_path = output_root / name / "rows.jsonl"
+        new_rows = [json.loads(line) for line in output_path.read_text().splitlines() if line]
+        conditions = {}
+        for condition in sorted({row.get("condition") for row in new_rows}):
+            rows = [row for row in new_rows if row.get("condition") == condition]
+            changed = [
+                row
+                for row in rows
+                if bool(old_by_hash[row["original_row_sha256"]]["intended"]["passed"])
+                != bool(row["intended"]["passed"])
+                or bool(old_by_hash[row["original_row_sha256"]]["opposite"]["passed"])
+                != bool(row["opposite"]["passed"])
+            ]
+            def outcomes(side: str) -> dict[str, int]:
+                result: dict[str, int] = {}
+                for row in rows:
+                    outcome = row[side]["outcome"]
+                    result[outcome] = result.get(outcome, 0) + 1
+                return result
+            conditions[condition] = {
+                "views": len(rows),
+                "intended_pass": sum(row["intended"]["passed"] for row in rows),
+                "opposite_pass": sum(row["opposite"]["passed"] for row in rows),
+                "intended_outcomes": outcomes("intended"),
+                "opposite_outcomes": outcomes("opposite"),
+                "changed_pass_fail_outcomes_vs_history": len(changed),
+            }
+        runs[name] = {"source_rows": len(old_rows), "revalidated_rows": len(new_rows), "conditions": conditions}
+    return {"schema_version": 1, "evaluator_revision": EVALUATOR_REVISION, "runs": runs}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--inputs", nargs="*", help="explicit source rows.jsonl files; defaults to all paired-runtime artifacts")
@@ -103,7 +140,7 @@ def main() -> None:
         run_name = source_path.parent.name
         output_path = output_root / run_name / "rows.jsonl"
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        existing = {}
+        existing: dict[str, dict] = {}
         if output_path.exists():
             existing = {
                 row["original_row_sha256"]: row
@@ -141,9 +178,25 @@ def main() -> None:
                     "policy": policy,
                 }
                 handle.write(json.dumps(revalidated, sort_keys=True) + "\n")
+                handle.flush()
+                existing[original_hash] = revalidated
                 total += 1
                 if total % 25 == 0:
                     print(json.dumps({"revalidated_rows": total, "run": run_name}), flush=True)
+        expected_hashes = [_canonical_hash(row) for row in rows]
+        missing = [key for key in expected_hashes if key not in existing]
+        if missing:
+            raise RuntimeError(f"{source_path}: missing {len(missing)} revalidated rows")
+        # A tool interruption can leave append-only duplicates.  Canonicalize only our newly
+        # created artifact, in immutable source-row order; raw historical artifacts are untouched.
+        canonical_rows = [existing[key] for key in expected_hashes]
+        temporary = output_path.with_suffix(".tmp")
+        temporary.write_text(
+            "".join(json.dumps(row, sort_keys=True) + "\n" for row in canonical_rows)
+        )
+        temporary.replace(output_path)
+    summary = _summary(output_root, paths)
+    (output_root / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
     print(json.dumps({"revalidated_rows": total, "output_dir": str(output_root), "manifest": manifest}, sort_keys=True))
 
 

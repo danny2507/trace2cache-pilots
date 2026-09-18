@@ -1,0 +1,592 @@
+{
+  "evaluator_revision": "sandbox-v2-startup-and-candidate-budget",
+  "runs": {
+    "alignment_decoder200_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 2,
+            "semantic_failure": 19,
+            "semantic_pass": 3
+          },
+          "intended_pass": 3,
+          "opposite_outcomes": {
+            "policy_rejection": 2,
+            "semantic_failure": 4,
+            "semantic_pass": 18
+          },
+          "opposite_pass": 18,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 2,
+            "semantic_failure": 4,
+            "semantic_pass": 18
+          },
+          "intended_pass": 18,
+          "opposite_outcomes": {
+            "policy_rejection": 2,
+            "semantic_failure": 19,
+            "semantic_pass": 3
+          },
+          "opposite_pass": 3,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "alignment_decoder200_full_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 9,
+            "semantic_failure": 185,
+            "semantic_pass": 46
+          },
+          "intended_pass": 46,
+          "opposite_outcomes": {
+            "policy_rejection": 9,
+            "semantic_failure": 59,
+            "semantic_pass": 172
+          },
+          "opposite_pass": 172,
+          "views": 240
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 2,
+          "intended_outcomes": {
+            "policy_rejection": 9,
+            "semantic_failure": 59,
+            "semantic_pass": 172
+          },
+          "intended_pass": 172,
+          "opposite_outcomes": {
+            "policy_rejection": 9,
+            "semantic_failure": 185,
+            "semantic_pass": 46
+          },
+          "opposite_pass": 46,
+          "views": 240
+        }
+      },
+      "revalidated_rows": 480,
+      "source_rows": 480
+    },
+    "alignment_decoder200_test_short_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 4,
+          "intended_outcomes": {
+            "semantic_failure": 18,
+            "semantic_pass": 6
+          },
+          "intended_pass": 6,
+          "opposite_outcomes": {
+            "semantic_failure": 9,
+            "semantic_pass": 15
+          },
+          "opposite_pass": 15,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 4,
+          "intended_outcomes": {
+            "semantic_failure": 9,
+            "semantic_pass": 15
+          },
+          "intended_pass": 15,
+          "opposite_outcomes": {
+            "semantic_failure": 18,
+            "semantic_pass": 6
+          },
+          "opposite_pass": 6,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "alignment_vector200_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 4,
+            "policy_rejection": 4,
+            "semantic_failure": 11,
+            "semantic_pass": 5
+          },
+          "intended_pass": 5,
+          "opposite_outcomes": {
+            "extraction_failure": 4,
+            "policy_rejection": 4,
+            "semantic_failure": 7,
+            "semantic_pass": 9
+          },
+          "opposite_pass": 9,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 4,
+            "policy_rejection": 4,
+            "semantic_failure": 7,
+            "semantic_pass": 9
+          },
+          "intended_pass": 9,
+          "opposite_outcomes": {
+            "extraction_failure": 4,
+            "policy_rejection": 4,
+            "semantic_failure": 11,
+            "semantic_pass": 5
+          },
+          "opposite_pass": 5,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "binding_decoder200_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 20,
+            "semantic_pass": 3
+          },
+          "intended_pass": 3,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 8,
+            "semantic_pass": 15
+          },
+          "opposite_pass": 15,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 8,
+            "semantic_pass": 15
+          },
+          "intended_pass": 15,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 20,
+            "semantic_pass": 3
+          },
+          "opposite_pass": 3,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "counterfactual_decoder200_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "policy_rejection": 5,
+            "semantic_failure": 15,
+            "semantic_pass": 3
+          },
+          "intended_pass": 3,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "policy_rejection": 5,
+            "semantic_failure": 4,
+            "semantic_pass": 14
+          },
+          "opposite_pass": 14,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "policy_rejection": 5,
+            "semantic_failure": 4,
+            "semantic_pass": 14
+          },
+          "intended_pass": 14,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "policy_rejection": 5,
+            "semantic_failure": 15,
+            "semantic_pass": 3
+          },
+          "opposite_pass": 3,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "full_data_vector2000_dev_projection": {
+      "conditions": {
+        "nearest_oracle_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 20,
+            "semantic_failure": 53,
+            "semantic_pass": 167
+          },
+          "intended_pass": 167,
+          "opposite_outcomes": {
+            "extraction_failure": 20,
+            "semantic_failure": 183,
+            "semantic_pass": 37
+          },
+          "opposite_pass": 37,
+          "views": 240
+        },
+        "oracle_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 20,
+            "semantic_pass": 220
+          },
+          "intended_pass": 220,
+          "opposite_outcomes": {
+            "extraction_failure": 20,
+            "semantic_failure": 220
+          },
+          "opposite_pass": 0,
+          "views": 240
+        }
+      },
+      "revalidated_rows": 480,
+      "source_rows": 480
+    },
+    "full_data_vector2000_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 22,
+            "policy_rejection": 23,
+            "semantic_failure": 161,
+            "semantic_pass": 34
+          },
+          "intended_pass": 34,
+          "opposite_outcomes": {
+            "extraction_failure": 22,
+            "policy_rejection": 23,
+            "semantic_failure": 66,
+            "semantic_pass": 129
+          },
+          "opposite_pass": 129,
+          "views": 240
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 22,
+            "policy_rejection": 23,
+            "semantic_failure": 66,
+            "semantic_pass": 129
+          },
+          "intended_pass": 129,
+          "opposite_outcomes": {
+            "extraction_failure": 22,
+            "policy_rejection": 23,
+            "semantic_failure": 161,
+            "semantic_pass": 34
+          },
+          "opposite_pass": 34,
+          "views": 240
+        }
+      },
+      "revalidated_rows": 480,
+      "source_rows": 480
+    },
+    "rescue_vector1200_train_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 21,
+            "semantic_pass": 2
+          },
+          "intended_pass": 2,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 5,
+            "semantic_pass": 18
+          },
+          "opposite_pass": 18,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 5,
+            "semantic_pass": 18
+          },
+          "intended_pass": 18,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 21,
+            "semantic_pass": 2
+          },
+          "opposite_pass": 2,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "rescue_vector2000_dev_repair": {
+      "conditions": {
+        "nearest_oracle_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 4,
+            "semantic_failure": 6,
+            "semantic_pass": 14
+          },
+          "intended_pass": 14,
+          "opposite_outcomes": {
+            "extraction_failure": 4,
+            "semantic_failure": 16,
+            "semantic_pass": 4
+          },
+          "opposite_pass": 4,
+          "views": 24
+        },
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 2,
+            "policy_rejection": 4,
+            "semantic_failure": 15,
+            "semantic_pass": 3
+          },
+          "intended_pass": 3,
+          "opposite_outcomes": {
+            "extraction_failure": 2,
+            "policy_rejection": 4,
+            "semantic_failure": 7,
+            "semantic_pass": 11
+          },
+          "opposite_pass": 11,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 2,
+            "policy_rejection": 4,
+            "semantic_failure": 7,
+            "semantic_pass": 11
+          },
+          "intended_pass": 11,
+          "opposite_outcomes": {
+            "extraction_failure": 2,
+            "policy_rejection": 4,
+            "semantic_failure": 15,
+            "semantic_pass": 3
+          },
+          "opposite_pass": 3,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 72,
+      "source_rows": 72
+    },
+    "rescue_vector2000_oracle_diagnostic": {
+      "conditions": {
+        "nearest_oracle_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 2,
+            "semantic_pass": 22
+          },
+          "intended_pass": 22,
+          "opposite_outcomes": {
+            "extraction_failure": 2,
+            "semantic_failure": 22
+          },
+          "opposite_pass": 0,
+          "views": 24
+        },
+        "oracle_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 2,
+            "semantic_pass": 22
+          },
+          "intended_pass": 22,
+          "opposite_outcomes": {
+            "extraction_failure": 2,
+            "semantic_failure": 22
+          },
+          "opposite_pass": 0,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "rescue_vector2000_train_repair": {
+      "conditions": {
+        "expected_and_status_removed": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 10,
+            "semantic_failure": 30,
+            "semantic_pass": 8
+          },
+          "intended_pass": 8,
+          "opposite_outcomes": {
+            "policy_rejection": 10,
+            "semantic_failure": 30,
+            "semantic_pass": 8
+          },
+          "opposite_pass": 8,
+          "views": 48
+        },
+        "no_roles": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 16,
+            "semantic_failure": 26,
+            "semantic_pass": 6
+          },
+          "intended_pass": 6,
+          "opposite_outcomes": {
+            "policy_rejection": 16,
+            "semantic_failure": 25,
+            "semantic_pass": 7
+          },
+          "opposite_pass": 7,
+          "views": 48
+        },
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 5,
+            "semantic_failure": 42,
+            "semantic_pass": 1
+          },
+          "intended_pass": 1,
+          "opposite_outcomes": {
+            "extraction_failure": 5,
+            "semantic_failure": 1,
+            "semantic_pass": 42
+          },
+          "opposite_pass": 42,
+          "views": 48
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 5,
+            "semantic_failure": 1,
+            "semantic_pass": 42
+          },
+          "intended_pass": 42,
+          "opposite_outcomes": {
+            "extraction_failure": 5,
+            "semantic_failure": 42,
+            "semantic_pass": 1
+          },
+          "opposite_pass": 1,
+          "views": 48
+        }
+      },
+      "revalidated_rows": 192,
+      "source_rows": 192
+    },
+    "typed_decoder200_dev_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 1,
+            "semantic_failure": 19,
+            "semantic_pass": 4
+          },
+          "intended_pass": 4,
+          "opposite_outcomes": {
+            "policy_rejection": 1,
+            "semantic_failure": 5,
+            "semantic_pass": 18
+          },
+          "opposite_pass": 18,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "policy_rejection": 1,
+            "semantic_failure": 5,
+            "semantic_pass": 18
+          },
+          "intended_pass": 18,
+          "opposite_outcomes": {
+            "policy_rejection": 1,
+            "semantic_failure": 19,
+            "semantic_pass": 4
+          },
+          "opposite_pass": 4,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    },
+    "typed_decoder200_test_short_repair": {
+      "conditions": {
+        "paired_swap": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 15,
+            "semantic_pass": 8
+          },
+          "intended_pass": 8,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 10,
+            "semantic_pass": 13
+          },
+          "opposite_pass": 13,
+          "views": 24
+        },
+        "true_latent": {
+          "changed_pass_fail_outcomes_vs_history": 0,
+          "intended_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 10,
+            "semantic_pass": 13
+          },
+          "intended_pass": 13,
+          "opposite_outcomes": {
+            "extraction_failure": 1,
+            "semantic_failure": 15,
+            "semantic_pass": 8
+          },
+          "opposite_pass": 8,
+          "views": 24
+        }
+      },
+      "revalidated_rows": 48,
+      "source_rows": 48
+    }
+  },
+  "schema_version": 1
+}

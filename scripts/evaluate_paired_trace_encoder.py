@@ -7,10 +7,11 @@ marked in the report and never counted as unseen-program generalization.
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
+from dataclasses import asdict, replace
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import time
 
 import torch
@@ -81,6 +82,69 @@ def summarize(rows):
     return summaries
 
 
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _git_revision() -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"], text=True, capture_output=True, check=False
+    )
+    return completed.stdout.strip() if completed.returncode == 0 else "unavailable"
+
+
+def _snapshot_metadata(model_path: str | Path) -> dict[str, object]:
+    root = Path(model_path)
+    names = ("config.json", "generation_config.json", "tokenizer.json", "tokenizer_config.json", "special_tokens_map.json")
+    return {
+        "path": str(root.resolve()),
+        "files": {name: _sha256_file(root / name) for name in names if (root / name).is_file()},
+    }
+
+
+def _evaluation_manifest(args, config, records, checkpoint_hash, dataset_hash, model_path, tokenizer, items) -> dict:
+    test_suite = [asdict(item.case) for item in items]
+    manifest = {
+        "schema_version": 1,
+        "checkpoint_sha256": checkpoint_hash,
+        "dataset_sha256": dataset_hash,
+        "checkpoint_config": config,
+        "model": _snapshot_metadata(model_path),
+        "tokenizer": {
+            "vocab_size": tokenizer.vocab_size,
+            "special_token_ids": {
+                "bos": tokenizer.bos_token_id,
+                "eos": tokenizer.eos_token_id,
+                "pad": tokenizer.pad_token_id,
+            },
+        },
+        "codebook": {
+            "path": str(Path(config["codebook_checkpoint"]).resolve()),
+            "sha256": _sha256_file(Path(config["codebook_checkpoint"])),
+        },
+        "test_suite_sha256": hashlib.sha256(
+            json.dumps(test_suite, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "panel_pair_uids": [record.pair_uid for record in records],
+        "conditions": list(args.conditions),
+        "generation": {
+            "heldout_wording": args.heldout_wording,
+            "max_new_tokens": args.max_new_tokens,
+            "cache_fixed_codes": args.cache_fixed_codes,
+        },
+        "evaluator_revision": EVALUATOR_REVISION,
+        "code_revision": _git_revision(),
+    }
+    manifest["sha256"] = hashlib.sha256(
+        json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    return manifest
+
+
 @torch.inference_mode()
 def audit_encoder_padding(encoder, views, feature_map, oracle, *, typed_values: bool, binding_relations: bool, typed_value_mode: str):
     """Check that repair-time singleton encoding matches the padded training evaluation."""
@@ -125,12 +189,23 @@ def main():
     checkpoint_hash = hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()
     dataset_hash = hashlib.sha256(Path(args.dataset).read_bytes()).hexdigest()
     output_dir = Path(args.output_dir); output_dir.mkdir(parents=True, exist_ok=True)
+    manifest = _evaluation_manifest(
+        args, config, records, checkpoint_hash, dataset_hash, model_path, tokenizer, items
+    )
+    manifest_path = output_dir / "manifest.json"
+    if manifest_path.exists():
+        if json.loads(manifest_path.read_text()) != manifest:
+            raise ValueError("resume manifest differs from checkpoint, panel, conditions, or evaluation dependencies")
+    elif (output_dir / "rows.jsonl").exists():
+        raise ValueError("legacy rows lack an immutable manifest; select a new output directory")
+    else:
+        manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     row_path = output_dir / "rows.jsonl"
     rows = []
     if row_path.exists():
         rows = [json.loads(line) for line in row_path.read_text().splitlines() if line]
-        if any(row["checkpoint_sha256"] != checkpoint_hash or row["dataset_sha256"] != dataset_hash or row["heldout_wording"] != args.heldout_wording or row["max_new_tokens"] != args.max_new_tokens for row in rows):
-            raise ValueError("resume rows belong to another checkpoint/data/generation config")
+        if any(row.get("evaluation_manifest_sha256") != manifest["sha256"] for row in rows):
+            raise ValueError("resume rows do not belong to the immutable evaluation manifest")
     done = {(row["pair_uid"], row["side"], row["condition"]) for row in rows}
     fixed_code_cache = {}
     with torch.inference_mode():
@@ -167,11 +242,11 @@ def main():
                     response = tokenizer.decode(generated, skip_special_tokens=True)
                     patch, intended = validate(response, items[label].case)
                     _, opposite = validate(response, items[opposite_label].case)
-                    row = {"checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "generation_cache_hit": cached is not None, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
+                    row = {"evaluation_manifest_sha256": manifest["sha256"], "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "generation_cache_hit": cached is not None, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
                     with row_path.open("a") as handle: handle.write(json.dumps(row, sort_keys=True) + "\n")
                     rows.append(row)
                     print(json.dumps({"family": record.family_id, "side": side, "condition": condition, "correct": intended["passed"], "opposite": opposite["passed"]}), flush=True)
-    result = {"args": vars(args), "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "encoder_padding_audit": padding_audit, "summary": summarize(rows), "generation_cache_hits": sum(row.get("generation_cache_hit", False) for row in rows), "fixed_code_cache_entries_this_run": len(fixed_code_cache), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
+    result = {"args": vars(args), "evaluation_manifest_sha256": manifest["sha256"], "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "training_panel": str(Path(args.dataset).resolve()) == str(Path(config["dataset"]).resolve()), "encoder_padding_audit": padding_audit, "summary": summarize(rows), "generation_cache_hits": sum(row.get("generation_cache_hit", False) for row in rows), "fixed_code_cache_entries_this_run": len(fixed_code_cache), "peak_allocated_gib": torch.cuda.max_memory_allocated() / 2**30}
     (output_dir / "summary.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps(result["summary"], sort_keys=True), flush=True)
 

@@ -1,0 +1,66 @@
+{
+  "evaluator_revision": "sandbox-v2-startup-and-candidate-budget",
+  "policy": {
+    "candidate_timeout_seconds": 3.0,
+    "startup_timeout_seconds": 5.0
+  },
+  "schema_version": 1,
+  "sources": [
+    {
+      "path": "artifacts/paired_runtime_v2/alignment_decoder200_dev_repair/rows.jsonl",
+      "sha256": "1005344328e6143b37927a9ed1f79558f520c08cf5e96b9c01be18f8811c3bd7"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/alignment_decoder200_full_dev_repair/rows.jsonl",
+      "sha256": "2a63b34113b889677fb6911008b85e3aacfff73590263154c2cdfe952ac64747"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/alignment_decoder200_test_short_repair/rows.jsonl",
+      "sha256": "f7773b631ef7c8d7152d66b2288256264f1479c79d989392a49c2f7a603db0e3"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/alignment_vector200_dev_repair/rows.jsonl",
+      "sha256": "e484e67ae4c61279792431213187f9c27b48bae87d04ee87d660b6975ad311c3"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/binding_decoder200_dev_repair/rows.jsonl",
+      "sha256": "cc832796a2fbce1c70bc2971914daffd3448cf15db4ea303f26d9a9082df6a0c"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/counterfactual_decoder200_dev_repair/rows.jsonl",
+      "sha256": "8d5669a69a5037a7d583d2f2ed7cab78ed852435a3a09bae51fda675b71ba994"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/full_data_vector2000_dev_projection/rows.jsonl",
+      "sha256": "1e086a295cc3ca3d5fbdbe95768517f56698f8fc763f65c7c71e792b2d5f57c2"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/full_data_vector2000_dev_repair/rows.jsonl",
+      "sha256": "193c9b2cfdc74601f304ef6122aafe72c0dda3f74350bfe52182a4b251f83aaf"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/rescue_vector1200_train_repair/rows.jsonl",
+      "sha256": "9d80e1082f3a9388639bf753e24b43551cc882b8b9dd10123bcc525c0da7995f"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/rescue_vector2000_dev_repair/rows.jsonl",
+      "sha256": "23b79b6146f577f8c8aa95a21862e7572e63cd04fbb6ad44cf3b94dec2b24898"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/rescue_vector2000_oracle_diagnostic/rows.jsonl",
+      "sha256": "628b67eb5bfa359dd5b9ddd60b393320af4d79ff290625544d21986c38156dd2"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/rescue_vector2000_train_repair/rows.jsonl",
+      "sha256": "5b145fb176b1ff969572f8d3201907ba31d46503efaaf2ccec83ba4c3dd6541d"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/typed_decoder200_dev_repair/rows.jsonl",
+      "sha256": "7634b30e233c822a45c18c0b70013ce83d7d094cd244668612215e11987a850c"
+    },
+    {
+      "path": "artifacts/paired_runtime_v2/typed_decoder200_test_short_repair/rows.jsonl",
+      "sha256": "4a7500547bcde60c5e38e42a6881c893c910674bd4017a529fc461793969aaef"
+    }
+  ]
+}
