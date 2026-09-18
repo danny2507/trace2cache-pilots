@@ -24,6 +24,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import read_jsonl
+from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only
 from trace2cache.training_sampling import sample_paired_family
 from trace2cache.receiver_training import vector_loss, oracle_identity_loss
 from trace2cache.receiver_training import paired_patch_loss, paired_counterfactual_patch_loss, splice_prompt
@@ -61,6 +62,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--typed-values", action="store_true", help="attach structured tagged runtime values through a residual side channel")
     parser.add_argument("--typed-value-mode", choices=("parent_aggregate", "legacy_virtual_nodes"), default="parent_aggregate", help="parent_aggregate preserves baseline events; legacy_virtual_nodes is reproduction-only")
     parser.add_argument("--binding-relations", action="store_true", help="add audited NEXT/source/value-version topology; separate from typed-value ablation")
+    parser.add_argument("--evidence-view", choices=("full_runtime", "io_only", "runtime_corrupted_keep_io"), default="full_runtime")
     parser.add_argument("--seed", type=int, default=401)
     parser.add_argument("--checkpoint", default="checkpoints/paired_runtime_v2/overfit_context2_vector_seed401.pt")
     parser.add_argument("--output", default="artifacts/paired_runtime_v2/overfit_context2_vector_seed401.json")
@@ -85,6 +87,14 @@ def all_views(records: list[object]) -> tuple[list[object], torch.Tensor]:
     for record in records:
         views.extend((record.evidence_a, record.evidence_b)); labels.extend((record.label_a, record.label_b))
     return views, torch.tensor(labels, dtype=torch.long)
+
+
+def select_evidence_view(records: list[object], name: str) -> list[object]:
+    if name == "full_runtime":
+        return records
+    transform = io_only if name == "io_only" else corrupt_runtime_keep_io
+    from dataclasses import replace
+    return [replace(record, evidence_a=transform(record.evidence_a), evidence_b=transform(record.evidence_b)) for record in records]
 
 
 def build_feature_map(extractor: FrozenNativeFeatureExtractor, views: list[object], method: str, batch_size: int) -> dict[str, torch.Tensor]:
@@ -124,8 +134,8 @@ def main() -> None:
     args = parse_args()
     if not torch.cuda.is_available() or not torch.cuda.is_bf16_supported(): raise SystemExit("CUDA BF16 is required")
     torch.manual_seed(args.seed); random.seed(args.seed); torch.cuda.reset_peak_memory_stats()
-    records = read_jsonl(args.dataset); views, labels = all_views(records)
-    validation_records = read_jsonl(args.validation_dataset) if args.validation_dataset else []
+    records = select_evidence_view(read_jsonl(args.dataset), args.evidence_view); views, labels = all_views(records)
+    validation_records = select_evidence_view(read_jsonl(args.validation_dataset), args.evidence_view) if args.validation_dataset else []
     if validation_records and {record.input_hash for record in records} & {record.input_hash for record in validation_records}:
         raise RuntimeError("training and validation input bundles overlap")
     validation_views, validation_labels = all_views(validation_records)

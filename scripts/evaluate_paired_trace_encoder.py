@@ -21,6 +21,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import EXPECTED, STATUS, EvidenceView, read_jsonl
+from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only
 from trace2cache.receiver_training import splice_prompt
 from trace2cache.sandbox import EVALUATOR_REVISION, evaluate_patch, extract_function
 from run_pilot1 import resolve_local_model
@@ -50,6 +51,13 @@ def controlled_view(view: EvidenceView, condition: str) -> EvidenceView:
     if condition == "no_roles":
         return replace(view, events=tuple(replace(event, role_id=0) for event in view.events))
     return view
+
+
+def selected_evidence_view(view: EvidenceView, name: str) -> EvidenceView:
+    if name == "full_runtime": return view
+    if name == "io_only": return io_only(view)
+    if name == "runtime_corrupted_keep_io": return corrupt_runtime_keep_io(view)
+    raise ValueError(f"unknown checkpoint evidence view: {name}")
 
 
 def validate(response, case):
@@ -173,6 +181,7 @@ def main():
     typed_values = bool(config.get("typed_values", False))
     typed_value_mode = config.get("typed_value_mode", "legacy_virtual_nodes")
     binding_relations = bool(config.get("binding_relations", False))
+    evidence_view = config.get("evidence_view", "full_runtime")
     encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=config["hidden_width"], max_events=config["max_events"], max_tests=config["max_tests"], typed_feature_dim=FEATURE_DIM if typed_values else 0, relation_types=NUM_RELATIONS if binding_relations else 0).to("cuda").eval()
     encoder.load_state_dict(payload["encoder"], strict=True)
     counts = {}; records = []
@@ -180,10 +189,10 @@ def main():
         count = counts.get(record.family_id, 0)
         if count < args.pairs_per_family: records.append(record); counts[record.family_id] = count + 1
     if not records: raise ValueError("empty evaluation panel")
-    views = [controlled_view(view, condition) for record in records for view in (record.evidence_a, record.evidence_b) for condition in args.conditions]
+    views = [controlled_view(selected_evidence_view(view, evidence_view), condition) for record in records for view in (record.evidence_a, record.evidence_b) for condition in args.conditions]
     extractor = FrozenNativeFeatureExtractor(receiver, tokenizer, model_id=config["model"], cache_dir=config["feature_cache"])
     feature_map = build_feature_map(extractor, views, config["feature_method"], config["feature_batch_size"])
-    padding_audit = audit_encoder_padding(encoder, [view for record in records for view in (record.evidence_a, record.evidence_b)], feature_map, oracle, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode)
+    padding_audit = audit_encoder_padding(encoder, [selected_evidence_view(view, evidence_view) for record in records for view in (record.evidence_a, record.evidence_b)], feature_map, oracle, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode)
     print(json.dumps({"encoder_padding_audit": padding_audit}), flush=True)
     items = get_ambiguous_cases()
     checkpoint_hash = hashlib.sha256(Path(args.checkpoint).read_bytes()).hexdigest()
@@ -216,7 +225,10 @@ def main():
                 for condition in args.conditions:
                     if (record.pair_uid, side, condition) in done: continue
                     began = time.perf_counter()
-                    source_view = getattr(record, f"evidence_{other if condition in ('paired_swap', 'paired_swap_nearest') else side}")
+                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest") else side
+                    source_view = selected_evidence_view(
+                        getattr(record, f"evidence_{evidence_side}"), evidence_view
+                    )
                     view = controlled_view(source_view, condition)
                     latent = encoder(**collate_views([view], feature_map, receiver.device, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode))
                     similarity = torch.nn.functional.cosine_similarity(latent.flatten(1), oracle.flatten(1), dim=-1)
