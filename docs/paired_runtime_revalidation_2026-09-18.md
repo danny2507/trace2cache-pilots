@@ -129,3 +129,22 @@ full-runtime latent > I/O-only latent >> frozen structured text, but it is not a
 latent beats text: the text receiver was not separately SFT/alignment-trained, and all results are
 still one-seed known-family diagnostics. Artifact:
 `artifacts/paired_runtime_v2/structured_text_dev_repair/`.
+
+## Stage-C1 named and compact text interface
+
+The original JSON serializer exposed numeric role IDs, so the frozen receiver had no textual role
+legend.  C1 evaluates two stricter replacements using the same 24 views, greedy decoding and
+policy evaluator: a lossless JSON serializer with names such as `EXPECTED` and `BRANCH`, and a
+test-grouped compact form with the same event payloads.  The compact form lowers mean prompt size
+from 1,592 to 1,108 tokens (30.4%); neither form produces evidence-sensitive repair:
+
+| Condition | Intended repair | Paired-swap repair | Complete pairs |
+| --- | ---: | ---: | ---: |
+| No evidence | 4/24 | 4/24 | 0/12 |
+| Named lossless text | 3/24 | 3/24 | 0/12 |
+| Compact behavioral text | 2/24 | 3/24 | 0/12 |
+
+This is a frozen-receiver text control, not a claim about what text could achieve after text-SFT.
+It removes the specific numeric-schema objection to the earlier baseline and justifies moving to
+the matched-from-scratch full-runtime versus I/O-only latent comparison.  Immutable generation
+artifact: `artifacts/paired_runtime_v2/named_text_compact_dev_repair_v2/`.

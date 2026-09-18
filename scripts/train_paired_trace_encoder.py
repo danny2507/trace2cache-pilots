@@ -119,6 +119,18 @@ def build_feature_map(extractor: FrozenNativeFeatureExtractor, views: list[objec
     return {content: vector.detach() for content, vector in zip(contents, vectors)}
 
 
+def state_fingerprint(module: torch.nn.Module) -> str:
+    """Exact initialization identity for matched evidence-view experiments."""
+    digest = hashlib.sha256()
+    for name, value in sorted(module.state_dict().items()):
+        tensor = value.detach().cpu().contiguous()
+        digest.update(name.encode())
+        digest.update(str(tensor.dtype).encode())
+        digest.update(str(tuple(tensor.shape)).encode())
+        digest.update(tensor.view(torch.uint8).numpy().tobytes())
+    return digest.hexdigest()
+
+
 @torch.inference_mode()
 def evaluate(encoder: RoleAwareEventEncoder, views: list[object], labels: torch.Tensor, feature_map: dict[str, torch.Tensor], oracle: torch.Tensor, *, batch_size: int, typed_values: bool = False, binding_relations: bool = False, typed_value_mode: str = "parent_aggregate") -> dict[str, float]:
     predictions = []
@@ -171,6 +183,7 @@ def main() -> None:
         # Same-architecture continuation must load every parameter. A plain-to-rich migration is
         # permitted only for deliberately zero-initialized residual modules listed above.
         if sorted(missing) != sorted(expected_missing) or unexpected: raise RuntimeError(f"encoder warm-start mismatch: missing={missing}, unexpected={unexpected}")
+    initial_encoder_sha256 = state_fingerprint(encoder)
     if args.objective in ("decoder", "decoder_counterfactual") and args.sampling != "paired_family":
         raise SystemExit("decoder objectives require --sampling paired_family")
     if args.sampling == "paired_family" and args.batch_size != 2 * args.gradient_accumulation:
@@ -293,9 +306,9 @@ def main() -> None:
     if args.validation_dataset:
         data_hashes["validation"] = hashlib.sha256(Path(args.validation_dataset).read_bytes()).hexdigest()
     sampling_digest = sampling_hasher.hexdigest() if args.sampling == "paired_family" else None
-    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
+    payload = {"schema_version": 2, "timestamp": datetime.now(timezone.utc).isoformat(), "args": vars(args), "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "initial_encoder_sha256": initial_encoder_sha256, "behavior_ids": [item.case.case_id for item in get_ambiguous_cases()], "encoder": encoder.state_dict(), "oracle_code_shape": list(oracle.shape), "final": final, "history": history}
     checkpoint = Path(args.checkpoint); checkpoint.parent.mkdir(parents=True, exist_ok=True); temporary = checkpoint.with_suffix(".tmp"); torch.save(payload, temporary); temporary.replace(checkpoint)
-    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "views": len(views), "validation_views": len(validation_views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
+    result = {"timestamp": payload["timestamp"], "args": vars(args), "dataset": args.dataset, "dataset_sha256": data_hashes, "sampling_trace_sha256": sampling_digest, "initial_encoder_sha256": initial_encoder_sha256, "views": len(views), "validation_views": len(validation_views), "unique_payloads": len(feature_map), "feature_seconds": feature_seconds, "train_seconds": time.perf_counter() - started, "trainable_parameters": trainable_parameter_count(encoder), "peak_allocated_gib": round(torch.cuda.max_memory_allocated() / 2**30, 3), "peak_reserved_gib": round(torch.cuda.max_memory_reserved() / 2**30, 3), "history": history, "final": final}
     output = Path(args.output); output.parent.mkdir(parents=True, exist_ok=True); output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps({"final": final, "output": str(output)}, sort_keys=True))
 

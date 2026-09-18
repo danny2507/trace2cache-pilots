@@ -1,0 +1,78 @@
+{
+  "args": {
+    "cache_fixed_codes": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/typed_parent_aggregate_decoder200_seed401.pt",
+    "conditions": [
+      "no_evidence",
+      "structured_text",
+      "paired_swap_text",
+      "compact_text",
+      "paired_swap_compact_text"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/named_text_compact_dev_repair_v2",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "d1a5c852893f9418ec37682726797e87cd54fd6dca28268186be7b3581d92b27",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 1.9744038581848145e-07,
+    "rmse": 2.2637223651145177e-08,
+    "views": 24
+  },
+  "evaluation_manifest_sha256": "ec0ac9e313b5f5dbfd74a00d50dc313e3d0a0cd23dd0603fdee383cdf266d7ca",
+  "fixed_code_cache_entries_this_run": 0,
+  "generation_cache_hits": 0,
+  "peak_allocated_gib": 5.674116611480713,
+  "summary": {
+    "compact_text": {
+      "both_correct": 0,
+      "cap_hits": 0,
+      "correct": 2,
+      "mean_prompt_tokens": 1108.0,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    },
+    "no_evidence": {
+      "both_correct": 0,
+      "cap_hits": 0,
+      "correct": 4,
+      "mean_prompt_tokens": 97.25,
+      "opposite_correct": 4,
+      "pairs": 12,
+      "views": 24
+    },
+    "paired_swap_compact_text": {
+      "both_correct": 0,
+      "cap_hits": 0,
+      "correct": 3,
+      "mean_prompt_tokens": 1108.0,
+      "opposite_correct": 2,
+      "pairs": 12,
+      "views": 24
+    },
+    "paired_swap_text": {
+      "both_correct": 0,
+      "cap_hits": 1,
+      "correct": 3,
+      "mean_prompt_tokens": 1592.3333333333333,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    },
+    "structured_text": {
+      "both_correct": 0,
+      "cap_hits": 1,
+      "correct": 3,
+      "mean_prompt_tokens": 1592.3333333333333,
+      "opposite_correct": 3,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": false
+}
