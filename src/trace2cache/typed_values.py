@@ -2,8 +2,9 @@
 
 The runtime collector already serializes values as tagged JSON.  This module deliberately
 only decodes that safe representation: it never evaluates a repr or source fragment.
-Nested values become ordered virtual evidence nodes, so a list such as ``[3, -2]`` is not
-reduced to an unordered bag or a length scalar before it reaches the trace encoder.
+Nested values are decoded into ordered typed items.  The current encoder aggregates these items
+back to their parent runtime event through a zero-initialized residual, so enabling typed features
+does not alter the baseline event stream, positions, or attention pattern at warm-start.
 """
 
 from __future__ import annotations

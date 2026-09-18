@@ -58,7 +58,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hidden-width", type=int, default=256)
     parser.add_argument("--max-events", type=int, default=512)
     parser.add_argument("--max-tests", type=int, default=8)
-    parser.add_argument("--typed-values", action="store_true", help="expand structured tagged runtime values into ordered typed nodes")
+    parser.add_argument("--typed-values", action="store_true", help="attach structured tagged runtime values through a residual side channel")
+    parser.add_argument("--typed-value-mode", choices=("parent_aggregate", "legacy_virtual_nodes"), default="parent_aggregate", help="parent_aggregate preserves baseline events; legacy_virtual_nodes is reproduction-only")
     parser.add_argument("--binding-relations", action="store_true", help="add audited NEXT/source/value-version topology; separate from typed-value ablation")
     parser.add_argument("--seed", type=int, default=401)
     parser.add_argument("--checkpoint", default="checkpoints/paired_runtime_v2/overfit_context2_vector_seed401.pt")
@@ -109,10 +110,10 @@ def build_feature_map(extractor: FrozenNativeFeatureExtractor, views: list[objec
 
 
 @torch.inference_mode()
-def evaluate(encoder: RoleAwareEventEncoder, views: list[object], labels: torch.Tensor, feature_map: dict[str, torch.Tensor], oracle: torch.Tensor, *, batch_size: int, typed_values: bool = False, binding_relations: bool = False) -> dict[str, float]:
+def evaluate(encoder: RoleAwareEventEncoder, views: list[object], labels: torch.Tensor, feature_map: dict[str, torch.Tensor], oracle: torch.Tensor, *, batch_size: int, typed_values: bool = False, binding_relations: bool = False, typed_value_mode: str = "parent_aggregate") -> dict[str, float]:
     predictions = []
     for start in range(0, len(views), batch_size):
-        batch = collate_views(views[start:start + batch_size], feature_map, oracle.device, typed_values=typed_values, binding_relations=binding_relations)
+        batch = collate_views(views[start:start + batch_size], feature_map, oracle.device, typed_values=typed_values, binding_relations=binding_relations, typed_value_mode=typed_value_mode)
         predictions.append(encoder(**batch))
     latent = torch.cat(predictions).float(); target = oracle[labels.to(oracle.device)]
     similarities = torch.nn.functional.cosine_similarity(latent.flatten(1).unsqueeze(1), oracle.flatten(1).unsqueeze(0), dim=-1)
@@ -144,10 +145,21 @@ def main() -> None:
     encoder = RoleAwareEventEncoder(model_width=receiver.config.hidden_size, output_anchor=oracle.mean(0), hidden_width=args.hidden_width, max_events=args.max_events, max_tests=args.max_tests, typed_feature_dim=FEATURE_DIM if args.typed_values else 0, relation_types=NUM_RELATIONS if args.binding_relations else 0).to("cuda")
     if args.init_checkpoint:
         payload = torch.load(args.init_checkpoint, map_location=receiver.device, weights_only=False)
+        source_args = payload.get("args", {})
+        source_typed = bool(source_args.get("typed_values", False))
+        source_binding = bool(source_args.get("binding_relations", False))
+        if (source_typed and not args.typed_values) or (source_binding and not args.binding_relations):
+            raise RuntimeError("cannot warm-start a richer representation into a plain encoder")
+        if source_typed and source_args.get("typed_value_mode", "legacy_virtual_nodes") != args.typed_value_mode:
+            raise RuntimeError("warm-start source and target typed-value modes differ")
         missing, unexpected = encoder.load_state_dict(payload["encoder"], strict=False)
         expected_missing = []
-        if args.typed_values: expected_missing += ["typed_projection.0.weight", "typed_projection.0.bias", "typed_projection.1.weight"]
-        if args.binding_relations: expected_missing += [name for name in encoder.state_dict() if name.startswith("relation_layer.")]
+        if args.typed_values and not source_typed:
+            expected_missing += ["typed_projection.0.weight", "typed_projection.0.bias", "typed_projection.1.weight"]
+        if args.binding_relations and not source_binding:
+            expected_missing += [name for name in encoder.state_dict() if name.startswith("relation_layer.")]
+        # Same-architecture continuation must load every parameter. A plain-to-rich migration is
+        # permitted only for deliberately zero-initialized residual modules listed above.
         if sorted(missing) != sorted(expected_missing) or unexpected: raise RuntimeError(f"encoder warm-start mismatch: missing={missing}, unexpected={unexpected}")
     if args.objective in ("decoder", "decoder_counterfactual") and args.sampling != "paired_family":
         raise SystemExit("decoder objectives require --sampling paired_family")
@@ -178,13 +190,13 @@ def main() -> None:
             else:
                 selected = [order_rng.randrange(len(views)) for _ in range(args.batch_size)]
                 selected_views = [views[index] for index in selected]; selected_labels = labels[selected]
-            batch = collate_views(selected_views, feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations)
+            batch = collate_views(selected_views, feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
             target = oracle[selected_labels.to(receiver.device)]
             latent = encoder(**batch)
             loss = vector_loss(latent, target)
             diagnostics = {"vector": float(loss.detach())}
             if args.objective == "vector_identity":
-                identity = oracle_identity_loss(latent, oracle, labels[selected].to(receiver.device), temperature=args.identity_temperature)
+                identity = oracle_identity_loss(latent, oracle, selected_labels.to(receiver.device), temperature=args.identity_temperature)
                 loss = loss + args.identity_weight * identity
                 diagnostics["identity"] = float(identity.detach())
             loss.backward()
@@ -197,20 +209,24 @@ def main() -> None:
             chosen = sample_paired_family(records, order_rng, args.gradient_accumulation)
             sampling_hasher.update(f"{update}:".encode())
             sampling_hasher.update(",".join(record.pair_uid for record in chosen).encode()); sampling_hasher.update(b"\n")
+            microbatch_pairs = args.decoder_microbatch_pairs or len(chosen)
             for side in ("a", "b"):
-                side_views = [getattr(record, f"evidence_{side}") for record in chosen]
                 label = getattr(chosen[0], f"label_{side}"); other_label = getattr(chosen[0], f"label_{'b' if side == 'a' else 'a'}")
                 if any(getattr(record, f"label_{side}") != label for record in chosen): raise RuntimeError("family label mismatch")
-                batch = collate_views(side_views, feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations)
-                latent = encoder(**batch)
-                prompt = splice_prompt(receiver, tokenizer, rendered_prompts[label], latent)
-                positive = targets[label].expand(len(chosen), -1)
-                negative = targets[other_label].expand(len(chosen), -1)
-                code = oracle[label].unsqueeze(0).expand(len(chosen), -1, -1)
-                components = paired_patch_loss(receiver, prompt, positive, negative, code, latent, margin=args.decoder_margin, vector_weight=args.decoder_vector_weight)
-                (components["loss"] / 2).backward()
-                total_loss += float(components["loss"].detach()) / 2
-                for name in component_sums: component_sums[name] += float(components[name].detach()) / 2
+                for start in range(0, len(chosen), microbatch_pairs):
+                    micro = chosen[start:start + microbatch_pairs]
+                    weight = len(micro) / len(chosen)
+                    side_views = [getattr(record, f"evidence_{side}") for record in micro]
+                    batch = collate_views(side_views, feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
+                    latent = encoder(**batch)
+                    prompt = splice_prompt(receiver, tokenizer, rendered_prompts[label], latent)
+                    positive = targets[label].expand(len(micro), -1)
+                    negative = targets[other_label].expand(len(micro), -1)
+                    code = oracle[label].unsqueeze(0).expand(len(micro), -1, -1)
+                    components = paired_patch_loss(receiver, prompt, positive, negative, code, latent, margin=args.decoder_margin, vector_weight=args.decoder_vector_weight)
+                    (components["loss"] * weight / 2).backward()
+                    total_loss += float(components["loss"].detach()) * weight / 2
+                    for name in component_sums: component_sums[name] += float(components[name].detach()) * weight / 2
             loss = torch.tensor(total_loss, device=receiver.device)
             diagnostics = component_sums
         else:
@@ -229,8 +245,8 @@ def main() -> None:
             for start in range(0, len(chosen), microbatch_pairs):
                 micro = chosen[start:start + microbatch_pairs]
                 weight = len(micro) / len(chosen)
-                batch_a = collate_views([record.evidence_a for record in micro], feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations)
-                batch_b = collate_views([record.evidence_b for record in micro], feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations)
+                batch_a = collate_views([record.evidence_a for record in micro], feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
+                batch_b = collate_views([record.evidence_b for record in micro], feature_map, receiver.device, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
                 latent_a, latent_b = encoder(**batch_a), encoder(**batch_b)
                 prompt_a = splice_prompt(receiver, tokenizer, rendered_prompts[label_a], latent_a)
                 prompt_b = splice_prompt(receiver, tokenizer, rendered_prompts[label_b], latent_b)
@@ -254,15 +270,15 @@ def main() -> None:
             diagnostics = component_sums
         grad_norm = torch.nn.utils.clip_grad_norm_(encoder.parameters(), 1.0); optimizer.step()
         if update == 1 or update % 50 == 0 or update == args.steps:
-            encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations)
+            encoder.eval(); metrics = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
             if validation_views:
-                metrics["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations)
+                metrics["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
             encoder.train()
             history.append({"update": update, "loss": float(loss.detach()), "grad_norm": float(grad_norm), **diagnostics, **metrics})
             print(json.dumps(history[-1], sort_keys=True), flush=True)
-    encoder.eval(); final = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations)
+    encoder.eval(); final = evaluate(encoder, views, labels, feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
     if validation_views:
-        final["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations)
+        final["validation"] = evaluate(encoder, validation_views, validation_labels, validation_feature_map, oracle, batch_size=args.batch_size, typed_values=args.typed_values, binding_relations=args.binding_relations, typed_value_mode=args.typed_value_mode)
     data_hashes = {"train": hashlib.sha256(Path(args.dataset).read_bytes()).hexdigest()}
     if args.validation_dataset:
         data_hashes["validation"] = hashlib.sha256(Path(args.validation_dataset).read_bytes()).hexdigest()

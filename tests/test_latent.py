@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+import json
 
 import torch
 from torch import nn
@@ -11,6 +12,9 @@ from trace2cache.latent import (
     NativePairEncoder,
     RoleAwareEventEncoder,
 )
+from trace2cache.native_features import collate_views
+from trace2cache.paired_evidence import EvidenceEvent, EvidenceView
+from trace2cache.structured_runtime import tagged_value
 
 
 class LatentTests(unittest.TestCase):
@@ -58,6 +62,45 @@ class LatentTests(unittest.TestCase):
         self.assertEqual((baseline - typed).abs().max().item(), 0.0)
         typed.sum().backward()
         self.assertIsNotNone(encoder.typed_projection[1].weight.grad)
+
+    def test_parent_aggregated_typed_collation_preserves_plain_warm_start(self):
+        view = EvidenceView(
+            "typed-warm-start",
+            (
+                EvidenceEvent(0, 0, 0, 1, "plain event", None),
+                EvidenceEvent(
+                    1,
+                    0,
+                    1,
+                    5,
+                    json.dumps({"state": {"values": tagged_value([3, -2, True])}}),
+                    4,
+                ),
+            ),
+        )
+        features = {event.content: torch.randn(16, dtype=torch.bfloat16) for event in view.events}
+        plain = RoleAwareEventEncoder(
+            model_width=16, output_anchor=torch.randn(3, 16), hidden_width=16,
+            num_roles=10, max_events=4, max_tests=2, num_layers=1, num_heads=4,
+        )
+        typed = RoleAwareEventEncoder(
+            model_width=16, output_anchor=plain.output_anchor, hidden_width=16,
+            num_roles=10, max_events=4, max_tests=2, num_layers=1, num_heads=4,
+            typed_feature_dim=99,
+        )
+        missing, unexpected = typed.load_state_dict(plain.state_dict(), strict=False)
+        self.assertEqual(sorted(missing), ["typed_projection.0.bias", "typed_projection.0.weight", "typed_projection.1.weight"])
+        self.assertEqual(unexpected, [])
+        nn.init.normal_(plain.output[-1].weight, std=0.02)
+        typed.output[-1].weight.data.copy_(plain.output[-1].weight.data)
+        plain_batch = collate_views([view], features, torch.device("cpu"))
+        typed_batch = collate_views([view], features, torch.device("cpu"), typed_values=True)
+        for name in ("content_vectors", "role_ids", "test_ids", "event_mask"):
+            self.assertTrue(torch.equal(plain_batch[name], typed_batch[name]), name)
+        self.assertEqual(typed_batch["typed_features"].shape[:2], plain_batch["event_mask"].shape)
+        self.assertTrue(torch.allclose(plain(**plain_batch), typed(**typed_batch), atol=0, rtol=0))
+        typed(**typed_batch).sum().backward()
+        self.assertGreater(typed.typed_projection[1].weight.grad.abs().max().item(), 0.0)
     def test_pair_encoder_is_parametric_and_native_anchored(self):
         embedding = nn.Embedding(60, 16)
         digit_ids = list(range(10, 20))

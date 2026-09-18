@@ -159,19 +159,27 @@ class FrozenNativeFeatureExtractor:
         return difference
 
 
-def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device, *, typed_values: bool = False, binding_relations: bool = False) -> dict[str, torch.Tensor]:
-    """Pad EvidenceViews, optionally expanding safe tagged values into ordered nodes."""
+def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor], device: torch.device, *, typed_values: bool = False, binding_relations: bool = False, typed_value_mode: str = "parent_aggregate") -> dict[str, torch.Tensor]:
+    """Pad EvidenceViews and optionally attach safe typed values to their parent events.
+
+    ``parent_aggregate`` is the controlled typed path: it leaves base events exactly untouched and
+    averages ordered typed-item features into a side channel for each parent.  ``legacy_virtual_nodes``
+    exists only to reproduce released pre-fix checkpoints; it changes event positions/attention and
+    must never be described as a zero-equivalent warm start.
+    """
     from .typed_values import FEATURE_DIM, parse_typed_nodes, typed_feature
     views = list(views)
     if not views: raise ValueError("cannot collate no views")
     if typed_values and binding_relations:
         raise ValueError("typed expansion and binding relations are separate representation ablations")
+    if typed_value_mode not in {"parent_aggregate", "legacy_virtual_nodes"}:
+        raise ValueError(f"unknown typed value mode: {typed_value_mode}")
     expanded = []
     for view in views:
         entries = []
         for event in view.events:
             entries.append((event, None))
-            if typed_values:
+            if typed_values and typed_value_mode == "legacy_virtual_nodes":
                 entries.extend((event, node) for node in parse_typed_nodes(event.content))
         expanded.append(entries)
     width = max(len(entries) for entries in expanded); hidden = next(iter(feature_map.values())).shape[-1]
@@ -185,7 +193,13 @@ def collate_views(views: Iterable[object], feature_map: dict[str, torch.Tensor],
         for event_index, (event, node) in enumerate(entries):
             contents[batch_index, event_index] = feature_map[event.content].to(device)
             roles[batch_index, event_index] = event.role_id; tests[batch_index, event_index] = event.test_id; mask[batch_index, event_index] = True
-            if node is not None: typed[batch_index, event_index] = torch.tensor(typed_feature(node), device=device)
+            if typed_values and typed_value_mode == "parent_aggregate" and node is None:
+                nodes = parse_typed_nodes(event.content)
+                if nodes:
+                    values = torch.tensor([typed_feature(item) for item in nodes], dtype=torch.float32, device=device)
+                    typed[batch_index, event_index] = values.mean(dim=0)
+            elif node is not None:
+                typed[batch_index, event_index] = torch.tensor(typed_feature(node), device=device)
         if relations is not None:
             from .binding_encoder import SELF, relation_edges
             valid = len(entries)
