@@ -21,7 +21,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import EXPECTED, STATUS, EvidenceView, read_jsonl
-from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only, structured_text
+from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, io_only, structured_text
 from trace2cache.receiver_training import splice_prompt
 from trace2cache.sandbox import EVALUATOR_REVISION, evaluate_patch, extract_function
 from run_pilot1 import resolve_local_model
@@ -29,7 +29,7 @@ from run_repair_codebook import MARKER, render
 from run_repair_latent_pool import greedy_generate
 from train_paired_trace_encoder import build_feature_map, load_oracle_codes
 
-CONDITIONS = ("true_latent", "paired_swap", "structured_text", "paired_swap_text", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
+CONDITIONS = ("true_latent", "paired_swap", "structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
 
 
 def parse_args():
@@ -86,6 +86,7 @@ def summarize(rows):
             "both_correct": sum(len(pair) == 2 and all(row["intended"]["passed"] for row in pair) for pair in pairs.values()),
             "pairs": len(pairs), "opposite_correct": sum(row["opposite"]["passed"] for row in selected),
             "cap_hits": sum(row["cap_hit"] for row in selected),
+            "mean_prompt_tokens": sum(row["prompt_tokens"] for row in selected) / len(selected),
         }
     return summaries
 
@@ -225,12 +226,12 @@ def main():
                 for condition in args.conditions:
                     if (record.pair_uid, side, condition) in done: continue
                     began = time.perf_counter()
-                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest", "paired_swap_text") else side
+                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest", "paired_swap_text", "paired_swap_compact_text") else side
                     source_view = selected_evidence_view(
                         getattr(record, f"evidence_{evidence_side}"), evidence_view
                     )
                     view = controlled_view(source_view, condition)
-                    if condition in ("structured_text", "paired_swap_text"):
+                    if condition in ("structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text"):
                         latent = None
                         nearest_label = None
                     else:
@@ -243,8 +244,14 @@ def main():
                     if condition == "oracle_latent":
                         latent = oracle[label].unsqueeze(0); fixed_label = label
                     if condition == "no_evidence": latent = None
-                    evidence = structured_text(view) if condition in ("structured_text", "paired_swap_text") else "unavailable" if latent is None else MARKER
+                    if condition in ("structured_text", "paired_swap_text"):
+                        evidence = structured_text(view)
+                    elif condition in ("compact_text", "paired_swap_compact_text"):
+                        evidence = compact_behavioral_text(view)
+                    else:
+                        evidence = "unavailable" if latent is None else MARKER
                     rendered = render(tokenizer, items[label].case, evidence, heldout=args.heldout_wording)
+                    prompt_tokens = len(tokenizer(rendered, add_special_tokens=False).input_ids)
                     inputs = splice_prompt(receiver, tokenizer, rendered, latent)
                     cache_key = (rendered, fixed_label) if args.cache_fixed_codes and fixed_label is not None else None
                     cached = fixed_code_cache.get(cache_key) if cache_key is not None else None
@@ -259,7 +266,7 @@ def main():
                     response = tokenizer.decode(generated, skip_special_tokens=True)
                     patch, intended = validate(response, items[label].case)
                     _, opposite = validate(response, items[opposite_label].case)
-                    row = {"evaluation_manifest_sha256": manifest["sha256"], "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "generation_cache_hit": cached is not None, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
+                    row = {"evaluation_manifest_sha256": manifest["sha256"], "checkpoint_sha256": checkpoint_hash, "dataset_sha256": dataset_hash, "pair_uid": record.pair_uid, "family": record.family_id, "split": record.split, "side": side, "condition": condition, "heldout_wording": args.heldout_wording, "max_new_tokens": args.max_new_tokens, "prompt_tokens": prompt_tokens, "nearest_label": nearest_label, "label": label, "response": response, "patch": patch, "intended": intended, "opposite": opposite, "generation_cache_hit": cached is not None, "cap_hit": len(generated) == args.max_new_tokens and int(generated[-1]) != tokenizer.eos_token_id, "seconds": time.perf_counter() - began}
                     with row_path.open("a") as handle: handle.write(json.dumps(row, sort_keys=True) + "\n")
                     rows.append(row)
                     print(json.dumps({"family": record.family_id, "side": side, "condition": condition, "correct": intended["passed"], "opposite": opposite["passed"]}), flush=True)

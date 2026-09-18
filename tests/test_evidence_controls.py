@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only, structured_text
+from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, io_only, structured_text
 from trace2cache.paired_evidence import ACTUAL, BRANCH, EXPECTED, INPUT, STATUS, TEST_START, EvidenceEvent, EvidenceView
 
 
@@ -22,4 +22,8 @@ def test_stage_c_controls_preserve_io_and_only_corrupt_runtime() -> None:
     assert corrupt.events[3:] == view.events[3:]
     assert json.loads(corrupt.events[2].content) == {"runtime": "CORRUPTED"}
     assert corrupt.events[2].source_line is None
-    assert '"role_id":4' in structured_text(view)
+    assert '"role":"EXPECTED"' in structured_text(view)
+    compact_text = compact_behavioral_text(view)
+    assert "TEST 0" in compact_text
+    assert "BRANCH step=2 line=7" in compact_text
+    assert "EXPECTED step=4" in compact_text
