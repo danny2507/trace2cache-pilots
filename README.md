@@ -28,6 +28,13 @@ into the latent encoder.
 Trainable-only model artifacts are published separately at
 [`danny2507/trace2cache-pilots`](https://huggingface.co/danny2507/trace2cache-pilots).
 
+The latest paired-runtime update is a careful negative-control result: direct decoder
+supervision gives useful paired repair behavior on known toy program families, but generic typed
+value nodes, cross-latent counterfactual loss, and audited binding relations do not improve it.
+It does not support a task-disjoint repair or direct-KV claim.  See
+[`docs/handover_2026-09-18.md`](docs/handover_2026-09-18.md) for exact denominators, controls,
+checkpoints, and release contents.
+
 ## Reproduce
 
 Create the project-local, pinned CUDA 11.8 environment and run:
