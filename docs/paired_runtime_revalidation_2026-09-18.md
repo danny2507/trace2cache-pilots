@@ -166,3 +166,13 @@ a *representation-neutral* pretraining stage or a shared text/latent alignment o
 re-running this matched comparison.  Artifacts:
 `artifacts/paired_runtime_v2/stage_c_from_scratch_full_seed401.json` and
 `artifacts/paired_runtime_v2/stage_c_from_scratch_io_seed401.json`.
+
+The first matched vector-only warm-up checkpoint (400 updates at 1e-3, paired sampler) also has
+identical initialization and sampling hashes across views.  It remains below the identity gate:
+full runtime reaches 0.341 cosine / 1/24 nearest-code accuracy and I/O-only 0.370 / 1/24.  This
+shows that the historical `full_data_vector2000` warm start cannot be treated as a from-scratch
+baseline: it was a continuation checkpoint.  The remaining predeclared warm-up schedule is 800
+updates at 3e-4 and 800 at 1e-4 for **each** view, then the 200-update decoder stage; do not use
+the 400-step numbers to compare runtime utility.  Artifacts:
+`artifacts/paired_runtime_v2/stage_c_matched_full_vector400_seed401.json` and
+`artifacts/paired_runtime_v2/stage_c_matched_io_vector400_seed401.json`.
