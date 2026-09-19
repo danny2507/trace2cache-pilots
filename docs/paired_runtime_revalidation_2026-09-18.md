@@ -192,3 +192,23 @@ same 200-update decoder alignment objective from each final vector checkpoint, f
 fixed true-versus-paired-swap repair evaluation. Artifacts:
 `artifacts/paired_runtime_v2/stage_c_matched_full_vector2000_seed401.json` and
 `artifacts/paired_runtime_v2/stage_c_matched_io_vector2000_seed401.json`.
+
+The subsequent matched 200-update decoder stage and fixed first-pair-per-family repair
+evaluation give the following one-seed result. Each row uses the same frozen receiver, decoder
+loss, greedy cap, evaluator, development panel and true-versus-paired-swap intervention.
+
+| Evidence view | True intended repair | Paired-swap intended repair | True − swap | Complete true pairs |
+| --- | ---: | ---: | ---: | ---: |
+| Full runtime | 9/24 | 6/24 | +3 | 2/12 |
+| I/O-only | 4/24 | 8/24 | −4 | 0/12 |
+
+The full-runtime adapter is padding-stable (`max_abs=1.27e-7`, zero nearest-code disagreements)
+and the I/O adapter independently passes the same audit (`8.94e-8`, zero disagreements). Thus the
+result is not explained by batching/padding. Relative to the matched I/O-only branch, full runtime
+adds five true repairs, reverses the swap direction by seven repairs, and supplies the only
+complete-pair successes. This supports a narrow **known-family, one-seed** claim that intermediate
+runtime events matter to this learned latent adapter after matched from-scratch training. It does
+not establish a text-medium advantage after text alignment, causal source/value binding, or
+task/source-disjoint program-repair generalization. Artifacts:
+`artifacts/paired_runtime_v2/stage_c_matched_full_decoder200_{seed401.json,dev_repair/}` and
+`artifacts/paired_runtime_v2/stage_c_matched_io_decoder200_{seed401.json,dev_repair/}`.
