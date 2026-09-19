@@ -238,3 +238,19 @@ function. On the same fixed panel it reaches 2/24 true repair versus 1/24 paired
 explicit prompt does not close the gap, but it does produce a small text binding signal and is the
 appropriate frozen-text baseline; broader prompt/slice searches remain possible. Artifact:
 `artifacts/paired_runtime_v2/prompt_only_debugger_text_dev_repair/`.
+
+## Stage-C3 binding permutation control
+
+The binding control keeps I/O bit-identical and preserves every runtime row's event id, receiving
+test id, step and role, while cyclically transferring same-role `(payload, source_line)` packets
+between tests. It changes 15,026/15,032 intermediate packets in training. Its independently
+trained branch attains 33.9% train / 34.6% dev code identity, exceeding full runtime on this
+shortcut-prone probe, but repair is 7/24 true versus 5/24 paired-swap (+2; one complete pair).
+
+For this one seed, full runtime is 9/24 versus 6/24 (+3; two pairs), corrupted payload is 7/24
+versus 7/24 (0), and permuted binding is 7/24 versus 5/24 (+2). Thus runtime *content presence*
+is materially supported by the corruption intervention; this particular cross-test binding
+permutation only weakly reduces the repair signal. It does not yet prove the adapter relies on
+fine-grained test/source binding. A stronger next control should permute within-test temporal or
+def-use bindings while preserving the same test's runtime marginal distribution. Artifacts:
+`artifacts/paired_runtime_v2/stage_c_permuted_decoder200_{seed401.json,dev_repair/}`.

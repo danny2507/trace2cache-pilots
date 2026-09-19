@@ -1,0 +1,135 @@
+{
+  "args": {
+    "batch_size": 16,
+    "binding_relations": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/stage_c_permuted_decoder200_seed401.pt",
+    "codebook_checkpoint": "checkpoints/repair_latent/expanded_codebook_seed313.pt",
+    "counterfactual_weight": 1.0,
+    "dataset": ".local/datasets/paired_runtime_v2/train.jsonl",
+    "decoder_margin": 0.1,
+    "decoder_microbatch_pairs": 0,
+    "decoder_vector_weight": 0.1,
+    "evidence_view": "runtime_test_bindings_permuted",
+    "feature_batch_size": 16,
+    "feature_cache": ".local/cache/paired_runtime_v2/features",
+    "feature_method": "context2",
+    "gradient_accumulation": 8,
+    "hidden_width": 256,
+    "identity_temperature": 0.1,
+    "identity_weight": 0.1,
+    "init_checkpoint": "checkpoints/paired_runtime_v2/stage_c_permuted_vector2000_seed401.pt",
+    "learning_rate": 3e-05,
+    "max_events": 512,
+    "max_tests": 8,
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "objective": "decoder",
+    "output": "artifacts/paired_runtime_v2/stage_c_permuted_decoder200_seed401.json",
+    "sampling": "paired_family",
+    "seed": 401,
+    "steps": 200,
+    "typed_value_mode": "parent_aggregate",
+    "typed_values": false,
+    "validation_dataset": ".local/datasets/paired_runtime_v2/dev.jsonl"
+  },
+  "dataset": ".local/datasets/paired_runtime_v2/train.jsonl",
+  "dataset_sha256": {
+    "train": "750037c5df89f2acea767dfe1fdddeb0d575d86ca17566a676d650505f748e8d",
+    "validation": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51"
+  },
+  "feature_seconds": 0.6579108759760857,
+  "final": {
+    "mean_cosine": 0.511503279209137,
+    "nearest_code_accuracy": 0.3346354365348816,
+    "validation": {
+      "mean_cosine": 0.511724591255188,
+      "nearest_code_accuracy": 0.3375000059604645
+    }
+  },
+  "history": [
+    {
+      "grad_norm": 2.6502573490142822,
+      "loss": 0.8904905319213867,
+      "margin": -0.0009277984499931335,
+      "mean_cosine": 0.5335155725479126,
+      "nearest_code_accuracy": 0.3365885615348816,
+      "nll": 0.13547058403491974,
+      "rank": 0.7513086199760437,
+      "update": 1,
+      "validation": {
+        "mean_cosine": 0.5336670279502869,
+        "nearest_code_accuracy": 0.3333333432674408
+      },
+      "vector": 0.03711385279893875
+    },
+    {
+      "grad_norm": 4.172966480255127,
+      "loss": 0.9059362411499023,
+      "margin": -0.001353934407234192,
+      "mean_cosine": 0.5262356996536255,
+      "nearest_code_accuracy": 0.30859375,
+      "nll": 0.15120117366313934,
+      "rank": 0.7487110793590546,
+      "update": 50,
+      "validation": {
+        "mean_cosine": 0.5264333486557007,
+        "nearest_code_accuracy": 0.31666669249534607
+      },
+      "vector": 0.06023946776986122
+    },
+    {
+      "grad_norm": 4.645886421203613,
+      "loss": 0.8298361301422119,
+      "margin": 0.00671926187351346,
+      "mean_cosine": 0.520609974861145,
+      "nearest_code_accuracy": 0.3014323115348816,
+      "nll": 0.08418243378400803,
+      "rank": 0.740924209356308,
+      "update": 100,
+      "validation": {
+        "mean_cosine": 0.5208132266998291,
+        "nearest_code_accuracy": 0.30000001192092896
+      },
+      "vector": 0.04729437083005905
+    },
+    {
+      "grad_norm": 11.944019317626953,
+      "loss": 0.9066175222396851,
+      "margin": 0.0070547983050346375,
+      "mean_cosine": 0.5151326060295105,
+      "nearest_code_accuracy": 0.2916666865348816,
+      "nll": 0.15966209024190903,
+      "rank": 0.7418018281459808,
+      "update": 150,
+      "validation": {
+        "mean_cosine": 0.5153096318244934,
+        "nearest_code_accuracy": 0.2916666865348816
+      },
+      "vector": 0.05153600312769413
+    },
+    {
+      "grad_norm": 9.95868968963623,
+      "loss": 1.222105622291565,
+      "margin": -0.0011802613735198975,
+      "mean_cosine": 0.511503279209137,
+      "nearest_code_accuracy": 0.3346354365348816,
+      "nll": 0.4694608151912689,
+      "rank": 0.7453583478927612,
+      "update": 200,
+      "validation": {
+        "mean_cosine": 0.511724591255188,
+        "nearest_code_accuracy": 0.3375000059604645
+      },
+      "vector": 0.07286425679922104
+    }
+  ],
+  "initial_encoder_sha256": "f8143c75ae2bdb2f172bb0d0e96089b791d412e1fa34437a68e20ba1055eab5b",
+  "peak_allocated_gib": 11.366,
+  "peak_reserved_gib": 17.506,
+  "sampling_trace_sha256": "393d9fcca6831ddb88ecf53006fed2acf323a2d84ae5866806925a4a21b4d9e9",
+  "timestamp": "2026-09-19T02:03:36.558573+00:00",
+  "train_seconds": 181.79119739308953,
+  "trainable_parameters": 4078848,
+  "unique_payloads": 10588,
+  "validation_views": 240,
+  "views": 1536
+}
