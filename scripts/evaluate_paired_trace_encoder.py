@@ -29,7 +29,7 @@ from run_repair_codebook import MARKER, render
 from run_repair_latent_pool import greedy_generate
 from train_paired_trace_encoder import build_feature_map, load_oracle_codes
 
-CONDITIONS = ("true_latent", "paired_swap", "structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
+CONDITIONS = ("true_latent", "paired_swap", "structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text", "debugger_text", "paired_swap_debugger_text", "nearest_oracle_latent", "paired_swap_nearest", "no_evidence", "oracle_latent", "expected_and_status_removed", "no_roles")
 
 
 def parse_args():
@@ -74,6 +74,33 @@ def validate(response, case):
         }
     # Keep an extracted candidate even if policy validation or execution later fails.
     return source, evaluate_patch(source, case)
+
+
+def render_debugger_text(tokenizer, case, trace: str) -> str:
+    """Prompt-only debugger baseline; no trace-specific tuning or learned states."""
+    args_text = ", ".join(repr(argument) for argument in case.public_test.args)
+    user = f"""Repair the Python function below. Use the runtime evidence as debugger output.
+
+First identify the behavioral discrepancy by comparing test inputs, ACTUAL results, EXPECTED
+results, STATUS, and ordered runtime events. Runtime events are grouped by test; source lines and
+values belong to the test shown. Then return only the complete corrected function in one Python
+code block. Do not explain your reasoning.
+
+BUGGY FUNCTION:
+```python
+{case.buggy_source.rstrip()}
+```
+
+PUBLIC FAILING TEST:
+`{case.function_name}({args_text})` must return `{case.public_test.expected!r}`.
+
+RUNTIME EVIDENCE:
+{trace}
+"""
+    return tokenizer.apply_chat_template(
+        [{"role": "system", "content": "You are a precise Python debugger and program repair assistant."}, {"role": "user", "content": user}],
+        tokenize=False, add_generation_prompt=True,
+    )
 
 
 def summarize(rows):
@@ -227,12 +254,12 @@ def main():
                 for condition in args.conditions:
                     if (record.pair_uid, side, condition) in done: continue
                     began = time.perf_counter()
-                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest", "paired_swap_text", "paired_swap_compact_text") else side
+                    evidence_side = other if condition in ("paired_swap", "paired_swap_nearest", "paired_swap_text", "paired_swap_compact_text", "paired_swap_debugger_text") else side
                     source_view = selected_evidence_view(
                         getattr(record, f"evidence_{evidence_side}"), evidence_view
                     )
                     view = controlled_view(source_view, condition)
-                    if condition in ("structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text"):
+                    if condition in ("structured_text", "paired_swap_text", "compact_text", "paired_swap_compact_text", "debugger_text", "paired_swap_debugger_text"):
                         latent = None
                         nearest_label = None
                     else:
@@ -249,9 +276,15 @@ def main():
                         evidence = structured_text(view)
                     elif condition in ("compact_text", "paired_swap_compact_text"):
                         evidence = compact_behavioral_text(view)
+                    elif condition in ("debugger_text", "paired_swap_debugger_text"):
+                        evidence = compact_behavioral_text(view)
                     else:
                         evidence = "unavailable" if latent is None else MARKER
-                    rendered = render(tokenizer, items[label].case, evidence, heldout=args.heldout_wording)
+                    rendered = (
+                        render_debugger_text(tokenizer, items[label].case, evidence)
+                        if condition in ("debugger_text", "paired_swap_debugger_text")
+                        else render(tokenizer, items[label].case, evidence, heldout=args.heldout_wording)
+                    )
                     prompt_tokens = len(tokenizer(rendered, add_special_tokens=False).input_ids)
                     inputs = splice_prompt(receiver, tokenizer, rendered, latent)
                     cache_key = (rendered, fixed_label) if args.cache_fixed_codes and fixed_label is not None else None
