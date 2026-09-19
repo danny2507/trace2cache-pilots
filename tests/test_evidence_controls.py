@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, io_only, permute_runtime_test_bindings, structured_text
+from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, permute_runtime_temporal_bindings, io_only, permute_runtime_test_bindings, structured_text
 from trace2cache.paired_evidence import ACTUAL, BRANCH, EXPECTED, INPUT, STATUS, TEST_START, EvidenceEvent, EvidenceView
 
 
@@ -55,3 +55,23 @@ def test_binding_permutation_preserves_io_rows_and_moves_same_role_runtime_packe
     assert permuted.events[2].content == view.events[8].content
     assert permuted.events[2].source_line == view.events[8].source_line
     assert permuted.events[8].content == view.events[2].content
+
+
+def test_temporal_permutation_preserves_each_test_runtime_packet_multiset() -> None:
+    view = EvidenceView("one_test", (
+        EvidenceEvent(0, 0, 0, TEST_START, '{"test":0}', None),
+        EvidenceEvent(1, 0, 1, INPUT, '{"value":1}', None),
+        EvidenceEvent(2, 0, 2, BRANCH, '{"statement":"if x"}', 7),
+        EvidenceEvent(3, 0, 3, BRANCH, '{"statement":"return x"}', 8),
+        EvidenceEvent(4, 0, 4, ACTUAL, '{"value":0}', None),
+        EvidenceEvent(5, 0, 5, EXPECTED, '{"value":1}', None),
+        EvidenceEvent(6, 0, 6, STATUS, '{"status":"fail"}', None),
+    ))
+    permuted = permute_runtime_temporal_bindings(view)
+    original_packets = sorted((event.content, event.source_line) for event in view.events if event.role_id not in (TEST_START, INPUT, ACTUAL, EXPECTED, STATUS))
+    changed_packets = sorted((event.content, event.source_line) for event in permuted.events if event.role_id not in (TEST_START, INPUT, ACTUAL, EXPECTED, STATUS))
+    assert changed_packets == original_packets
+    assert permuted.events[2].content == view.events[3].content
+    for original, changed in zip(view.events, permuted.events):
+        assert (original.event_id, original.test_id, original.step, original.role_id) == (changed.event_id, changed.test_id, changed.step, changed.role_id)
+        if original.role_id in (TEST_START, INPUT, ACTUAL, EXPECTED, STATUS): assert original == changed

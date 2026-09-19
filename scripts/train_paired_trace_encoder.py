@@ -24,7 +24,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder, trainable_parameter_count
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import read_jsonl
-from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only, permute_runtime_test_bindings
+from trace2cache.evidence_controls import corrupt_runtime_keep_io, io_only, permute_runtime_temporal_bindings, permute_runtime_test_bindings
 from trace2cache.training_sampling import sample_paired_family
 from trace2cache.receiver_training import vector_loss, oracle_identity_loss
 from trace2cache.receiver_training import paired_patch_loss, paired_counterfactual_patch_loss, splice_prompt
@@ -62,7 +62,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--typed-values", action="store_true", help="attach structured tagged runtime values through a residual side channel")
     parser.add_argument("--typed-value-mode", choices=("parent_aggregate", "legacy_virtual_nodes"), default="parent_aggregate", help="parent_aggregate preserves baseline events; legacy_virtual_nodes is reproduction-only")
     parser.add_argument("--binding-relations", action="store_true", help="add audited NEXT/source/value-version topology; separate from typed-value ablation")
-    parser.add_argument("--evidence-view", choices=("full_runtime", "io_only", "runtime_corrupted_keep_io", "runtime_test_bindings_permuted"), default="full_runtime")
+    parser.add_argument("--evidence-view", choices=("full_runtime", "io_only", "runtime_corrupted_keep_io", "runtime_test_bindings_permuted", "runtime_temporal_bindings_permuted"), default="full_runtime")
     parser.add_argument("--seed", type=int, default=401)
     parser.add_argument("--checkpoint", default="checkpoints/paired_runtime_v2/overfit_context2_vector_seed401.pt")
     parser.add_argument("--output", default="artifacts/paired_runtime_v2/overfit_context2_vector_seed401.json")
@@ -96,6 +96,7 @@ def select_evidence_view(records: list[object], name: str) -> list[object]:
         "io_only": io_only,
         "runtime_corrupted_keep_io": corrupt_runtime_keep_io,
         "runtime_test_bindings_permuted": permute_runtime_test_bindings,
+        "runtime_temporal_bindings_permuted": permute_runtime_temporal_bindings,
     }[name]
     from dataclasses import replace
     return [replace(record, evidence_a=transform(record.evidence_a), evidence_b=transform(record.evidence_b)) for record in records]

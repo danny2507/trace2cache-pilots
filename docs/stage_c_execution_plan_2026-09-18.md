@@ -60,6 +60,11 @@ This preserves runtime-packet multiplicity and role/event histograms while break
 between a runtime packet and the receiving test execution. Across the 1,536 training views,
 15,026/15,032 intermediate packets change; the remaining six have no same-role cross-test donor.
 
+Follow-up (2026-09-19): `runtime_temporal_bindings_permuted` is the stronger within-test control.
+It retains each test's exact multiset of intermediate `(payload, source_line)` packets, plus all
+I/O and row metadata, but rotates packets between runtime steps. All 15,032 training runtime
+packets change receiver step under this transform.
+
 Decision: a full-runtime advantage that disappears under either intervention supports use of
 runtime associations. If it survives both, investigate generic trace-format or prompt effects.
 

@@ -21,7 +21,7 @@ from trace2cache.ambiguous_repair import get_ambiguous_cases
 from trace2cache.latent import RoleAwareEventEncoder
 from trace2cache.native_features import FrozenNativeFeatureExtractor, collate_views
 from trace2cache.paired_evidence import EXPECTED, STATUS, EvidenceView, read_jsonl
-from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, io_only, permute_runtime_test_bindings, structured_text
+from trace2cache.evidence_controls import compact_behavioral_text, corrupt_runtime_keep_io, io_only, permute_runtime_temporal_bindings, permute_runtime_test_bindings, structured_text
 from trace2cache.receiver_training import splice_prompt
 from trace2cache.sandbox import EVALUATOR_REVISION, evaluate_patch, extract_function
 from run_pilot1 import resolve_local_model
@@ -58,6 +58,7 @@ def selected_evidence_view(view: EvidenceView, name: str) -> EvidenceView:
     if name == "io_only": return io_only(view)
     if name == "runtime_corrupted_keep_io": return corrupt_runtime_keep_io(view)
     if name == "runtime_test_bindings_permuted": return permute_runtime_test_bindings(view)
+    if name == "runtime_temporal_bindings_permuted": return permute_runtime_temporal_bindings(view)
     raise ValueError(f"unknown checkpoint evidence view: {name}")
 
 

@@ -81,6 +81,37 @@ def permute_runtime_test_bindings(view: EvidenceView) -> EvidenceView:
     return EvidenceView(view.view_uid + ":runtime_test_bindings_permuted", tuple(events))
 
 
+def permute_runtime_temporal_bindings(view: EvidenceView) -> EvidenceView:
+    """Break temporal/def-use binding without moving any runtime fact across tests.
+
+    For each test execution, the complete multiset of intermediate ``(content, source_line)``
+    packets is preserved exactly, but packets are cyclically reassigned to different runtime
+    event rows. I/O rows and all row metadata (event id, test, step, role) remain unchanged.
+    """
+    events = list(view.events)
+    by_test: dict[int, list[int]] = {}
+    for index, event in enumerate(events):
+        if event.role_id not in IO_ROLES:
+            by_test.setdefault(event.test_id, []).append(index)
+    moved = 0
+    for indices in by_test.values():
+        if len(indices) < 2:
+            continue
+        originals = list(events)
+        donors = indices[1:] + indices[:1]
+        for recipient, donor in zip(indices, donors):
+            moved += (originals[recipient].content, originals[recipient].source_line) != (
+                originals[donor].content, originals[donor].source_line
+            )
+            events[recipient] = replace(
+                originals[recipient], content=originals[donor].content,
+                source_line=originals[donor].source_line,
+            )
+    if moved == 0:
+        raise ValueError("temporal binding permutation found no distinct runtime packets")
+    return EvidenceView(view.view_uid + ":runtime_temporal_bindings_permuted", tuple(events))
+
+
 def structured_text(view: EvidenceView) -> str:
     """Lossless, role-named text serialization with no facts beyond ``view``."""
     lines = []
