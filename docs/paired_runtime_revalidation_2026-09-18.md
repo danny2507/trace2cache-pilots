@@ -226,3 +226,15 @@ reproduce the full branch's positive true-minus-swap signal (+3 versus 0). This 
 one-seed evidence that payload/source content matters; the binding-permutation branch remains
 necessary to distinguish content presence from correctly bound content. Artifacts:
 `artifacts/paired_runtime_v2/stage_c_corrupted_decoder200_{seed401.json,dev_repair/}`.
+
+## Prompt-only debugger text baseline
+
+To avoid treating text-SFT as necessary, a frozen prompt-only baseline was run with no learned
+trace adapter. It receives the compact full trace plus explicit debugger instructions to compare
+inputs, ACTUAL, EXPECTED, STATUS and ordered per-test events, then emit only a replacement
+function. On the same fixed panel it reaches 2/24 true repair versus 1/24 paired-swap repair
+(one complete pair) at 1,158 mean prompt tokens. The matched full-runtime latent branch reaches
+9/24 versus 6/24 at 103 textual prompt tokens plus eight injected latent states. Thus this single
+explicit prompt does not close the gap, but it does produce a small text binding signal and is the
+appropriate frozen-text baseline; broader prompt/slice searches remain possible. Artifact:
+`artifacts/paired_runtime_v2/prompt_only_debugger_text_dev_repair/`.
