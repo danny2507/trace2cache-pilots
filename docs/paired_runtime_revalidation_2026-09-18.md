@@ -212,3 +212,17 @@ not establish a text-medium advantage after text alignment, causal source/value 
 task/source-disjoint program-repair generalization. Artifacts:
 `artifacts/paired_runtime_v2/stage_c_matched_full_decoder200_{seed401.json,dev_repair/}` and
 `artifacts/paired_runtime_v2/stage_c_matched_io_decoder200_{seed401.json,dev_repair/}`.
+
+## Stage-C3 runtime corruption control
+
+The independently trained corruption branch preserves exact I/O rows and every runtime row's
+position, test identity and role, but replaces each runtime payload with the same `CORRUPTED`
+marker and removes its source line. It uses the same 2,000-vector plus 200-decoder schedule,
+seed and evaluation panel as Stage C2. Despite reaching 29.0% train / 29.2% dev code identity
+(close to full runtime's 30.2% / 30.4%), its repair intervention is `7/24` true and `7/24`
+paired-swap, with zero complete pairs. Full runtime is `9/24` true, `6/24` swap and two complete
+pairs. Thus generic runtime-event layout is enough for much of the vector probe, but it does not
+reproduce the full branch's positive true-minus-swap signal (+3 versus 0). This is directional
+one-seed evidence that payload/source content matters; the binding-permutation branch remains
+necessary to distinguish content presence from correctly bound content. Artifacts:
+`artifacts/paired_runtime_v2/stage_c_corrupted_decoder200_{seed401.json,dev_repair/}`.
