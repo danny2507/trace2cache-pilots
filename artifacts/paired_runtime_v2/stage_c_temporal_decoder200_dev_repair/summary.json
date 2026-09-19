@@ -1,0 +1,48 @@
+{
+  "args": {
+    "cache_fixed_codes": false,
+    "checkpoint": "checkpoints/paired_runtime_v2/stage_c_temporal_decoder200_seed401.pt",
+    "conditions": [
+      "true_latent",
+      "paired_swap"
+    ],
+    "dataset": ".local/datasets/paired_runtime_v2/dev.jsonl",
+    "heldout_wording": false,
+    "max_new_tokens": 192,
+    "output_dir": "artifacts/paired_runtime_v2/stage_c_temporal_decoder200_dev_repair",
+    "pairs_per_family": 1
+  },
+  "checkpoint_sha256": "75ef43b77cd818f14a3fd10f60414062d218ed6aea480ab778a30956e4922628",
+  "dataset_sha256": "10b5a4f13acd74f788c91c588e82e3acec1feeb66c77e88ce9e64f2c786b8c51",
+  "encoder_padding_audit": {
+    "code_disagreements": 0,
+    "max_abs": 1.1175870895385742e-07,
+    "rmse": 1.0713314679833275e-08,
+    "views": 24
+  },
+  "evaluation_manifest_sha256": "3bebc85c8c609ac79b777518ab5d43ada256fc4f14b70827d52a48db241d6745",
+  "fixed_code_cache_entries_this_run": 0,
+  "generation_cache_hits": 0,
+  "peak_allocated_gib": 3.455617904663086,
+  "summary": {
+    "paired_swap": {
+      "both_correct": 0,
+      "cap_hits": 0,
+      "correct": 8,
+      "mean_prompt_tokens": 103.25,
+      "opposite_correct": 10,
+      "pairs": 12,
+      "views": 24
+    },
+    "true_latent": {
+      "both_correct": 1,
+      "cap_hits": 0,
+      "correct": 10,
+      "mean_prompt_tokens": 103.25,
+      "opposite_correct": 8,
+      "pairs": 12,
+      "views": 24
+    }
+  },
+  "training_panel": false
+}

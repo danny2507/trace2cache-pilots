@@ -254,3 +254,20 @@ permutation only weakly reduces the repair signal. It does not yet prove the ada
 fine-grained test/source binding. A stronger next control should permute within-test temporal or
 def-use bindings while preserving the same test's runtime marginal distribution. Artifacts:
 `artifacts/paired_runtime_v2/stage_c_permuted_decoder200_{seed401.json,dev_repair/}`.
+
+## Stage-C3 within-test temporal/def-use permutation
+
+The stronger control preserves every test's exact intermediate packet multiset and all I/O/row
+metadata, but rotates `(payload, source_line)` between runtime steps inside that same test. All
+15,032 training runtime packets change receiver step. Its independent branch reaches 32.0% train
+/ 32.1% dev code identity and produces 10/24 true repair versus 8/24 paired-swap (+2; one
+complete pair). Although raw true repair is slightly above full runtime (9/24), its evidence gap
+is smaller (+2 versus +3) and it does not collapse under destroyed temporal/def-use coherence.
+
+Together, corruption (7/24 vs 7/24), cross-test permutation (7/24 vs 5/24), and within-test
+temporal permutation (10/24 vs 8/24) show a modest content-sensitive signal but do **not** justify
+a claim that this adapter uses fine-grained runtime bindings. The synthetic known-family setting
+has residual I/O/layout shortcuts and one-seed variation. The appropriate next milestone is
+task/source-disjoint MBPP mutation repair, retaining the corruption control as a guardrail rather
+than adding more controls selected on this panel. Artifacts:
+`artifacts/paired_runtime_v2/stage_c_temporal_decoder200_{seed401.json,dev_repair/}`.
