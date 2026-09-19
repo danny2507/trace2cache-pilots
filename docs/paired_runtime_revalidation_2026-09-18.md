@@ -176,3 +176,19 @@ updates at 3e-4 and 800 at 1e-4 for **each** view, then the 200-update decoder s
 the 400-step numbers to compare runtime utility.  Artifacts:
 `artifacts/paired_runtime_v2/stage_c_matched_full_vector400_seed401.json` and
 `artifacts/paired_runtime_v2/stage_c_matched_io_vector400_seed401.json`.
+
+After completing the predeclared 2,000-update vector schedule (400 @ 1e-3, 800 @ 3e-4,
+800 @ 1e-4), the branches separate on the fixed code-identity probe:
+
+| Evidence view | Train nearest code | Dev nearest code | Dev cosine |
+| --- | ---: | ---: | ---: |
+| Full runtime | 72.5/240 (30.2%) | 73/240 (30.4%) | 0.523 |
+| I/O-only | 25.2/240 (10.5%) | 26/240 (10.8%) | 0.421 |
+
+This is the first matched-from-scratch indication that intermediate events improve the encoder's
+ability to recover the pre-existing repair-code targets. It is a one-seed representation probe,
+not repair accuracy and not a latent-versus-text result. The next predeclared operation is the
+same 200-update decoder alignment objective from each final vector checkpoint, followed by the
+fixed true-versus-paired-swap repair evaluation. Artifacts:
+`artifacts/paired_runtime_v2/stage_c_matched_full_vector2000_seed401.json` and
+`artifacts/paired_runtime_v2/stage_c_matched_io_vector2000_seed401.json`.
