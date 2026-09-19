@@ -53,6 +53,13 @@ communication. If full runtime wins consistently, proceed to C3.
 3. Train/evaluate full-runtime, corrupted-runtime, and permuted-binding conditions independently.
 4. Audit that I/O hashes are equal and that only declared runtime fields changed.
 
+Implementation note (2026-09-19): `runtime_test_bindings_permuted` keeps every I/O event
+bit-identical and keeps every runtime row's event id, test id, step and role. Within each runtime
+role, it interleaves events by per-test rank and rotates their `(payload, source_line)` packets.
+This preserves runtime-packet multiplicity and role/event histograms while breaking the association
+between a runtime packet and the receiving test execution. Across the 1,536 training views,
+15,026/15,032 intermediate packets change; the remaining six have no same-role cross-test donor.
+
 Decision: a full-runtime advantage that disappears under either intervention supports use of
 runtime associations. If it survives both, investigate generic trace-format or prompt effects.
 

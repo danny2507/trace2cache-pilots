@@ -40,6 +40,47 @@ def corrupt_runtime_keep_io(view: EvidenceView) -> EvidenceView:
     return EvidenceView(view.view_uid + ":runtime_corrupted_keep_io", tuple(events))
 
 
+def permute_runtime_test_bindings(view: EvidenceView) -> EvidenceView:
+    """Keep runtime facts but move same-role packets across executions.
+
+    I/O rows are copied exactly.  Every intermediate row retains its own event id, test id,
+    step and role, while the pair ``(content, source_line)`` is received from a different
+    test whenever that role occurs in multiple tests.  Interleaving by within-test rank before
+    a one-position rotation makes the permutation deterministic and avoids contiguous events
+    from one test simply being exchanged among themselves.
+    """
+    events = list(view.events)
+    by_role: dict[int, list[int]] = {}
+    for index, event in enumerate(events):
+        if event.role_id not in IO_ROLES:
+            by_role.setdefault(event.role_id, []).append(index)
+    moved = 0
+    for indices in by_role.values():
+        by_test: dict[int, list[int]] = {}
+        for index in indices:
+            by_test.setdefault(events[index].test_id, []).append(index)
+        if len(by_test) < 2:
+            continue
+        interleaved: list[int] = []
+        for rank in range(max(len(group) for group in by_test.values())):
+            for test_id in sorted(by_test):
+                if rank < len(by_test[test_id]):
+                    interleaved.append(by_test[test_id][rank])
+        donors = interleaved[1:] + interleaved[:1]
+        originals = list(events)
+        for recipient, donor in zip(interleaved, donors):
+            if originals[recipient].test_id != originals[donor].test_id:
+                moved += 1
+            events[recipient] = replace(
+                originals[recipient],
+                content=originals[donor].content,
+                source_line=originals[donor].source_line,
+            )
+    if moved == 0:
+        raise ValueError("runtime binding permutation found no cross-test runtime packets")
+    return EvidenceView(view.view_uid + ":runtime_test_bindings_permuted", tuple(events))
+
+
 def structured_text(view: EvidenceView) -> str:
     """Lossless, role-named text serialization with no facts beyond ``view``."""
     lines = []
