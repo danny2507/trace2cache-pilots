@@ -1,0 +1,91 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/latent_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/cohort_v1",
+    "conditions": [
+      "gist_text",
+      "collated_text"
+    ],
+    "const_prefix_checkpoint": "checkpoints/mbpp_generalization/latent_seed1001_const.pt",
+    "constant_latent": false,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "edit_sketch_icae": false,
+    "edit_span_loss": false,
+    "gist_latent": false,
+    "gist_weight": 1.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "include_specification": false,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 128,
+    "max_events": 96,
+    "max_new_tokens": 256,
+    "max_sequence_tokens": 768,
+    "max_tests": 4,
+    "min_free_gib": 12.0,
+    "mode": "text",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/haque_text_seed1001",
+    "reconstruction_weight": 1.0,
+    "role_skip": false,
+    "seed": 1001,
+    "separation_margin": 0.3,
+    "separation_weight": 0.5,
+    "sketch_weight": 1.0,
+    "split": "test",
+    "steps": 800,
+    "train_hide_public_test": true,
+    "train_value_failures": false
+  },
+  "cohort_sha256": "acc350b87778d21a6ef441ec9cab4e4ef0d6cbaca1061703bb069a476f658baa",
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "peak_allocated_gib": 7.143506050109863,
+  "summary": {
+    "collated_text": {
+      "correct": 60,
+      "examples": 128,
+      "extraction_failure": 11,
+      "mean_prompt_tokens": 452.03125,
+      "task_correct": 60,
+      "tasks": 128
+    },
+    "compact_text": {
+      "correct": 10,
+      "examples": 15,
+      "extraction_failure": 0,
+      "mean_prompt_tokens": 949.6,
+      "task_correct": 10,
+      "tasks": 15
+    },
+    "gist_text": {
+      "correct": 63,
+      "examples": 128,
+      "extraction_failure": 12,
+      "mean_prompt_tokens": 295.578125,
+      "task_correct": 63,
+      "tasks": 128
+    },
+    "io_text": {
+      "correct": 9,
+      "examples": 16,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 233.8125,
+      "task_correct": 9,
+      "tasks": 16
+    },
+    "no_evidence": {
+      "correct": 8,
+      "examples": 16,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 189.9375,
+      "task_correct": 8,
+      "tasks": 16
+    }
+  },
+  "timestamp": "2026-09-20T07:03:40.229117+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

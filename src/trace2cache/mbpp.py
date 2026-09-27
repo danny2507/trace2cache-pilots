@@ -347,7 +347,14 @@ def _run_mbpp_worker(
             "tests": [],
             "error": result.stderr.strip() or result.stdout.strip(),
         }
-    return json.loads(result.stdout)
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return {
+            "status": "worker_error",
+            "tests": [],
+            "error": "invalid_worker_json",
+        }
 
 
 def run_mbpp_tests(

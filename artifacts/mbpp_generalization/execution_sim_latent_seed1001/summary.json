@@ -1,0 +1,282 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/execution_sim_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "conditions": null,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 0,
+    "max_events": 48,
+    "max_new_tokens": 128,
+    "max_sequence_tokens": 1536,
+    "max_tests": 4,
+    "min_free_gib": 8.0,
+    "mode": "full",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_latent_seed1001",
+    "reconstruction_weight": 1.0,
+    "seed": 1001,
+    "split": "test",
+    "steps": 400,
+    "text_rows": "artifacts/mbpp_generalization/execution_sim_text_seed1001/rows.jsonl"
+  },
+  "elapsed_seconds": 321.0535078048706,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "newly_written": 512,
+  "peak_allocated_gib": 13.123081684112549,
+  "summary": {
+    "code_input": {
+      "correct": 12,
+      "examples": 128,
+      "mean_prompt_tokens": 299.5390625,
+      "task_correct": 12,
+      "tasks": 128
+    },
+    "shuffled_latent": {
+      "correct": 14,
+      "examples": 128,
+      "mean_prompt_tokens": 315.5390625,
+      "task_correct": 14,
+      "tasks": 128
+    },
+    "trace_text": {
+      "correct": 25,
+      "examples": 128,
+      "mean_prompt_tokens": 2326.0390625,
+      "task_correct": 25,
+      "tasks": 128
+    },
+    "true_latent": {
+      "correct": 14,
+      "examples": 128,
+      "mean_prompt_tokens": 315.5390625,
+      "task_correct": 14,
+      "tasks": 128
+    }
+  },
+  "timestamp": "2026-09-21T15:11:07.287169+00:00",
+  "trainable_parameters": 4734208,
+  "training": {
+    "best_score": 0.1337,
+    "best_step": 140,
+    "history": [
+      {
+        "gpu_allocated_gib": 6.52,
+        "loss": 1.29894,
+        "ranking_loss": 0.1,
+        "reconstruction_loss": 0.98951,
+        "shuffled_stdout_loss": 0.00943,
+        "step": 1,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 0.00943
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.55576,
+        "ranking_loss": 0.09645,
+        "reconstruction_loss": 0.1072,
+        "shuffled_stdout_loss": 1.16274,
+        "step": 20,
+        "true_shuffled_cosine": 0.99999,
+        "true_stdout_loss": 1.1592
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.38643,
+        "ranking_loss": 0.10007,
+        "reconstruction_loss": 0.08556,
+        "shuffled_stdout_loss": 0.00059,
+        "step": 40,
+        "true_shuffled_cosine": 0.99997,
+        "true_stdout_loss": 0.00066
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.59056,
+        "ranking_loss": 0.12924,
+        "reconstruction_loss": 0.09139,
+        "shuffled_stdout_loss": 0.0822,
+        "step": 60,
+        "true_shuffled_cosine": 0.98563,
+        "true_stdout_loss": 0.11144
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.87873,
+        "ranking_loss": 0.10271,
+        "reconstruction_loss": 0.18247,
+        "shuffled_stdout_loss": 0.38542,
+        "step": 80,
+        "true_shuffled_cosine": 0.99914,
+        "true_stdout_loss": 0.38813
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.00376,
+        "ranking_loss": 0.09147,
+        "reconstruction_loss": 0.09448,
+        "shuffled_stdout_loss": 0.64338,
+        "step": 100,
+        "true_shuffled_cosine": 0.99978,
+        "true_stdout_loss": 0.63486
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.48023,
+        "ranking_loss": 0.10701,
+        "reconstruction_loss": 0.06715,
+        "shuffled_stdout_loss": 0.08506,
+        "step": 120,
+        "true_shuffled_cosine": 0.9997,
+        "true_stdout_loss": 0.09206
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.35259,
+        "ranking_loss": 0.10001,
+        "reconstruction_loss": 0.05163,
+        "shuffled_stdout_loss": 0.00092,
+        "step": 140,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 0.00093
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.23879,
+        "ranking_loss": 0.09849,
+        "reconstruction_loss": 0.05286,
+        "shuffled_stdout_loss": 0.89195,
+        "step": 160,
+        "true_shuffled_cosine": 0.99985,
+        "true_stdout_loss": 0.89044
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.78989,
+        "ranking_loss": 0.10185,
+        "reconstruction_loss": 0.12631,
+        "shuffled_stdout_loss": 0.35616,
+        "step": 180,
+        "true_shuffled_cosine": 0.99991,
+        "true_stdout_loss": 0.35802
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.84672,
+        "ranking_loss": 0.10034,
+        "reconstruction_loss": 0.10745,
+        "shuffled_stdout_loss": 0.43791,
+        "step": 200,
+        "true_shuffled_cosine": 0.99975,
+        "true_stdout_loss": 0.43825
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.64653,
+        "ranking_loss": 0.10208,
+        "reconstruction_loss": 0.04078,
+        "shuffled_stdout_loss": 1.29743,
+        "step": 220,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 1.2995
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.35009,
+        "ranking_loss": 0.1,
+        "reconstruction_loss": 0.0495,
+        "shuffled_stdout_loss": 0.00059,
+        "step": 240,
+        "true_shuffled_cosine": 0.99998,
+        "true_stdout_loss": 0.00059
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.02316,
+        "ranking_loss": 0.10265,
+        "reconstruction_loss": 0.04195,
+        "shuffled_stdout_loss": 0.67061,
+        "step": 260,
+        "true_shuffled_cosine": 0.99971,
+        "true_stdout_loss": 0.67326
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.96825,
+        "ranking_loss": 0.10505,
+        "reconstruction_loss": 0.03937,
+        "shuffled_stdout_loss": 0.60869,
+        "step": 280,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 0.61374
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.64079,
+        "ranking_loss": 0.10378,
+        "reconstruction_loss": 0.1706,
+        "shuffled_stdout_loss": 1.15507,
+        "step": 300,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 1.15885
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.68452,
+        "ranking_loss": 0.10214,
+        "reconstruction_loss": 0.11699,
+        "shuffled_stdout_loss": 0.25896,
+        "step": 320,
+        "true_shuffled_cosine": 0.99999,
+        "true_stdout_loss": 0.2611
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.23347,
+        "ranking_loss": 0.10526,
+        "reconstruction_loss": 0.03653,
+        "shuffled_stdout_loss": 0.87587,
+        "step": 340,
+        "true_shuffled_cosine": 0.99997,
+        "true_stdout_loss": 0.88114
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.51397,
+        "ranking_loss": 0.09478,
+        "reconstruction_loss": 0.14194,
+        "shuffled_stdout_loss": 1.09289,
+        "step": 360,
+        "true_shuffled_cosine": 0.99998,
+        "true_stdout_loss": 1.08768
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 1.22991,
+        "ranking_loss": 0.08017,
+        "reconstruction_loss": 0.0775,
+        "shuffled_stdout_loss": 0.93173,
+        "step": 380,
+        "true_shuffled_cosine": 1.0,
+        "true_stdout_loss": 0.9119
+      },
+      {
+        "gpu_allocated_gib": 6.54,
+        "loss": 0.72894,
+        "ranking_loss": 0.11181,
+        "reconstruction_loss": 0.0374,
+        "shuffled_stdout_loss": 0.3443,
+        "step": 400,
+        "true_shuffled_cosine": 0.99999,
+        "true_stdout_loss": 0.35611
+      }
+    ],
+    "seconds": 157.12518571317196,
+    "steps": 400
+  }
+}

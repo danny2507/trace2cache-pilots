@@ -1,0 +1,120 @@
+{
+  "args": {
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "limit": 0,
+    "max_new_tokens": 512,
+    "min_free_gib": 8.0,
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_ask_events_seed1001",
+    "resume": true,
+    "seed": 1001,
+    "split": "test",
+    "text_rows": "artifacts/mbpp_generalization/execution_sim_text_seed1001/rows.jsonl"
+  },
+  "call": "gate0_sft_justified",
+  "call_note": "ask_events does not beat code_input, but gold compact events still do. The model can read events it cannot invent. SFT on disjoint train is justified.",
+  "elapsed_seconds": 4359.437145430595,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "free_gib_at_start": 28.4180908203125,
+  "panel_sha256": "074dd6cecdd960970356907168b6f3ea5c086ae9b487ca56aecec6d0b943276c",
+  "peak_allocated_gib": 7.436568260192871,
+  "summary": {
+    "ask_vs_code": {
+      "left_ids": [
+        2018896,
+        2018906,
+        2091470
+      ],
+      "left_only": 3,
+      "p": 0.09228515625,
+      "right_ids": [
+        2018905,
+        2021842,
+        2035118,
+        2035473,
+        2035575,
+        2077414,
+        2085927,
+        2085976,
+        2086020,
+        2091442
+      ],
+      "right_only": 10
+    },
+    "ask_vs_gold": {
+      "left_ids": [
+        2018906,
+        2091470
+      ],
+      "left_only": 2,
+      "p": 3.5881996154785156e-05,
+      "right_ids": [
+        2013685,
+        2013690,
+        2018898,
+        2018901,
+        2018905,
+        2019387,
+        2035118,
+        2035473,
+        2035575,
+        2064248,
+        2073875,
+        2073876,
+        2073886,
+        2085927,
+        2085944,
+        2085976,
+        2086020,
+        2091442,
+        2091713,
+        2091846,
+        2091849,
+        2091870
+      ],
+      "right_only": 22
+    },
+    "call": "gate0_sft_justified",
+    "correct": {
+      "ask_events": 5,
+      "code_input": 12,
+      "trace_text": 25
+    },
+    "gold_vs_code": {
+      "left_ids": [
+        2013685,
+        2013690,
+        2018896,
+        2018898,
+        2018901,
+        2019387,
+        2064248,
+        2073875,
+        2073876,
+        2073886,
+        2085944,
+        2091713,
+        2091846,
+        2091849,
+        2091870
+      ],
+      "left_only": 15,
+      "p": 0.002349853515625,
+      "right_ids": [
+        2021842,
+        2077414
+      ],
+      "right_only": 2
+    },
+    "mean_event_lines": 37.5625,
+    "n": {
+      "ask_events": 128,
+      "code_input": 128,
+      "trace_text": 128
+    },
+    "note": "ask_events does not beat code_input, but gold compact events still do. The model can read events it cannot invent. SFT on disjoint train is justified."
+  },
+  "timestamp": "2026-09-22T09:07:28.204686+00:00",
+  "trainable_parameters": 0
+}

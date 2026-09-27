@@ -9,3 +9,5 @@ third_party/
 *.egg-info/
 .tools/
 .local/
+.claude0old/
+test_write.txt

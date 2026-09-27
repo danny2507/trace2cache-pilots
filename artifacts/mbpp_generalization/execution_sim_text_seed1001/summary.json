@@ -1,0 +1,48 @@
+{
+  "args": {
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "conditions": [
+      "code_input",
+      "trace_gist",
+      "trace_text"
+    ],
+    "limit": 0,
+    "max_new_tokens": 128,
+    "min_free_gib": 8.0,
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_text_seed1001",
+    "seed": 1001,
+    "split": "test"
+  },
+  "elapsed_seconds": 608.1247835159302,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "newly_written": 384,
+  "peak_allocated_gib": 14.882837295532227,
+  "summary": {
+    "code_input": {
+      "correct": 12,
+      "examples": 128,
+      "mean_prompt_tokens": 299.5390625,
+      "task_correct": 12,
+      "tasks": 128
+    },
+    "trace_gist": {
+      "correct": 14,
+      "examples": 128,
+      "mean_prompt_tokens": 467.234375,
+      "task_correct": 14,
+      "tasks": 128
+    },
+    "trace_text": {
+      "correct": 25,
+      "examples": 128,
+      "mean_prompt_tokens": 2326.0390625,
+      "task_correct": 25,
+      "tasks": 128
+    }
+  },
+  "timestamp": "2026-09-21T14:45:55.714244+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

@@ -1,0 +1,998 @@
+{
+  "args": {
+    "checkpoint_dir": "checkpoints/mbpp_generalization",
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "gradient_accumulation": 4,
+    "learning_rate": 0.0001,
+    "limit": 0,
+    "lora_alpha": 32,
+    "lora_rank": 16,
+    "max_new_tokens": 512,
+    "max_sequence_tokens": 4096,
+    "min_free_gib": 8.0,
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "objectives": [
+      "sft_stdout",
+      "sft_events"
+    ],
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_event_sft_seed1001",
+    "resume": true,
+    "seed": 1001,
+    "skip_train": false,
+    "steps": 1280
+  },
+  "call": "sft_fail",
+  "call_note": "Event-chain SFT does not beat stdout-only SFT. Gold-prompt win was a reading aid. Kill the method.",
+  "elapsed_seconds": 10726.99591961503,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "panel_sha256": "074dd6cecdd960970356907168b6f3ea5c086ae9b487ca56aecec6d0b943276c",
+  "peak_allocated_gib": 13.875607013702393,
+  "summary": {
+    "call": "sft_fail",
+    "correct": {
+      "sft_events": 3,
+      "sft_stdout": 14
+    },
+    "events_vs_stdout": {
+      "left_ids": [],
+      "left_only": 0,
+      "p": 0.0009765625,
+      "right_ids": [
+        2018905,
+        2019382,
+        2035473,
+        2085944,
+        2091442,
+        2091458,
+        2091464,
+        2091474,
+        2091846,
+        2091849,
+        2091870
+      ],
+      "right_only": 11
+    },
+    "mean_event_lines": 22.734375,
+    "n": {
+      "sft_events": 128,
+      "sft_stdout": 128
+    },
+    "note": "Event-chain SFT does not beat stdout-only SFT. Gold-prompt win was a reading aid. Kill the method."
+  },
+  "timestamp": "2026-09-22T12:42:24.766552+00:00",
+  "train_examples": 320,
+  "train_sha256": "02ddf7fe8cb110397250d30142413b0c3234e1a476fcf3d0db4fb6c15fad3390",
+  "trainable_parameters": {
+    "sft_events": 7372800,
+    "sft_stdout": 7372800
+  },
+  "training": {
+    "sft_events": {
+      "history": [
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.5,
+          "loss": 0.16029,
+          "objective": "sft_events",
+          "step": 1
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.73186,
+          "objective": "sft_events",
+          "step": 20
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.03925,
+          "objective": "sft_events",
+          "step": 40
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.28176,
+          "objective": "sft_events",
+          "step": 60
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.19726,
+          "objective": "sft_events",
+          "step": 80
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.36574,
+          "objective": "sft_events",
+          "step": 100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.22137,
+          "objective": "sft_events",
+          "step": 120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05701,
+          "objective": "sft_events",
+          "step": 140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.22689,
+          "objective": "sft_events",
+          "step": 160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.20447,
+          "objective": "sft_events",
+          "step": 180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.85594,
+          "objective": "sft_events",
+          "step": 200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.24516,
+          "objective": "sft_events",
+          "step": 220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04655,
+          "objective": "sft_events",
+          "step": 240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07314,
+          "objective": "sft_events",
+          "step": 260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.3265,
+          "objective": "sft_events",
+          "step": 280
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.75539,
+          "objective": "sft_events",
+          "step": 300
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.25155,
+          "objective": "sft_events",
+          "step": 320
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.15355,
+          "objective": "sft_events",
+          "step": 340
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.54,
+          "loss": 0.31574,
+          "objective": "sft_events",
+          "step": 360
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.19292,
+          "objective": "sft_events",
+          "step": 380
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07602,
+          "objective": "sft_events",
+          "step": 400
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.11722,
+          "objective": "sft_events",
+          "step": 420
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08904,
+          "objective": "sft_events",
+          "step": 440
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0756,
+          "objective": "sft_events",
+          "step": 460
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.06993,
+          "objective": "sft_events",
+          "step": 480
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00924,
+          "objective": "sft_events",
+          "step": 500
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.13947,
+          "objective": "sft_events",
+          "step": 520
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.03968,
+          "objective": "sft_events",
+          "step": 540
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.12767,
+          "objective": "sft_events",
+          "step": 560
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.06359,
+          "objective": "sft_events",
+          "step": 580
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.03928,
+          "objective": "sft_events",
+          "step": 600
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0817,
+          "objective": "sft_events",
+          "step": 620
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04988,
+          "objective": "sft_events",
+          "step": 640
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04298,
+          "objective": "sft_events",
+          "step": 660
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04393,
+          "objective": "sft_events",
+          "step": 680
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02326,
+          "objective": "sft_events",
+          "step": 700
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.12655,
+          "objective": "sft_events",
+          "step": 720
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00944,
+          "objective": "sft_events",
+          "step": 740
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.31797,
+          "objective": "sft_events",
+          "step": 760
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.06736,
+          "objective": "sft_events",
+          "step": 780
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.51631,
+          "objective": "sft_events",
+          "step": 800
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07989,
+          "objective": "sft_events",
+          "step": 820
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.37597,
+          "objective": "sft_events",
+          "step": 840
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02621,
+          "objective": "sft_events",
+          "step": 860
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08146,
+          "objective": "sft_events",
+          "step": 880
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.11257,
+          "objective": "sft_events",
+          "step": 900
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08748,
+          "objective": "sft_events",
+          "step": 920
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00302,
+          "objective": "sft_events",
+          "step": 940
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00852,
+          "objective": "sft_events",
+          "step": 960
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.20335,
+          "objective": "sft_events",
+          "step": 980
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.09195,
+          "objective": "sft_events",
+          "step": 1000
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05634,
+          "objective": "sft_events",
+          "step": 1020
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08848,
+          "objective": "sft_events",
+          "step": 1040
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0232,
+          "objective": "sft_events",
+          "step": 1060
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.06072,
+          "objective": "sft_events",
+          "step": 1080
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.06409,
+          "objective": "sft_events",
+          "step": 1100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.01096,
+          "objective": "sft_events",
+          "step": 1120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05591,
+          "objective": "sft_events",
+          "step": 1140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.73468,
+          "objective": "sft_events",
+          "step": 1160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02264,
+          "objective": "sft_events",
+          "step": 1180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0055,
+          "objective": "sft_events",
+          "step": 1200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05641,
+          "objective": "sft_events",
+          "step": 1220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.01533,
+          "objective": "sft_events",
+          "step": 1240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.01624,
+          "objective": "sft_events",
+          "step": 1260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05656,
+          "objective": "sft_events",
+          "step": 1280
+        }
+      ],
+      "seconds": 1115.1175995133817,
+      "skipped": 0,
+      "steps": 1280,
+      "trainable_parameters": 7372800
+    },
+    "sft_stdout": {
+      "history": [
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.49,
+          "loss": 0.03228,
+          "objective": "sft_stdout",
+          "step": 1
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1.19281,
+          "objective": "sft_stdout",
+          "step": 20
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0005,
+          "objective": "sft_stdout",
+          "step": 40
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02798,
+          "objective": "sft_stdout",
+          "step": 60
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.10969,
+          "objective": "sft_stdout",
+          "step": 80
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.218,
+          "objective": "sft_stdout",
+          "step": 100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00464,
+          "objective": "sft_stdout",
+          "step": 120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00013,
+          "objective": "sft_stdout",
+          "step": 140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.60217,
+          "objective": "sft_stdout",
+          "step": 160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0007,
+          "objective": "sft_stdout",
+          "step": 180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02473,
+          "objective": "sft_stdout",
+          "step": 200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1.08183,
+          "objective": "sft_stdout",
+          "step": 220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 2e-05,
+          "objective": "sft_stdout",
+          "step": 240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00016,
+          "objective": "sft_stdout",
+          "step": 260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00044,
+          "objective": "sft_stdout",
+          "step": 280
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.89568,
+          "objective": "sft_stdout",
+          "step": 300
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00064,
+          "objective": "sft_stdout",
+          "step": 320
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.01714,
+          "objective": "sft_stdout",
+          "step": 340
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.85492,
+          "objective": "sft_stdout",
+          "step": 360
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.13159,
+          "objective": "sft_stdout",
+          "step": 380
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0002,
+          "objective": "sft_stdout",
+          "step": 400
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 8e-05,
+          "objective": "sft_stdout",
+          "step": 420
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0002,
+          "objective": "sft_stdout",
+          "step": 440
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 3e-05,
+          "objective": "sft_stdout",
+          "step": 460
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00104,
+          "objective": "sft_stdout",
+          "step": 480
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "objective": "sft_stdout",
+          "step": 500
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00085,
+          "objective": "sft_stdout",
+          "step": 520
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00669,
+          "objective": "sft_stdout",
+          "step": 540
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0002,
+          "objective": "sft_stdout",
+          "step": 560
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00013,
+          "objective": "sft_stdout",
+          "step": 580
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "objective": "sft_stdout",
+          "step": 600
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00012,
+          "objective": "sft_stdout",
+          "step": 620
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00019,
+          "objective": "sft_stdout",
+          "step": 640
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00017,
+          "objective": "sft_stdout",
+          "step": 660
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00017,
+          "objective": "sft_stdout",
+          "step": 680
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00014,
+          "objective": "sft_stdout",
+          "step": 700
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00018,
+          "objective": "sft_stdout",
+          "step": 720
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 2e-05,
+          "objective": "sft_stdout",
+          "step": 740
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00023,
+          "objective": "sft_stdout",
+          "step": 760
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 8e-05,
+          "objective": "sft_stdout",
+          "step": 780
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00028,
+          "objective": "sft_stdout",
+          "step": 800
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0002,
+          "objective": "sft_stdout",
+          "step": 820
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00014,
+          "objective": "sft_stdout",
+          "step": 840
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00015,
+          "objective": "sft_stdout",
+          "step": 860
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 3e-05,
+          "objective": "sft_stdout",
+          "step": 880
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.15259,
+          "objective": "sft_stdout",
+          "step": 900
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00011,
+          "objective": "sft_stdout",
+          "step": 920
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "objective": "sft_stdout",
+          "step": 940
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "objective": "sft_stdout",
+          "step": 960
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00011,
+          "objective": "sft_stdout",
+          "step": 980
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0002,
+          "objective": "sft_stdout",
+          "step": 1000
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 2e-05,
+          "objective": "sft_stdout",
+          "step": 1020
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 8e-05,
+          "objective": "sft_stdout",
+          "step": 1040
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 8e-05,
+          "objective": "sft_stdout",
+          "step": 1060
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00016,
+          "objective": "sft_stdout",
+          "step": 1080
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00013,
+          "objective": "sft_stdout",
+          "step": 1100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 8e-05,
+          "objective": "sft_stdout",
+          "step": 1120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00014,
+          "objective": "sft_stdout",
+          "step": 1140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.18103,
+          "objective": "sft_stdout",
+          "step": 1160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00036,
+          "objective": "sft_stdout",
+          "step": 1180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00016,
+          "objective": "sft_stdout",
+          "step": 1200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00015,
+          "objective": "sft_stdout",
+          "step": 1220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00012,
+          "objective": "sft_stdout",
+          "step": 1240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 9e-05,
+          "objective": "sft_stdout",
+          "step": 1260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00022,
+          "objective": "sft_stdout",
+          "step": 1280
+        }
+      ],
+      "seconds": 1081.1658209264278,
+      "skipped": 0,
+      "steps": 1280,
+      "trainable_parameters": 7372800
+    }
+  }
+}

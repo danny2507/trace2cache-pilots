@@ -1,0 +1,55 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/latent_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/cohort_v1",
+    "conditions": [
+      "oracle_sketch"
+    ],
+    "constant_latent": false,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "edit_span_loss": false,
+    "gist_latent": false,
+    "gist_weight": 1.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "include_specification": false,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 128,
+    "max_events": 96,
+    "max_new_tokens": 256,
+    "max_sequence_tokens": 768,
+    "max_tests": 4,
+    "min_free_gib": 6.0,
+    "mode": "text",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/oracle_sketch_seed1001",
+    "reconstruction_weight": 1.0,
+    "role_skip": false,
+    "seed": 1001,
+    "separation_margin": 0.3,
+    "separation_weight": 0.5,
+    "split": "test",
+    "steps": 800,
+    "train_hide_public_test": true,
+    "train_value_failures": false
+  },
+  "cohort_sha256": "acc350b87778d21a6ef441ec9cab4e4ef0d6cbaca1061703bb069a476f658baa",
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "peak_allocated_gib": 6.722968101501465,
+  "summary": {
+    "oracle_sketch": {
+      "correct": 114,
+      "examples": 128,
+      "extraction_failure": 11,
+      "mean_prompt_tokens": 202.0234375,
+      "task_correct": 114,
+      "tasks": 128
+    }
+  },
+  "timestamp": "2026-09-20T02:43:51.789836+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

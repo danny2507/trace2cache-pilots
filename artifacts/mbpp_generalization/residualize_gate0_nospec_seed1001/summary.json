@@ -1,0 +1,22 @@
+{
+  "aborted": true,
+  "call": "aborted_name_leak",
+  "n_rows": 88,
+  "reason": "function names in public asserts still specified the task; pivoted to anonymized-entry Gate 0",
+  "summary": {
+    "call": "gate0_insufficient",
+    "fisher_p": null,
+    "generic_hidden_pass": 30,
+    "generic_hidden_rate": 0.7142857142857143,
+    "gold_n": 0,
+    "gold_table": 0,
+    "gold_table_rate": null,
+    "n_generic_public_pass": 42,
+    "n_public_pass": 42,
+    "n_rows": 88,
+    "n_table_public_pass": 0,
+    "note": "Need at least 10 public-pass table rows and 10 public-pass generic rows.",
+    "table_hidden_pass": 0,
+    "table_hidden_rate": null
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/latent_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/refactory_cohort_v1",
+    "conditions": [
+      "no_evidence",
+      "io_text",
+      "compact_text",
+      "gist_text",
+      "collated_text"
+    ],
+    "const_prefix_checkpoint": "checkpoints/mbpp_generalization/latent_seed1001_const.pt",
+    "constant_latent": false,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "edit_sketch_icae": false,
+    "edit_span_loss": false,
+    "gist_latent": false,
+    "gist_weight": 1.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "include_specification": false,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 0,
+    "max_events": 96,
+    "max_new_tokens": 256,
+    "max_sequence_tokens": 768,
+    "max_tests": 4,
+    "min_free_gib": 12.0,
+    "mode": "text",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/refactory_text_seed1001",
+    "reconstruction_weight": 1.0,
+    "role_skip": false,
+    "seed": 1001,
+    "separation_margin": 0.3,
+    "separation_weight": 0.5,
+    "sketch_weight": 1.0,
+    "split": "test",
+    "steps": 800,
+    "train_hide_public_test": true,
+    "train_value_failures": false
+  },
+  "cohort_sha256": "ea5fe92f20426753a4b268b2aee8389b1630b3e6168144b33ba3248befa0b8bf",
+  "eval_examples": 119,
+  "eval_tasks": 119,
+  "peak_allocated_gib": 8.691211700439453,
+  "summary": {
+    "collated_text": {
+      "correct": 39,
+      "examples": 119,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 481.14285714285717,
+      "task_correct": 39,
+      "tasks": 119
+    },
+    "compact_text": {
+      "correct": 42,
+      "examples": 119,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 719.8151260504202,
+      "task_correct": 42,
+      "tasks": 119
+    },
+    "gist_text": {
+      "correct": 44,
+      "examples": 119,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 303.30252100840335,
+      "task_correct": 44,
+      "tasks": 119
+    },
+    "io_text": {
+      "correct": 45,
+      "examples": 119,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 243.73949579831933,
+      "task_correct": 45,
+      "tasks": 119
+    },
+    "no_evidence": {
+      "correct": 53,
+      "examples": 119,
+      "extraction_failure": 1,
+      "mean_prompt_tokens": 198.52941176470588,
+      "task_correct": 53,
+      "tasks": 119
+    }
+  },
+  "timestamp": "2026-09-20T09:13:25.069674+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

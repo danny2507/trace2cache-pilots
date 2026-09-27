@@ -1,0 +1,79 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/latent_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/runbugrun_cohort_v1",
+    "conditions": [
+      "discrepancy_embed",
+      "shuffled_embed",
+      "corrupted_embed"
+    ],
+    "const_prefix_checkpoint": "checkpoints/mbpp_generalization/latent_seed1001_const.pt",
+    "constant_latent": false,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "discrepancy_residual": false,
+    "edit_sketch_icae": false,
+    "edit_span_loss": false,
+    "gist_latent": false,
+    "gist_weight": 1.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "include_specification": false,
+    "io_probe_weight": 0.1,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 0,
+    "max_events": 96,
+    "max_new_tokens": 256,
+    "max_sequence_tokens": 768,
+    "max_tests": 4,
+    "min_free_gib": 8.0,
+    "mode": "text",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/runbugrun_discrepancy_embed_seed1001",
+    "reconstruction_weight": 1.0,
+    "role_skip": false,
+    "seed": 1001,
+    "separation_margin": 0.3,
+    "separation_weight": 0.5,
+    "sketch_weight": 1.0,
+    "split": "test",
+    "steps": 800,
+    "train_hide_public_test": true,
+    "train_misses_rows": "",
+    "train_value_failures": false
+  },
+  "cohort_sha256": "01ff6f1cf2e0a77cd5dcc608d02999c7b8a5d7aa9545b59b4fb0b4e25fcc2f63",
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "peak_allocated_gib": 7.472672462463379,
+  "summary": {
+    "corrupted_embed": {
+      "correct": 22,
+      "examples": 128,
+      "extraction_failure": 31,
+      "mean_prompt_tokens": 374.203125,
+      "task_correct": 22,
+      "tasks": 128
+    },
+    "discrepancy_embed": {
+      "correct": 23,
+      "examples": 128,
+      "extraction_failure": 31,
+      "mean_prompt_tokens": 374.203125,
+      "task_correct": 23,
+      "tasks": 128
+    },
+    "shuffled_embed": {
+      "correct": 24,
+      "examples": 128,
+      "extraction_failure": 31,
+      "mean_prompt_tokens": 374.203125,
+      "task_correct": 24,
+      "tasks": 128
+    }
+  },
+  "timestamp": "2026-09-21T12:09:17.605975+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

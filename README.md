@@ -11,29 +11,31 @@ native anchors, one-state multi-fact codes, held-out value combinations, full tr
 and typed causal paths with heavy distractors. Direct KV injection is intentionally deferred until
 the soft-state representation and real-code integration are established.
 
-## Current status
+## Current status (2026-09-27)
 
-- Text repair receiver: `Qwen/Qwen2.5-Coder-3B-Instruct` (frozen, BF16)
-- Latent probe receiver: `Qwen/Qwen2.5-1.5B-Instruct` (frozen, BF16)
-- Hardware: one A100 40 GB
-- Text task: Python function repair, checked on held-out tests
-- Latent task: compress paired, typed runtime events into one receiver-readable state
+The latent / K-slot / splice / Residualize / Coconut / sketch-distill families are
+**closed**. Full scoreboard, kill calls, and the next SOTA-motivated menu (test-time
+scaling, ICL pairs, TTT — not 8-slot) are in
+[`docs/status_and_next_2026-09-27.md`](docs/status_and_next_2026-09-27.md).
 
-Across three causal-path seeds, the one-state latent reaches `58.0 ± 10.5%` macro accuracy on
-unseen output pairs and much longer traces, versus `19.6 ± 1.4%` after message shuffling. Branch
-flips and candidate-role swaps reduce accuracy to chance, supporting use of the intended causal
-fields. This is controlled synthetic evidence; the generated real Python traces are not yet wired
-into the latent encoder.
+Headline on the frozen 128 MBPP repair panel, greedy hidden-test Repair@1,
+`Qwen/Qwen2.5-Coder-3B-Instruct` BF16:
 
-Trainable-only model artifacts are published separately at
-[`danny2507/trace2cache-pilots`](https://huggingface.co/danny2507/trace2cache-pilots).
+- frozen `no_evidence` (buggy + public test): **68**
+- direct repair LoRA (control, not a method): **97**
+- oracle `REPLACE` in the eval prompt (ceiling, not a method): **114**
+- sketch distill **91** (`sketch_distill_fail`); LDP Gate 1 **64** (`ldp_g1_fail`)
 
-The latest paired-runtime update is a careful negative-control result: direct decoder
-supervision gives useful paired repair behavior on known toy program families, but generic typed
-value nodes, cross-latent counterfactual loss, and audited binding relations do not improve it.
-It does not support a task-disjoint repair or direct-KV claim.  See
-[`docs/handover_2026-09-18.md`](docs/handover_2026-09-18.md) for exact denominators, controls,
-checkpoints, and release contents.
+On stdout prediction, gold compact event *text* is 25 vs code-only 12; every
+non-text channel of those events failed (`sft_fail` 3 vs 14, `coconut_fail` 5 vs 14).
+
+Do not reopen a `*_fail` family. Do not train on the frozen 128. Shared A100: never
+kill other users’ GPU PIDs.
+
+Earlier toy paired-runtime and synthetic causal-path pilots remain in
+[`docs/handover_2026-09-18.md`](docs/handover_2026-09-18.md) and
+[`docs/pilot_results_2026-09-13.md`](docs/pilot_results_2026-09-13.md).
+Trainable-only adapters: [`danny2507/trace2cache-pilots`](https://huggingface.co/danny2507/trace2cache-pilots).
 
 ## Reproduce
 

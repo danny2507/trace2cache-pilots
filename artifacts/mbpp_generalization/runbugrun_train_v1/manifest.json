@@ -1,0 +1,38 @@
+{
+  "audit_rows": 600,
+  "candidate_python_bugs": 600,
+  "created_at": "2026-09-21T00:08:55.518058+00:00",
+  "dataset": "RunBugRun v2 Python",
+  "db": "third_party/run_bug_run/runbugrun.db",
+  "db_sha256": "4d96d546ce4bf45a29b6b3f0b870c65617ee540b73f3b9ce71f79eaaf12b8569",
+  "eligible_examples": 527,
+  "exclusion_reasons": {
+    "canonical_all_fail": 19,
+    "canonical_mixed": 18,
+    "canonical_timeout": 21,
+    "no_disjoint_hidden_failure": 14,
+    "public_trace_failed": 1
+  },
+  "max_events_per_test": 24,
+  "min_tests": 5,
+  "panel_n": 0,
+  "panel_task_ids": [],
+  "schema_version": 1,
+  "sha256": "6aa56a9451115f0c3109e66fed6db4560a839b9c151d400759b203f54e26b446",
+  "splits": {
+    "test": {
+      "eligible_examples": 0,
+      "eligible_problems": 0
+    },
+    "train": {
+      "eligible_examples": 527,
+      "eligible_problems": 78
+    },
+    "validation": {
+      "eligible_examples": 0,
+      "eligible_problems": 0
+    }
+  },
+  "sql_sha256": "7ba8d1c607e302215604194a8b98ae67591cf18b2380f98c6f242044ed620bc7",
+  "timeout": 4.0
+}

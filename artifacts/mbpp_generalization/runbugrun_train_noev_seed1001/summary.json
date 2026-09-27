@@ -1,0 +1,60 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/latent_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/runbugrun_cohort_v1_residual",
+    "conditions": [
+      "no_evidence"
+    ],
+    "const_prefix_checkpoint": "checkpoints/mbpp_generalization/latent_seed1001_const.pt",
+    "constant_latent": false,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "discrepancy_residual": false,
+    "edit_sketch_icae": false,
+    "edit_span_loss": false,
+    "gist_latent": false,
+    "gist_weight": 1.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "include_specification": false,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 0,
+    "max_events": 96,
+    "max_new_tokens": 256,
+    "max_sequence_tokens": 768,
+    "max_tests": 4,
+    "min_free_gib": 8.0,
+    "mode": "text",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/runbugrun_train_noev_seed1001",
+    "reconstruction_weight": 1.0,
+    "role_skip": false,
+    "seed": 1001,
+    "separation_margin": 0.3,
+    "separation_weight": 0.5,
+    "sketch_weight": 1.0,
+    "split": "train",
+    "steps": 800,
+    "train_hide_public_test": true,
+    "train_misses_rows": "",
+    "train_value_failures": false
+  },
+  "cohort_sha256": "3c17ab2addd7748a4c52d1ba89a4c3ced4078ddb522479681cab78b6a87e732b",
+  "eval_examples": 527,
+  "eval_tasks": 527,
+  "peak_allocated_gib": 7.575561046600342,
+  "summary": {
+    "no_evidence": {
+      "correct": 152,
+      "examples": 527,
+      "extraction_failure": 49,
+      "mean_prompt_tokens": 309.8785578747628,
+      "task_correct": 152,
+      "tasks": 527
+    }
+  },
+  "timestamp": "2026-09-21T01:02:57.658976+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

@@ -1,0 +1,66 @@
+{
+  "args": {
+    "checkpoint": "checkpoints/mbpp_generalization/execution_sim_seed1001.pt",
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "conditions": null,
+    "contrastive_margin": 0.1,
+    "contrastive_weight": 3.0,
+    "gradient_accumulation": 4,
+    "hidden_width": 256,
+    "latent_slots": 8,
+    "learning_rate": 0.0003,
+    "limit": 0,
+    "max_events": 48,
+    "max_new_tokens": 128,
+    "max_sequence_tokens": 1536,
+    "max_tests": 4,
+    "min_free_gib": 8.0,
+    "mode": "snap",
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_snap_seed1001",
+    "reconstruction_weight": 1.0,
+    "seed": 1001,
+    "split": "test",
+    "steps": 400,
+    "text_rows": "artifacts/mbpp_generalization/execution_sim_text_seed1001/rows.jsonl"
+  },
+  "elapsed_seconds": 366.1879849433899,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "newly_written": 512,
+  "peak_allocated_gib": 9.068694114685059,
+  "summary": {
+    "code_input": {
+      "correct": 12,
+      "examples": 128,
+      "mean_prompt_tokens": 299.5390625,
+      "task_correct": 12,
+      "tasks": 128
+    },
+    "shuffled_snap": {
+      "correct": 11,
+      "examples": 128,
+      "mean_prompt_tokens": 326.7109375,
+      "task_correct": 11,
+      "tasks": 128
+    },
+    "trace_text": {
+      "correct": 25,
+      "examples": 128,
+      "mean_prompt_tokens": 2326.0390625,
+      "task_correct": 25,
+      "tasks": 128
+    },
+    "vocab_snap": {
+      "correct": 10,
+      "examples": 128,
+      "mean_prompt_tokens": 326.7109375,
+      "task_correct": 10,
+      "tasks": 128
+    }
+  },
+  "test_sha256": "074dd6cecdd960970356907168b6f3ea5c086ae9b487ca56aecec6d0b943276c",
+  "timestamp": "2026-09-22T00:57:42.116459+00:00",
+  "trainable_parameters": 0,
+  "training": null
+}

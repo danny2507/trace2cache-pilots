@@ -1,0 +1,590 @@
+{
+  "args": {
+    "checkpoint_dir": "checkpoints/mbpp_generalization",
+    "cohort": "artifacts/mbpp_generalization/execution_sim_runbugrun_v1",
+    "gradient_accumulation": 4,
+    "init_checkpoint": "checkpoints/mbpp_generalization/event_sft_events_seed1001.pt",
+    "latent_steps": 640,
+    "learning_rate": 0.0001,
+    "limit": 0,
+    "lora_alpha": 32,
+    "lora_rank": 16,
+    "max_new_tokens": 512,
+    "max_sequence_tokens": 4096,
+    "min_free_gib": 8.0,
+    "mix_steps": 640,
+    "model": "Qwen/Qwen2.5-Coder-3B-Instruct",
+    "output_dir": "artifacts/mbpp_generalization/execution_sim_coconut_seed1001",
+    "resume": true,
+    "seed": 1001,
+    "skip_train": false,
+    "stdout_rows": "artifacts/mbpp_generalization/execution_sim_event_sft_seed1001/rows.jsonl",
+    "thoughts": 8
+  },
+  "call": "coconut_fail",
+  "call_note": "Coconut latent thoughts do not beat stdout-only SFT. Kill the method. Do not shuffle.",
+  "elapsed_seconds": 17247.21516866237,
+  "eval_examples": 128,
+  "eval_tasks": 128,
+  "init_checkpoint": "checkpoints/mbpp_generalization/event_sft_events_seed1001.pt",
+  "panel_sha256": "074dd6cecdd960970356907168b6f3ea5c086ae9b487ca56aecec6d0b943276c",
+  "peak_allocated_gib": 11.775362968444824,
+  "stages": [
+    {
+      "k": 8,
+      "keep_events": true,
+      "name": "mix8",
+      "steps": 640
+    },
+    {
+      "k": 8,
+      "keep_events": false,
+      "name": "latent8",
+      "steps": 640
+    }
+  ],
+  "summary": {
+    "call": "coconut_fail",
+    "correct": {
+      "coconut_latent": 5,
+      "coconut_mix": 5,
+      "sft_stdout": 14
+    },
+    "latent_vs_stdout": {
+      "left_ids": [
+        2085965,
+        2092307
+      ],
+      "left_only": 2,
+      "p": 0.0224609375,
+      "right_ids": [
+        2018905,
+        2019382,
+        2035473,
+        2085944,
+        2091458,
+        2091464,
+        2091474,
+        2091494,
+        2091846,
+        2091849,
+        2091870
+      ],
+      "right_only": 11
+    },
+    "mean_thoughts": 8.0,
+    "mix_vs_stdout": {
+      "left_ids": [
+        2091448
+      ],
+      "left_only": 1,
+      "p": 0.01171875,
+      "right_ids": [
+        2018905,
+        2019382,
+        2035473,
+        2085944,
+        2091458,
+        2091464,
+        2091474,
+        2091846,
+        2091849,
+        2091870
+      ],
+      "right_only": 10
+    },
+    "n": {
+      "coconut_latent": 128,
+      "coconut_mix": 128,
+      "sft_stdout": 128
+    },
+    "note": "Coconut latent thoughts do not beat stdout-only SFT. Kill the method. Do not shuffle."
+  },
+  "timestamp": "2026-09-23T04:52:52.746372+00:00",
+  "train_examples": 320,
+  "train_sha256": "02ddf7fe8cb110397250d30142413b0c3234e1a476fcf3d0db4fb6c15fad3390",
+  "training": {
+    "latent8": {
+      "history": [
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.49,
+          "loss": 0.01581,
+          "stage": "latent8",
+          "step": 1
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1.11957,
+          "stage": "latent8",
+          "step": 20
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0003,
+          "stage": "latent8",
+          "step": 40
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00075,
+          "stage": "latent8",
+          "step": 60
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00061,
+          "stage": "latent8",
+          "step": 80
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00026,
+          "stage": "latent8",
+          "step": 100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00018,
+          "stage": "latent8",
+          "step": 120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "stage": "latent8",
+          "step": 140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0051,
+          "stage": "latent8",
+          "step": 160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00013,
+          "stage": "latent8",
+          "step": 180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00184,
+          "stage": "latent8",
+          "step": 200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00045,
+          "stage": "latent8",
+          "step": 220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "stage": "latent8",
+          "step": 240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00022,
+          "stage": "latent8",
+          "step": 260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0029,
+          "stage": "latent8",
+          "step": 280
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.13416,
+          "stage": "latent8",
+          "step": 300
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00019,
+          "stage": "latent8",
+          "step": 320
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00156,
+          "stage": "latent8",
+          "step": 340
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.80692,
+          "stage": "latent8",
+          "step": 360
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0004,
+          "stage": "latent8",
+          "step": 380
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00021,
+          "stage": "latent8",
+          "step": 400
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00027,
+          "stage": "latent8",
+          "step": 420
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00019,
+          "stage": "latent8",
+          "step": 440
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "stage": "latent8",
+          "step": 460
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00365,
+          "stage": "latent8",
+          "step": 480
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 1e-05,
+          "stage": "latent8",
+          "step": 500
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00015,
+          "stage": "latent8",
+          "step": 520
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 9e-05,
+          "stage": "latent8",
+          "step": 540
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00016,
+          "stage": "latent8",
+          "step": 560
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 7e-05,
+          "stage": "latent8",
+          "step": 580
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 2e-05,
+          "stage": "latent8",
+          "step": 600
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 3e-05,
+          "stage": "latent8",
+          "step": 620
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00019,
+          "stage": "latent8",
+          "step": 640
+        }
+      ],
+      "k": 8,
+      "keep_events": false,
+      "seconds": 4596.960997134447,
+      "skipped": 0,
+      "steps": 640,
+      "trainable_parameters": 7372800
+    },
+    "mix8": {
+      "history": [
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.5,
+          "loss": 0.09193,
+          "stage": "mix8",
+          "step": 1
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.63549,
+          "stage": "mix8",
+          "step": 20
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.03248,
+          "stage": "mix8",
+          "step": 40
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.44507,
+          "stage": "mix8",
+          "step": 60
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.27587,
+          "stage": "mix8",
+          "step": 80
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.05732,
+          "stage": "mix8",
+          "step": 100
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00663,
+          "stage": "mix8",
+          "step": 120
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.03527,
+          "stage": "mix8",
+          "step": 140
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02933,
+          "stage": "mix8",
+          "step": 160
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08447,
+          "stage": "mix8",
+          "step": 180
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.97107,
+          "stage": "mix8",
+          "step": 200
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.16801,
+          "stage": "mix8",
+          "step": 220
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02902,
+          "stage": "mix8",
+          "step": 240
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.00106,
+          "stage": "mix8",
+          "step": 260
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.24205,
+          "stage": "mix8",
+          "step": 280
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.70057,
+          "stage": "mix8",
+          "step": 300
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.12591,
+          "stage": "mix8",
+          "step": 320
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08894,
+          "stage": "mix8",
+          "step": 340
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.54,
+          "loss": 0.25296,
+          "stage": "mix8",
+          "step": 360
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0778,
+          "stage": "mix8",
+          "step": 380
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.25334,
+          "stage": "mix8",
+          "step": 400
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07525,
+          "stage": "mix8",
+          "step": 420
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07932,
+          "stage": "mix8",
+          "step": 440
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.0551,
+          "stage": "mix8",
+          "step": 460
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02502,
+          "stage": "mix8",
+          "step": 480
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.01364,
+          "stage": "mix8",
+          "step": 500
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04401,
+          "stage": "mix8",
+          "step": 520
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.04946,
+          "stage": "mix8",
+          "step": 540
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.08557,
+          "stage": "mix8",
+          "step": 560
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.0277,
+          "stage": "mix8",
+          "step": 580
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.02571,
+          "stage": "mix8",
+          "step": 600
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.53,
+          "loss": 0.0359,
+          "stage": "mix8",
+          "step": 620
+        },
+        {
+          "event": "train_step",
+          "gpu_allocated_gib": 6.52,
+          "loss": 0.07112,
+          "stage": "mix8",
+          "step": 640
+        }
+      ],
+      "k": 8,
+      "keep_events": true,
+      "seconds": 4800.308434989303,
+      "skipped": 0,
+      "steps": 640,
+      "trainable_parameters": 7372800
+    }
+  }
+}

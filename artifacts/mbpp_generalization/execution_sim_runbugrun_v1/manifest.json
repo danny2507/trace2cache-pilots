@@ -1,0 +1,21 @@
+{
+  "created_at": "2026-09-21T14:31:44.536362+00:00",
+  "max_events_per_test": 24,
+  "mean_events": 19.171875,
+  "missed": 0,
+  "n": 128,
+  "panel_sha256": "074dd6cecdd960970356907168b6f3ea5c086ae9b487ca56aecec6d0b943276c",
+  "repair_cohort": "artifacts/mbpp_generalization/runbugrun_cohort_v1",
+  "repair_split_sha256": "ddae5cf90f72357efaa1465a432abfbbc860e94506d35fe488f2312a27a7c29c",
+  "split": "test",
+  "train_cap": 320,
+  "train_created_at": "2026-09-21T15:01:34.083172+00:00",
+  "train_mean_events": 18.0375,
+  "train_n": 320,
+  "train_reasons": {
+    "ok": 320,
+    "trace_failed": 46
+  },
+  "train_scanned": 368,
+  "train_sha256": "02ddf7fe8cb110397250d30142413b0c3234e1a476fcf3d0db4fb6c15fad3390"
+}
