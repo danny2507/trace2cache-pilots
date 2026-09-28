@@ -14,9 +14,10 @@ the soft-state representation and real-code integration are established.
 ## Current status (2026-09-27)
 
 The latent / K-slot / splice / Residualize / Coconut / sketch-distill families are
-**closed**. Full scoreboard, kill calls, and the next SOTA-motivated menu (test-time
-scaling, ICL pairs, TTT — not 8-slot) are in
-[`docs/status_and_next_2026-09-27.md`](docs/status_and_next_2026-09-27.md).
+**closed**. Full scoreboard, kill calls, literature review, and the next
+SOTA-motivated menu (test-time scaling, ICL pairs, TTT — not 8-slot) are in
+[`docs/status_and_next_2026-09-27.md`](docs/status_and_next_2026-09-27.md)
+(§3 literature, §5 next leads).
 
 Headline on the frozen 128 MBPP repair panel, greedy hidden-test Repair@1,
 `Qwen/Qwen2.5-Coder-3B-Instruct` BF16:

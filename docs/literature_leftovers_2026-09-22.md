@@ -65,8 +65,8 @@ If the goal is still a 3B A/A* method paper, do not reopen splices,
 event-chain SFT, Residualize, Coconut, LDP Gate 1/2, or sketch
 distillation. Direct repair LoRA (97) is a control, not a method paper.
 Skip LDP Gate 3 / xRAG / NExT-as-text unless asked. The 2026-09-27 menu
-(not 8-slot, motivated from published 2025 SOTA) is in
-`docs/status_and_next_2026-09-27.md`:
+(not 8-slot, motivated from published 2025 SOTA) and the literature
+review are in `docs/status_and_next_2026-09-27.md` §3 and §5:
 
 1. **S\*** test-time scaling for repair (Findings EMNLP 2025) — first run.
 2. **AuPair** ICL pairs (ICML 2025) — if S\* is a wash.

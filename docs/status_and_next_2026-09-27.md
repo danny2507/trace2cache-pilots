@@ -4,6 +4,9 @@ Canonical snapshot of the A/A* small-CodeLM method search. The project is **not*
 a negative paper. Do not reopen a family whose call is `*_fail` /
 `gate0_insufficient` / `aborted_name_leak`. Do not train on the frozen 128.
 
+Literature map (traces, latent interfaces, APR adaptation, distillation,
+test-time compute, occupied RL): **§3**. Next SOTA leads: **§5**.
+
 Receiver: `Qwen/Qwen2.5-Coder-3B-Instruct` BF16. Official Google MBPP ID split.
 LoRA is allowed only when the method *is* training the LM. Shared A100: never
 kill other users’ GPU PIDs. Python: `.venv/bin/python`.
@@ -134,7 +137,177 @@ families.
 
 ---
 
-## 3. Occupied published methods — do not clone
+## 3. Literature review
+
+Not a systematic review. Scope: published 2024–2026 work on small CodeLMs,
+program repair, execution evidence, distillation, and test-time compute, plus
+the interface papers that motivated the closed latent families. Prefer PMLR,
+ACL Anthology, ICLR/ICSE proceedings over arXiv. An earlier, latent-only
+review is `docs/literature_review_runtime_latent_2026-09-17.md` (2026-09-17);
+this section is the post-kill map.
+
+The 2025 A* shape for a 3B CodeLM is **adaptation, data, RL-from-tests, or
+inference-time compute**. It is not another encoder of a debugger dump.
+
+### 3.1 Execution traces as evidence
+
+Haque et al., [Towards Effectively Leveraging Execution Traces](https://aclanthology.org/2025.knowledgenlp-1.17/),
+KnowledgeNLP 2025, put traces in GPT repair prompts: naive dumps help in only
+2/6 dataset–model cells and degrade with complexity. Ni et al., [Do Code
+Semantics Help?](https://aclanthology.org/2025.findings-emnlp.548/), Findings
+of EMNLP 2025, report limited usefulness of execution traces for SFT and
+inference in the settings they study. Both papers say the same thing our
+Gate 0 measured: **a failing public test already in the prompt leaves little
+for LINE/STATE/RETURN to add.**
+
+That is why gist/collated/discrepancy/line traces lost to `no_evidence` on
+MBPP (63/60/62/— vs 68), Refactory (44 vs 53), and RunBugRun (28 vs 23 at 3B;
+41 vs 40 at 7B). Encoding those traces is forbidden once the text Gate 0
+fails.
+
+Precedents we did **not** clone: [NExT](https://arxiv.org/abs/2404.14662)
+(2024) self-trains execution rationales filtered by a correct patch — text
+SFT, high overlap if it works on this panel. [CodeExecutor](https://arxiv.org/abs/2305.05383)
+and [TRACED](https://arxiv.org/abs/2306.07487) (2023) continue-pretrain an
+executor; that paper already exists. [TraceFixer](https://arxiv.org/abs/2304.12743)
+(2023) needs a user-specified desired intermediate state, which we do not
+have at inference. [Dynamic Neural Program Embeddings](https://arxiv.org/abs/1711.07163) (ICLR 2018)
+train an executor, not a frozen CodeLM.
+
+### 3.2 Latent and continuous interfaces
+
+The closed splice family was an attempt to give a frozen 3B a non-text
+channel. The published interfaces we borrowed from:
+
+| Paper | Venue | Interface | What happened here |
+| --- | --- | --- | --- |
+| [ICAE](https://arxiv.org/abs/2307.06945) | 2023/24 | LoRA encoder → memory slots for a decoder | gist / sketch ICAE: bound but harmful (54, 59 vs 68) |
+| [xRAG](https://arxiv.org/abs/2405.13792) | NeurIPS 2024 | frozen embedder + projector; paraphrase then NLL+KL | we did cosine to event vectors (`distill_fail`); KL from the 25-win text teacher is untried and still a splice |
+| [Gist](https://arxiv.org/abs/2304.08467) | NeurIPS 2023 | activation compression; **adapts the LM** | not evidence a frozen decoder reads arbitrary Z |
+| [Coconut](https://openreview.net/forum?id=tG4SgayTtk) (Hao et al.) | ICLR 2025 workshop | last hidden state fed back as the next embed | `coconut_fail` 5 vs stdout LoRA 14 |
+| [BLIP-2](https://proceedings.mlr.press/v202/li23q.html) | ICML 2023 | Q-Former in front of a frozen LM | vision analogy; does not fix “decoder ignores Z” unless the receiver is trained |
+| Cache-to-Cache / LatentPress / [LaMAR](https://conf.researchr.org/details/ase-2026/ase-2026-research-track/127/LaMAR-Latent-Multi-agent-Collaboration-via-KV-Cache-Communication-for-Automated-Prog) | 2025–26 | per-layer KV | same claim one layer down; LaMAR is KV multi-agent *repair* at ASE 2026 — title overlap, do not claim first |
+
+On this hardware, shuffle never dropped. Identical pass/fail under a
+permuted Z is an unused prefix, not a channel. Coconut replaced event
+tokens with the 3B’s own states and still lost to stdout-only SFT. That
+closes continuous-thought *for invented execution traces* on this 3B. It
+does not refute Coconut on math; it says execution events are a bad
+latent CoT teacher (`sft_events` 3 ⊂ `sft_stdout` 14).
+
+### 3.3 Repair as adaptation of a CodeLM
+
+[RepairLLaMA](https://arxiv.org/abs/2312.15698) (Silva, Fang, Monperrus) is
+the PEFT-APR baseline: LoRA adapters plus a repair-specific representation
+(infill / localization tags) on CodeLlama. Our **direct repair LoRA 97/128**
+is that shape on Qwen2.5-Coder-3B without a representation paper. It is a
+control. Oracle `REPLACE` in the eval prompt (114) already shows the 3B can
+*apply* an infill sketch; the remaining question is discovery, which is
+just repair.
+
+[NextCoder](https://proceedings.mlr.press/v267/aggarwal25b.html) (Aggarwal
+et al., ICML 2025, PMLR 267:616–638) adapts Qwen2.5-Coder (including 3B) to
+diverse edits with synthetic edit data and **SeleKT** (dense step, sparse
+projection so the base does not forget). Occupied: same model family, same
+edit task, published recipe. Cite it. Do not reimplement SeleKT as our
+method.
+
+[ThinkRepair](https://dl.acm.org/doi/10.1145/3650212.3680359) (Yin et al.,
+ISSTA 2024) collects CoT repair examples then few-shot + interactive
+querying with tests. [Self-Debug](https://openreview.net/forum?id=KuPixIqPiq)
+(Chen et al., ICLR 2024) is the prompting ancestor: explain, run, fix at
+*eval*. Our eval is one-shot; putting a diagnosis in the eval prompt is
+Self-Debug, not a new method. Sketch distill moved that diagnosis into the
+*training* target and lost to direct SFT.
+
+### 3.4 Distilling an intermediate that is hidden at eval
+
+[ReflectionCoder](https://aclanthology.org/2025.acl-long.494/) (ACL 2025)
+trains on compiler-feedback reflection sequences, then distills into
+one-off `[instruction, code]` with a dynamic mask on the reflection tokens.
+That is exactly the sketch-distill experiment: oracle `REPLACE` then the
+canonical patch, mask p=0.5, eval prompt identical to `no_evidence`. Result:
+**91 vs direct 97**, `sketch_distill_fail`. A gold intermediate the 3B can
+*read* (Stage 0, 114) does not help as a thing it must *emit and then hide*.
+The same pattern as event-chain SFT (3 vs 14).
+
+[InverseCoder](https://ojs.aaai.org/index.php/AAAI/article/view/34742) (Wu
+et al., AAAI 2025) goes the other way: code → extra instructions, then SFT.
+[SCoder](https://aclanthology.org/2025.findings-emnlp.1136/) (Findings of
+EMNLP 2025) bootstraps a small synthesizer by progressive self-distillation.
+Both are data recipes. Inverse-Instruct is the leftover if inference-time
+methods close; it still has to beat direct LoRA 97.
+
+### 3.5 Inference-time compute, ICL, and RL-from-tests
+
+This is where 2025 actually published small-CodeLM gains.
+
+**Test-time scaling.** Li et al., [S*: Test Time Scaling for Code
+Generation](https://aclanthology.org/2025.findings-emnlp.865/), Findings of
+EMNLP 2025: hybrid parallel + sequential scaling with execution-grounded
+selection. A 3B outperforms GPT-4o-mini; GPT-4o-mini + S* beats o1-preview
+by 3.7% on LiveCodeBench. Our panel has only been greedy. Public tests are
+a legal verifier. This is N1.
+
+**ICL repair pairs.** Mavalankar et al., [AuPair](https://proceedings.mlr.press/v267/mavalankar25a.html),
+ICML 2025, PMLR 267:43276–43301: (wrong, fixed) pairs as 1-shot ICL beat
+best-of-N and standard self-repair on competitive programming, 5 LLMs, 7
+datasets, no SFT. We have 780 train pairs and have never used ICL. This is
+N2.
+
+**Test-time training.** Akyürek et al., [The Surprising Effectiveness of
+Test-Time Training for Few-Shot Learning](https://proceedings.mlr.press/v267/akyurek25a.html),
+ICML 2025, PMLR 267:942–963 (up to 6× on ARC). Hu et al., [Test-Time
+Learning for Large Language Models](https://proceedings.mlr.press/v267/hu25z.html),
+ICML 2025 (perplexity minimization + LoRA). Code-TTT for APR is not an
+occupied title. This is N3.
+
+**RL from execution — occupied.** Do not clone:
+
+- Gehring et al., [RLEF](https://proceedings.mlr.press/v267/gehring25a.html),
+  ICML 2025, PMLR 267:19034–19055: RL grounded in unit-test feedback,
+  multi-turn, Llama 3.1 8B/70B.
+- Jain et al., [μCODE](https://proceedings.mlr.press/v267/jain25a.html),
+  ICML 2025, PMLR 267:26700–26716: multi-turn code generation with
+  single-step rewards and a learned verifier.
+- [ACECODER](https://aclanthology.org/2025.acl-long.587/), ACL 2025:
+  synthesized tests → preference pairs → reward model / RL; Qwen2.5-Coder
+  included.
+- Cho et al., [CoCoS](https://aclanthology.org/2025.findings-emnlp.127/),
+  Findings of EMNLP 2025: online RL self-correction for **small** models;
+  +35.8% MBPP / +27.7% HumanEval at 1B.
+
+Those four are the published “train on test outcomes” papers. A GRPO run on
+our 780 mutants would be a clone, not a method.
+
+**Judges.** Crupi, Tufano, Bavota, [Improving Code Generation via Small
+Language Model-as-a-judge](https://conf.researchr.org/details/icse-2026/icse-2026-research-track/294/Improving-Code-Generation-via-Small-Language-Model-as-a-judge),
+ICSE 2026. Occupied if the method *is* a 3B ranker of its own patches.
+
+### 3.6 Where this project sits
+
+```
+evidence ──► frozen 3B reads it as text?
+              │ yes (stdout events: 25 vs 12) ──► can the 3B invent it?
+              │                                   │ no (ask 5, SFT 3) ──► do not encode, do not SFT the chain
+              │ no  (repair traces lose to public test) ──► do not encode
+              │
+adaptation ──► LoRA on the patch (97) beats frozen 68
+              │ gold sketch in the eval prompt (114) is a ceiling
+              │ gold sketch as train prefix (91) loses to direct
+              │
+open 2025 SOTA we have not run: S* / AuPair / TTT / Inverse-Instruct
+occupied: NextCoder, RLEF, μCODE, ACECODER, CoCoS, SLM-as-a-judge, Self-Debug, GainFill
+```
+
+A paper that reopens splices, Coconut, LDP, or sketch distill is a negative
+paper. The remaining A* opening on this panel is **how the 3B spends extra
+inference, extra ICL, or extra per-problem gradient, given that greedy LoRA
+is already 97 and oracle-in-prompt is 114.**
+
+---
+
+## 4. Occupied published methods — do not clone
 
 | Paper | Venue | Why occupied |
 | --- | --- | --- |
@@ -154,7 +327,7 @@ is not a paper.
 
 ---
 
-## 4. Next directions (motivated from 2025–2026 published SOTA)
+## 5. Next directions (motivated from 2025–2026 published SOTA)
 
 **Not limited to 8-slot / latent / splices.** Those families are scientifically
 closed on this hardware. Published A* small-CodeLM papers in 2025 are
@@ -250,7 +423,7 @@ Do not hide the public test. Do not train on the frozen 128.
 
 ---
 
-## 5. How to eval a new idea
+## 6. How to eval a new idea
 
 1. Write the kill rule **before** training. McNemar on the frozen 128, p<0.05,
    left_only > right_only.
@@ -267,7 +440,7 @@ Do not hide the public test. Do not train on the frozen 128.
 
 ---
 
-## 6. Frozen hashes (do not overwrite)
+## 7. Frozen hashes (do not overwrite)
 
 | Object | sha256 prefix |
 | --- | --- |
@@ -284,7 +457,7 @@ Rebuild via `scripts/build_*_cohort.py`. Per-run `summary.json` is in
 
 ---
 
-## 7. File map for the closed 2026-09 work
+## 8. File map for the closed 2026-09 work
 
 | Path | Role |
 | --- | --- |
@@ -298,6 +471,8 @@ Rebuild via `scripts/build_*_cohort.py`. Per-run `summary.json` is in
 | `src/trace2cache/residualize.py` | Residualize (closed) |
 | `docs/handover_2026-09-22.md` | successor protocol, eval checklist |
 | `docs/literature_leftovers_2026-09-22.md` | leftover log (latent-era) |
+| `docs/literature_review_runtime_latent_2026-09-17.md` | 2026-09-17 latent-interface review |
+| this file, §3 | 2026-09-28 literature map (traces, latent, APR, distill, TTS/RL) |
 | `artifacts/mbpp_generalization/RESULTS_2026-09-19.md` | early repair scoreboard |
 
 Venue target is unchanged: ICLR 2027 is too tight. Realistic A* is ICML 2027
